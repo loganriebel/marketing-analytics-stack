@@ -1,0 +1,591 @@
+{
+  "company": "Fernhook Software (fictional)",
+  "seed": 2026,
+  "window": {
+    "first_week": "2023-01-02",
+    "last_week": "2025-12-22",
+    "weeks": 156,
+    "crm_snapshot_date": "2025-12-28"
+  },
+  "definitions": {
+    "roi_pipeline": "expected pipeline $ (opportunity amount) caused by in-window spend, divided by in-window spend",
+    "roi_revenue": "same, for closed-won revenue",
+    "marginal_roi_pipeline": "extra expected pipeline per extra $ when the channel's whole in-window spend path is scaled by 1%",
+    "incremental": "expected value, net of noise, counting outcomes that land after the window ends",
+    "response_curve": "incremental pipeline when the channel's in-window spend path is scaled by spend_multiplier, other channels unchanged",
+    "lead_model": "leads(r,t) = base(r,t) + sum_c beta_c * size_r * hill(adstock_c(spend_rc)(t) / size_r)"
+  },
+  "channels": {
+    "paid_search": {
+      "spend": 17887314.52,
+      "incremental_leads": 51503.16,
+      "incremental_opportunities": 8782.32,
+      "incremental_pipeline": 57239406.46,
+      "incremental_revenue": 18889004.13,
+      "roi_pipeline": 3.2,
+      "roi_revenue": 1.056,
+      "marginal_roi_pipeline": 1.2333,
+      "cost_per_incremental_lead": 347.31,
+      "adstock": {
+        "type": "geometric",
+        "alpha": 0.25,
+        "l_max": 12,
+        "normalized": true
+      },
+      "saturation": {
+        "type": "hill",
+        "half_saturation": 2800,
+        "slope": 1.4,
+        "input": "adstocked weekly spend / region size index"
+      },
+      "beta_leads_per_week_per_size_unit": 23.070642,
+      "lead_quality": {
+        "p_mql": 0.58,
+        "p_sql": 0.42,
+        "p_opp": 0.7,
+        "p_won": 0.33,
+        "p_opp_per_lead": 0.17052,
+        "deal_size_multiplier": 1.0
+      },
+      "crm_last_touch_recording": {
+        "paid_search": 0.9,
+        "organic_search": 0.04,
+        "direct": 0.06
+      },
+      "platform_reporting": {
+        "claim_mult": 1.15,
+        "halo": 0.15,
+        "reach_spend": 4000,
+        "halo_from": {
+          "youtube": 0.4,
+          "meta": 0.25
+        }
+      },
+      "response_curve": {
+        "spend_multiplier": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0,
+          1.25,
+          1.5,
+          2.0,
+          3.0
+        ],
+        "spend": [
+          0.0,
+          4471828.63,
+          8943657.26,
+          13415485.89,
+          17887314.52,
+          22359143.15,
+          26830971.78,
+          35774629.04,
+          53661943.56
+        ],
+        "incremental_pipeline": [
+          0.0,
+          22263304.96,
+          39720460.21,
+          50418774.38,
+          57239406.46,
+          61836883.37,
+          65090575.66,
+          69311484.81,
+          73577677.42
+        ]
+      }
+    },
+    "meta": {
+      "spend": 5445175.21,
+      "incremental_leads": 26159.89,
+      "incremental_opportunities": 2554.51,
+      "incremental_pipeline": 14157455.55,
+      "incremental_revenue": 3964087.55,
+      "roi_pipeline": 2.6,
+      "roi_revenue": 0.728,
+      "marginal_roi_pipeline": 2.0438,
+      "cost_per_incremental_lead": 208.15,
+      "adstock": {
+        "type": "geometric",
+        "alpha": 0.45,
+        "l_max": 12,
+        "normalized": true
+      },
+      "saturation": {
+        "type": "hill",
+        "half_saturation": 3500,
+        "slope": 1.2,
+        "input": "adstocked weekly spend / region size index"
+      },
+      "beta_leads_per_week_per_size_unit": 29.59491,
+      "lead_quality": {
+        "p_mql": 0.45,
+        "p_sql": 0.35,
+        "p_opp": 0.62,
+        "p_won": 0.28,
+        "p_opp_per_lead": 0.09765,
+        "deal_size_multiplier": 0.85
+      },
+      "crm_last_touch_recording": {
+        "meta": 0.45,
+        "paid_search": 0.25,
+        "direct": 0.2,
+        "organic_search": 0.1
+      },
+      "platform_reporting": {
+        "claim_mult": 1.6,
+        "halo": 0.08,
+        "reach_spend": 2000,
+        "halo_from": {}
+      },
+      "response_curve": {
+        "spend_multiplier": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0,
+          1.25,
+          1.5,
+          2.0,
+          3.0
+        ],
+        "spend": [
+          0.0,
+          1361293.8,
+          2722587.6,
+          4083881.41,
+          5445175.21,
+          6806469.01,
+          8167762.81,
+          10890350.42,
+          16335525.63
+        ],
+        "incremental_pipeline": [
+          0.0,
+          3808943.45,
+          7716245.86,
+          11165740.02,
+          14157455.55,
+          16752474.78,
+          19014702.29,
+          22752269.23,
+          28086192.68
+        ]
+      }
+    },
+    "linkedin": {
+      "spend": 4992048.95,
+      "incremental_leads": 5666.81,
+      "incremental_opportunities": 1106.73,
+      "incremental_pipeline": 8985688.11,
+      "incremental_revenue": 2875420.2,
+      "roi_pipeline": 1.8,
+      "roi_revenue": 0.576,
+      "marginal_roi_pipeline": 0.9942,
+      "cost_per_incremental_lead": 880.93,
+      "adstock": {
+        "type": "geometric",
+        "alpha": 0.4,
+        "l_max": 12,
+        "normalized": true
+      },
+      "saturation": {
+        "type": "hill",
+        "half_saturation": 1500,
+        "slope": 1.2,
+        "input": "adstocked weekly spend / region size index"
+      },
+      "beta_leads_per_week_per_size_unit": 4.126964,
+      "lead_quality": {
+        "p_mql": 0.62,
+        "p_sql": 0.45,
+        "p_opp": 0.7,
+        "p_won": 0.32,
+        "p_opp_per_lead": 0.1953,
+        "deal_size_multiplier": 1.25
+      },
+      "crm_last_touch_recording": {
+        "linkedin": 0.75,
+        "direct": 0.15,
+        "paid_search": 0.1
+      },
+      "platform_reporting": {
+        "claim_mult": 1.3,
+        "halo": 0.05,
+        "reach_spend": 1500,
+        "halo_from": {}
+      },
+      "response_curve": {
+        "spend_multiplier": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0,
+          1.25,
+          1.5,
+          2.0,
+          3.0
+        ],
+        "spend": [
+          0.0,
+          1248012.24,
+          2496024.48,
+          3744036.71,
+          4992048.95,
+          6240061.19,
+          7488073.43,
+          9984097.9,
+          14976146.85
+        ],
+        "incremental_pipeline": [
+          0.0,
+          3237773.4,
+          5739838.72,
+          7579637.46,
+          8985688.11,
+          10096441.39,
+          10997382.18,
+          12373025.57,
+          14144386.24
+        ]
+      }
+    },
+    "youtube": {
+      "spend": 2318072.35,
+      "incremental_leads": 5704.67,
+      "incremental_opportunities": 853.42,
+      "incremental_pipeline": 5563373.64,
+      "incremental_revenue": 1780279.56,
+      "roi_pipeline": 2.4,
+      "roi_revenue": 0.768,
+      "marginal_roi_pipeline": 2.4475,
+      "cost_per_incremental_lead": 406.35,
+      "adstock": {
+        "type": "geometric",
+        "alpha": 0.7,
+        "l_max": 12,
+        "normalized": true
+      },
+      "saturation": {
+        "type": "hill",
+        "half_saturation": 3500,
+        "slope": 1.3,
+        "input": "adstocked weekly spend / region size index"
+      },
+      "beta_leads_per_week_per_size_unit": 15.464073,
+      "lead_quality": {
+        "p_mql": 0.55,
+        "p_sql": 0.4,
+        "p_opp": 0.68,
+        "p_won": 0.32,
+        "p_opp_per_lead": 0.1496,
+        "deal_size_multiplier": 1.0
+      },
+      "crm_last_touch_recording": {
+        "youtube": 0.12,
+        "paid_search": 0.4,
+        "organic_search": 0.23,
+        "direct": 0.25
+      },
+      "platform_reporting": {
+        "claim_mult": 1.5,
+        "halo": 0.04,
+        "reach_spend": 1500,
+        "halo_from": {}
+      },
+      "response_curve": {
+        "spend_multiplier": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0,
+          1.25,
+          1.5,
+          2.0,
+          3.0
+        ],
+        "spend": [
+          0.0,
+          579518.09,
+          1159036.17,
+          1738554.26,
+          2318072.35,
+          2897590.44,
+          3477108.52,
+          4636144.7,
+          6954217.05
+        ],
+        "incremental_pipeline": [
+          0.0,
+          1142405.28,
+          2610041.93,
+          4109938.26,
+          5563373.64,
+          6941414.72,
+          8234961.22,
+          10571292.41,
+          14380903.3
+        ]
+      }
+    },
+    "display": {
+      "spend": 4921757.61,
+      "incremental_leads": 932.78,
+      "incremental_opportunities": 67.16,
+      "incremental_pipeline": 393740.61,
+      "incremental_revenue": 98435.15,
+      "roi_pipeline": 0.08,
+      "roi_revenue": 0.02,
+      "marginal_roi_pipeline": 0.0319,
+      "cost_per_incremental_lead": 5276.44,
+      "adstock": {
+        "type": "geometric",
+        "alpha": 0.3,
+        "l_max": 12,
+        "normalized": true
+      },
+      "saturation": {
+        "type": "hill",
+        "half_saturation": 1000,
+        "slope": 1.0,
+        "input": "adstocked weekly spend / region size index"
+      },
+      "beta_leads_per_week_per_size_unit": 0.523721,
+      "lead_quality": {
+        "p_mql": 0.4,
+        "p_sql": 0.3,
+        "p_opp": 0.6,
+        "p_won": 0.25,
+        "p_opp_per_lead": 0.072,
+        "deal_size_multiplier": 0.9
+      },
+      "crm_last_touch_recording": {
+        "display": 0.4,
+        "direct": 0.35,
+        "paid_search": 0.25
+      },
+      "platform_reporting": {
+        "claim_mult": 2.0,
+        "halo": 0.2,
+        "reach_spend": 1300,
+        "halo_from": {}
+      },
+      "response_curve": {
+        "spend_multiplier": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0,
+          1.25,
+          1.5,
+          2.0,
+          3.0
+        ],
+        "spend": [
+          0.0,
+          1230439.4,
+          2460878.8,
+          3691318.21,
+          4921757.61,
+          6152197.01,
+          7382636.41,
+          9843515.22,
+          14765272.83
+        ],
+        "incremental_pipeline": [
+          0.0,
+          183678.94,
+          283274.28,
+          347887.63,
+          393740.61,
+          428174.5,
+          455078.55,
+          494560.09,
+          542826.61
+        ]
+      }
+    },
+    "webinars": {
+      "spend": 2120724.08,
+      "incremental_leads": 5663.78,
+      "incremental_opportunities": 1030.81,
+      "incremental_pipeline": 7422534.28,
+      "incremental_revenue": 2523661.66,
+      "roi_pipeline": 3.5,
+      "roi_revenue": 1.19,
+      "marginal_roi_pipeline": 2.0444,
+      "cost_per_incremental_lead": 374.44,
+      "adstock": {
+        "type": "geometric",
+        "alpha": 0.2,
+        "l_max": 12,
+        "normalized": true
+      },
+      "saturation": {
+        "type": "hill",
+        "half_saturation": 6000,
+        "slope": 1.0,
+        "input": "adstocked weekly spend / region size index"
+      },
+      "beta_leads_per_week_per_size_unit": 31.337299,
+      "lead_quality": {
+        "p_mql": 0.7,
+        "p_sql": 0.4,
+        "p_opp": 0.65,
+        "p_won": 0.34,
+        "p_opp_per_lead": 0.182,
+        "deal_size_multiplier": 1.1
+      },
+      "crm_last_touch_recording": {
+        "webinars": 0.95,
+        "direct": 0.05
+      },
+      "platform_reporting": {
+        "source": "webinar registrants",
+        "cost_per_registrant": 110.0
+      },
+      "response_curve": {
+        "spend_multiplier": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0,
+          1.25,
+          1.5,
+          2.0,
+          3.0
+        ],
+        "spend": [
+          0.0,
+          530181.02,
+          1060362.04,
+          1590543.06,
+          2120724.08,
+          2650905.1,
+          3181086.12,
+          4241448.16,
+          6362172.24
+        ],
+        "incremental_pipeline": [
+          0.0,
+          2826104.38,
+          4757617.7,
+          6231369.73,
+          7422534.28,
+          8421232.28,
+          9280303.45,
+          10703544.94,
+          12820422.19
+        ]
+      }
+    }
+  },
+  "baseline": {
+    "expected_pipeline_in_window": 110638069.34,
+    "leads_per_week_avg_region": 27.0,
+    "growth_per_year_log": 0.08,
+    "seasonality": {
+      "fourier": [
+        [
+          1,
+          0.08,
+          0.05
+        ],
+        [
+          2,
+          0.04,
+          0.0
+        ]
+      ],
+      "holiday_weeks": {
+        "52": 0.55,
+        "53": 0.55,
+        "1": 0.6,
+        "51": 0.8,
+        "47": 0.85
+      },
+      "summer_weeks": [
+        27,
+        34
+      ],
+      "summer_mult": 0.92
+    },
+    "lead_quality": {
+      "p_mql": 0.6,
+      "p_sql": 0.45,
+      "p_opp": 0.7,
+      "p_won": 0.36,
+      "amount_mult": 1.0
+    },
+    "crm_last_touch_recording": {
+      "organic_search": 0.38,
+      "direct": 0.27,
+      "referral": 0.13,
+      "paid_search": 0.15,
+      "meta": 0.02,
+      "display": 0.05
+    }
+  },
+  "media_share_of_expected_pipeline": 0.4587,
+  "deal_size": {
+    "median": 6000.0,
+    "lognormal_sigma": 0.45,
+    "area_multiplier": {
+      "NA": 1.0,
+      "EMEA": 0.92,
+      "APAC": 0.85
+    }
+  },
+  "funnel_lags_days_gamma_shape_scale": {
+    "mql": [
+      1.2,
+      0.8
+    ],
+    "sql": [
+      1.5,
+      1.5
+    ],
+    "opp": [
+      1.5,
+      1.2
+    ],
+    "close_won": [
+      4.0,
+      3.0
+    ],
+    "close_lost": [
+      3.0,
+      4.0
+    ]
+  },
+  "region_size_index": {
+    "US_NE": 1.59383,
+    "US_MA": 1.388175,
+    "US_SE": 1.285347,
+    "US_FL": 0.92545,
+    "US_GL": 1.491003,
+    "US_MW": 1.131105,
+    "US_PL": 0.565553,
+    "US_TX": 1.8509,
+    "US_MT": 0.66838,
+    "US_SW": 0.771208,
+    "US_CA": 2.056555,
+    "US_PNW": 0.822622,
+    "CA_E": 0.874036,
+    "CA_W": 0.514139,
+    "EU_UKI": 1.182519,
+    "EU_DACH": 1.028278,
+    "EU_BNL": 0.462725,
+    "EU_NOR": 0.411311,
+    "AP_ANZ": 0.616967,
+    "AP_SEA": 0.359897
+  },
+  "near_zero_channel": "display"
+}
