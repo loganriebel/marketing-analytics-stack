@@ -6,22 +6,22 @@ The public version of the stack I run at work: dashboards, Claude on golden tabl
 
 ## The company
 
-**Fernhook Software** is fictional. It sells fleet-maintenance and work-order software to small and mid-size fleets (5 to 200 vehicles): local delivery, HVAC and plumbing vans, landscaping crews.
+**Fernhook Software** is fictional. It sells fleet-maintenance and work-order software to small fleets (5 to 50 vehicles): local delivery, HVAC and plumbing vans, landscaping crews.
 
 - Sales-assisted motion: inbound lead, SDR call, demo, 14-day trial, close.
 - Short cycle: a lead closes in about two weeks; nine in ten close in 6 to 27 days.
-- First-year contracts run about $6,800 on average.
+- First-year contracts run about $2,700 on average, and it closes about 250 deals a week.
 - About $14M a year in paid media across nine channels, sold in 20 regions across North America, Europe, and APAC.
-- About 35 SDRs and 45 AEs.
+- About 50 SDRs and 70 AEs.
 
 ## The problem
 
 Fernhook grew on paid search, and its CRM credits every deal to the last UTM touch.
 
-- **The mix drifted to performance.** Budget reviews reward the channels closest to the click: search, retargeting, affiliates. TV, YouTube, and Meta look weak in last touch, so they get cut. Performance took 69% of spend in 2023 and 79% in 2025.
-- **Search keeps getting more expensive.** Last-touch search cost per lead rose from $171 in 2023 to $207 in 2025. Each new dollar buys less.
-- **Growth stalled.** 2025 had the biggest budget yet, and closed-won deals fell by more than 10%. Blended cost per deal rose from $2,500 to almost $3,000.
-- **Nobody agrees on the numbers.** Every ad platform claims credit for the same deals, so their totals add up to far more than the CRM has. Last touch never credits TV at all.
+- **The mix drifted to performance.** Budget reviews reward the channels closest to the click: search, retargeting, affiliates. Connected TV, YouTube, and Meta look weak in last touch, so they get cut. Performance took 70% of spend in 2023 and 80% in 2025.
+- **Search keeps getting more expensive.** Last-touch search cost per lead rose from $65 in 2023 to $84 in 2025. Each new dollar buys less.
+- **Growth stalled.** In 2025 spend held near the 2024 level, and closed-won deals fell 10%. Blended cost per deal rose from about $1,050 to $1,150.
+- **Nobody agrees on the numbers.** Every ad platform claims credit for the same deals, so their totals add up to far more than the CRM has. Last touch never credits Connected TV at all.
 - **Finance has stopped trusting marketing.** When the CFO asks what a channel returns, the team can show last-touch numbers or platform numbers, and neither holds up.
 
 **The goal:** use an MMM to give finance one honest number, the overall marketing cost per acquisition (CPA), plus the true CPA of each channel. Then lower it by moving budget between channels at the same total spend.
@@ -43,7 +43,7 @@ Every table is weekly, by region, for 156 weeks (2023 to 2025).
 | Affiliates and partners | Performance | Placement and sponsor fees with resellers, fleet consultants, and review sites. | `partners_weekly` |
 | Meta | Brand | Prospecting video to small-business owners. | `ads_meta_weekly` |
 | YouTube | Brand | Prospecting video. | `ads_google_weekly` |
-| TV | Brand | Linear and streaming (CTV) spots in 8 US markets. | `tv_weekly` |
+| Connected TV (CTV) | Brand | Streaming TV ads, run as a test in 8 US markets. Cheaper to start and geo-target than broadcast TV. | `ctv_weekly` |
 | Webinars | Events | Regional live webinars. | `webinar_events` |
 
 **Controls:** what moves deals besides paid media (`fct_controls_weekly`).
@@ -59,29 +59,30 @@ Every table is weekly, by region, for 156 weeks (2023 to 2025).
 
 Two modeling traps are built in on purpose, because real teams hit them:
 
-- **Brand search spend follows demand.** People search "Fernhook" after they see TV, YouTube, or Meta, and brand search spend rises with them. A naive model will credit brand search for demand other channels created. Regional brand-search pauses act as holdout tests.
+- **Brand search spend follows demand.** People search "Fernhook" after they see CTV, YouTube, or Meta, and brand search spend rises with them. A naive model will credit brand search for demand other channels created. Regional brand-search pauses act as holdout tests.
 - **Affiliate commissions are not media spend.** Commissions are paid per closed deal, so they follow sales instead of causing them. Only placement and sponsor fees enter the model.
 
 ## Three views of the same spend
 
 | View | Where it lives | What it gets wrong |
 |---|---|---|
-| Platform-reported conversions | `ads_*`, `tv_weekly`, `partners_weekly`; `fct_channel_weekly.platform_conversions` | Every platform over-claims. Brand search and display claim buyers who were already coming. |
-| CRM last touch | `crm_leads` UTMs; `fct_channel_weekly.sourced_*` | Brand search gets credit for demand TV, YouTube, and Meta created. TV gets nothing. |
+| Platform-reported conversions | `ads_*`, `ctv_weekly`, `partners_weekly`; `fct_channel_weekly.platform_conversions` | Every platform over-claims. Brand search and display claim buyers who were already coming. |
+| CRM last touch | `crm_leads` UTMs; `fct_channel_weekly.sourced_*` | Brand search gets credit for demand CTV, YouTube, and Meta created. CTV gets nothing. |
 | The truth | `sim/truth/truth.json` only | Nothing. It is the answer key, and no dbt model or later agent may read it. |
 
-The true effects are built in: carryover (adstock), diminishing returns (saturation), seasonality, trend, and noise. Non-brand search is past its saturation point. Brand search mostly buys clicks that would have come anyway. Display retargeting has almost no true effect. TV, YouTube, and Meta are underfunded. Lead quality differs by channel, so cheap leads are not always good leads.
+The true effects are built in: carryover (adstock), diminishing returns (saturation), seasonality, trend, and noise. Non-brand search is past its saturation point. Brand search mostly buys clicks that would have come anyway. Display retargeting has almost no true effect. CTV, YouTube, and Meta are underfunded. Lead quality differs by channel, so cheap leads are not always good leads.
 
 ## How the spend is set up
 
 Spend has to move a lot, and not in lockstep, or no model can tell the channels apart.
 
-- **Flighting:** TV and YouTube run in on/off flights, Meta and LinkedIn run in bursts with pauses, non-brand search and display are always on.
-- **Regions:** each channel is spread unevenly across the 20 regions, and most channels have a few weeks where a region goes dark. Those act like natural geo holdouts. TV runs in only 8 regions, on its own schedule in each.
+- **Flighting:** CTV and YouTube run in on/off flights, Meta and LinkedIn run in bursts with pauses, non-brand search and display are always on.
+- **Regions:** each channel is spread unevenly across the 20 regions, and most channels have a few weeks where a region goes dark. Those act like natural geo holdouts. CTV runs in only 8 regions, on its own schedule in each.
 - **Webinars** are regional events, so their spend lands in one region and one week at a time.
+- **Non-brand search** is always on and saturated, so on its own it moves with the baseline. Regional budget tests and pauses keep it measurable.
 - **Affiliate fees** step up or down at quarterly contract renewals.
-- **Budget drift:** non-brand search, display, and affiliates grow each year; TV, YouTube, and Meta shrink. That is the last-touch habit playing out.
-- National weekly spend for any two channels correlates at under 0.4.
+- **Budget drift:** non-brand search, display, and affiliates grow each year; CTV, YouTube, and Meta shrink. That is the last-touch habit playing out.
+- National weekly spend for any two channels correlates at under 0.45.
 
 ## Layout
 
