@@ -30,41 +30,44 @@ N_WEEKS = 156
 BURN_IN_WEEKS = 26
 L_MAX = 12  # adstock memory in weeks
 
-# (code, metro market, sales_area, target_accounts, latitude). Target accounts count
-# small fleets in the market's service area, so farm-belt hubs like Fargo and Sioux
-# Falls run larger than their metro population alone. Latitude moves the seasons.
+# Fernhook sells in seven states: Minnesota, Wisconsin, Illinois, Iowa, Ohio, North
+# Dakota and South Dakota. Each market is a metro and its service area.
+# (code, metro market, state, sales_area, target_accounts, latitude). Target accounts
+# count small fleets in the service area, so farm-belt hubs like Fargo and Sioux Falls
+# run larger than their metro population alone and still close a few deals a week.
+# State is the main city's state. Latitude moves the seasons.
 REGIONS = [
-    ("CHI", "Chicago", "Great Lakes", 57_000, 41.9),
-    ("DTW", "Detroit", "Great Lakes", 35_000, 42.3),
-    ("MKE", "Milwaukee", "Great Lakes", 19_000, 43.0),
-    ("CLE", "Cleveland", "Great Lakes", 22_000, 41.5),
-    ("GRR", "Grand Rapids", "Great Lakes", 15_000, 43.0),
-    ("TOL", "Toledo", "Great Lakes", 10_000, 41.7),
-    ("CMH", "Columbus", "Ohio Valley", 22_000, 40.0),
-    ("CVG", "Cincinnati", "Ohio Valley", 22_000, 39.1),
-    ("IND", "Indianapolis", "Ohio Valley", 23_000, 39.8),
-    ("DAY", "Dayton", "Ohio Valley", 11_000, 39.8),
-    ("MSP", "Minneapolis-St. Paul", "Upper Midwest", 33_000, 45.0),
-    ("MSN", "Madison", "Upper Midwest", 10_000, 43.1),
-    ("GRB", "Green Bay", "Upper Midwest", 8_000, 44.5),
-    ("FAR", "Fargo", "Upper Midwest", 6_000, 46.9),
-    ("FSD", "Sioux Falls", "Upper Midwest", 7_000, 43.5),
-    ("STL", "St. Louis", "Plains", 27_000, 38.6),
-    ("MCI", "Kansas City", "Plains", 24_000, 39.1),
-    ("OMA", "Omaha", "Plains", 14_000, 41.3),
-    ("DSM", "Des Moines", "Plains", 12_000, 41.6),
-    ("ICT", "Wichita", "Plains", 11_000, 37.7),
+    ("CHI", "Chicago", "IL", "Illinois and Iowa", 68_000, 41.9),
+    ("RFD", "Rockford", "IL", "Illinois and Iowa", 11_000, 42.3),
+    ("PIA", "Peoria", "IL", "Illinois and Iowa", 11_000, 40.7),
+    ("MLI", "Quad Cities", "IA", "Illinois and Iowa", 12_000, 41.5),
+    ("DSM", "Des Moines", "IA", "Illinois and Iowa", 16_000, 41.6),
+    ("CID", "Cedar Rapids", "IA", "Illinois and Iowa", 10_000, 42.0),
+    ("CLE", "Cleveland", "OH", "Ohio", 29_000, 41.5),
+    ("CMH", "Columbus", "OH", "Ohio", 29_000, 40.0),
+    ("CVG", "Cincinnati", "OH", "Ohio", 29_000, 39.1),
+    ("DAY", "Dayton", "OH", "Ohio", 15_000, 39.8),
+    ("TOL", "Toledo", "OH", "Ohio", 13_000, 41.7),
+    ("CAK", "Akron", "OH", "Ohio", 13_000, 41.1),
+    ("MKE", "Milwaukee", "WI", "Wisconsin", 25_000, 43.0),
+    ("MSN", "Madison", "WI", "Wisconsin", 14_000, 43.1),
+    ("GRB", "Green Bay", "WI", "Wisconsin", 10_000, 44.5),
+    ("MSP", "Minneapolis-St. Paul", "MN", "Upper Midwest", 40_000, 45.0),
+    ("RST", "Rochester", "MN", "Upper Midwest", 8_000, 44.0),
+    ("DLH", "Duluth", "MN", "Upper Midwest", 9_000, 46.8),
+    ("FAR", "Fargo", "ND", "Upper Midwest", 9_000, 46.9),
+    ("FSD", "Sioux Falls", "SD", "Upper Midwest", 9_000, 43.5),
 ]
 # CTV runs as a market test, only in these markets: a north-to-south spread of
 # mid-size and large markets, with Chicago left out because its TV is the priciest.
-CTV_REGIONS = ["DTW", "MKE", "CMH", "IND", "MSP", "STL", "OMA", "DSM"]
+CTV_REGIONS = ["MSP", "MKE", "MSN", "DSM", "MLI", "TOL", "CMH", "CVG"]
 
 AREA = {
     # base_leads: organic demand per account; amount: deal size multiplier
-    "Great Lakes": {"base_leads": 1.00, "amount": 1.00},
-    "Ohio Valley": {"base_leads": 0.97, "amount": 0.97},
+    "Illinois and Iowa": {"base_leads": 1.00, "amount": 1.00},
+    "Ohio": {"base_leads": 0.97, "amount": 0.97},
+    "Wisconsin": {"base_leads": 1.00, "amount": 0.99},
     "Upper Midwest": {"base_leads": 1.04, "amount": 1.02},
-    "Plains": {"base_leads": 0.95, "amount": 0.95},
 }
 
 PAID_CHANNELS = ["paid_search_brand", "paid_search_nonbrand", "meta", "linkedin",
@@ -137,7 +140,7 @@ SPEND = {
 # earlier up north), and the slow weeks it softens. Close to the real calendar, but
 # a plan, not the truth.
 PLANNING = {
-    "ref_latitude": 41.7,
+    "ref_latitude": 42.5,
     "spring_peak_week": 22,
     "fall_peak_week": 42,
     "spring_weeks_per_degree": 0.15,
@@ -237,14 +240,14 @@ BASE = {
 # width, how far the switchovers move per degree of latitude (spring comes later up
 # north, heat comes earlier), and a small timing offset for each market.
 SEASON = {
-    "ref_latitude": 41.7,
+    "ref_latitude": 42.5,
     "spring_peak": {"week": (21.0, 23.0), "size": (0.13, 0.20), "width": (3.0, 4.0)},
     "fall_peak": {"week": (41.5, 43.5), "size": (0.15, 0.22), "width": (2.5, 3.5)},
     "summer_lull": {"week": (32.0, 34.0), "size": (0.18, 0.26), "width": (4.0, 5.0)},
     "winter_dip": {"week": (5.0, 7.0), "size": (0.03, 0.08), "width": (3.0, 4.0)},
     "spring_weeks_per_degree": (0.20, 0.40),
     "fall_weeks_per_degree": (0.35, 0.60),
-    "market_offset_sigma_weeks": (0.5, 1.0),
+    "market_offset_sigma_weeks": (0.3, 0.6),
     "holiday_weeks": {52: 0.55, 53: 0.55, 1: 0.60, 51: 0.80, 47: 0.85},
 }
 # Fleet activity index: a public-style weekly index of commercial fleet miles.
@@ -265,7 +268,7 @@ SALES = {
     "attrition_per_month": 0.006,
     "freeze": (date(2024, 7, 1), date(2025, 1, 31)),  # hiring freeze
     "freeze_attrition_per_month": 0.02,
-    "area_offset": {"Great Lakes": 0.0, "Ohio Valley": -0.03, "Upper Midwest": -0.08, "Plains": -0.05},
+    "area_offset": {"Illinois and Iowa": 0.0, "Ohio": -0.03, "Wisconsin": -0.04, "Upper Midwest": -0.08},
     "region_sigma": 0.06,
     "month_sigma": 0.03,
     "sdr_elasticity_range": (0.30, 0.50),

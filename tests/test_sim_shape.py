@@ -84,6 +84,7 @@ def test_grid_size(sim):
     regions = sim.tables["regions"]
     assert len(regions) == 20
     assert set(regions.sales_area) == set(C.AREA)
+    assert set(regions.state) == {"IL", "IA", "MN", "ND", "OH", "SD", "WI"}
 
 
 def test_channel_spend_is_not_collinear(sim):

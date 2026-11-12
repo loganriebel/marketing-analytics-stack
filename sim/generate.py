@@ -251,9 +251,10 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
 
     codes = [r[0] for r in C.REGIONS]
     names = [r[1] for r in C.REGIONS]
-    areas = [r[2] for r in C.REGIONS]
-    accounts = np.array([r[3] for r in C.REGIONS], dtype=float)
-    lat = np.array([r[4] for r in C.REGIONS], dtype=float)
+    states = [r[2] for r in C.REGIONS]
+    areas = [r[3] for r in C.REGIONS]
+    accounts = np.array([r[4] for r in C.REGIONS], dtype=float)
+    lat = np.array([r[5] for r in C.REGIONS], dtype=float)
     n_reg = len(codes)
     size = accounts / accounts.mean()
     area_lead = np.array([C.AREA[a]["base_leads"] for a in areas])
@@ -699,6 +700,7 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     regions_df = pd.DataFrame({
         "region_code": codes,
         "region_name": names,
+        "state": states,
         "sales_area": areas,
         "target_accounts": accounts.astype(np.int64),
         "latitude": lat,
