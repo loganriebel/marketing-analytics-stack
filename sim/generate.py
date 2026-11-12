@@ -656,6 +656,10 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     })
     promo_df = pd.DataFrame(promo_rows)
 
+    plan_rows = [{"change_date": str(ev_date), "channel": ch, "budget_change_pct": round(change * 100), "reason": reason}
+                 for ev_date, reason, changes in C.BUDGET_EVENTS for ch, change in changes.items()]
+    plan_changes_df = pd.DataFrame(plan_rows)
+
     index_df = pd.DataFrame({"week_start": week_str[win], "fleet_activity_index": fleet_index[win]})
 
     regions_df = pd.DataFrame({
@@ -679,6 +683,7 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
         "sales_capacity_monthly": sales_df,
         "email_weekly": email_df,
         "promo_calendar": promo_df,
+        "media_plan_changes": plan_changes_df,
         "fleet_activity_index_weekly": index_df,
     }
 

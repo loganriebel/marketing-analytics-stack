@@ -12,7 +12,7 @@ RAW_FILES = {
     "regions.csv", "ads_google_weekly.csv", "ads_meta_weekly.csv", "ads_linkedin_weekly.csv",
     "ads_display_weekly.csv", "ctv_weekly.csv", "partners_weekly.csv", "webinar_events.csv",
     "crm_leads.csv", "crm_opportunities.csv", "sales_capacity_monthly.csv", "email_weekly.csv",
-    "promo_calendar.csv", "fleet_activity_index_weekly.csv",
+    "promo_calendar.csv", "media_plan_changes.csv", "fleet_activity_index_weekly.csv",
 }
 
 
