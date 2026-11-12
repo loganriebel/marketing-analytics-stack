@@ -2,7 +2,7 @@
 
 The public version of the stack I run at work: dashboards, Claude on golden tables, MMM for budget asks. All data is synthetic.
 
-**Status:** step 1 of 6. The fake company, its raw data, and the dbt golden tables are built and tested. Metrics layer, Claude evals, Tableau, and MMM come next.
+**Status:** step 1 of 6. The fake company, its raw data, the dbt golden tables, and an [EDA and data validation report](docs/eda/EDA.md) are built and tested. Metrics layer, Claude evals, Tableau, and MMM come next.
 
 ## The company
 
@@ -97,6 +97,8 @@ Spend has to move a lot, and not in lockstep, or no model can tell the channels 
 sim/             seeded simulator (python -m sim) and the answer key in sim/truth/
 data/raw/        CSV exports, one per source system (generated, not committed)
 warehouse/       dbt project on DuckDB: staging, intermediate, marts
+eda/             EDA and validation report (python -m eda), reads the warehouse only
+docs/eda/        the generated report and charts
 tests/           pytest: determinism, no truth leak, scenario guards
 ```
 
@@ -116,6 +118,7 @@ py -3.11 -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt
 .venv\Scripts\python -m sim
 .venv\Scripts\dbt build --project-dir warehouse --profiles-dir warehouse
+.venv\Scripts\python -m eda
 .venv\Scripts\python -m pytest -q
 ```
 
