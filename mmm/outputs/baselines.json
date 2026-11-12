@@ -1,0 +1,113 @@
+{
+  "lead_to_won_rate": 0.046381478826913826,
+  "channels": {
+    "paid_search_brand": {
+      "spend": 7310195.37,
+      "crm_last_touch": {
+        "deals": 6267.0,
+        "cpa": 1166.458492101484
+      },
+      "platform_reported": {
+        "conversions": 121120.95000000043,
+        "deals": 5617.768777920708,
+        "cpa": 1301.2631275838494
+      }
+    },
+    "paid_search_nonbrand": {
+      "spend": 12750572.42,
+      "crm_last_touch": {
+        "deals": 5175.0,
+        "cpa": 2463.8787285024155
+      },
+      "platform_reported": {
+        "conversions": 158661.89999999997,
+        "deals": 7358.973555487917,
+        "cpa": 1732.6563716880496
+      }
+    },
+    "meta": {
+      "spend": 4050766.82,
+      "crm_last_touch": {
+        "deals": 1484.0,
+        "cpa": 2729.6272371967652
+      },
+      "platform_reported": {
+        "conversions": 199379.0,
+        "deals": 9247.492867031251,
+        "cpa": 438.0394641277976
+      }
+    },
+    "linkedin": {
+      "spend": 4232607.58,
+      "crm_last_touch": {
+        "deals": 1190.0,
+        "cpa": 3556.813092436975
+      },
+      "platform_reported": {
+        "conversions": 44962.0,
+        "deals": 2085.404051015699,
+        "cpa": 2029.6342945811878
+      }
+    },
+    "youtube": {
+      "spend": 1530269.18,
+      "crm_last_touch": {
+        "deals": 100.0,
+        "cpa": 15302.691799999999
+      },
+      "platform_reported": {
+        "conversions": 32811.69999999999,
+        "deals": 1521.855168825048,
+        "cpa": 1005.5287857526206
+      }
+    },
+    "ctv": {
+      "spend": 3342593.95,
+      "crm_last_touch": {
+        "deals": 0.0,
+        "cpa": null
+      },
+      "platform_reported": {
+        "conversions": 40772.0,
+        "deals": 1891.0656547309304,
+        "cpa": 1767.571602624024
+      }
+    },
+    "display": {
+      "spend": 4540936.24,
+      "crm_last_touch": {
+        "deals": 971.0,
+        "cpa": 4676.556374871267
+      },
+      "platform_reported": {
+        "conversions": 48931.0,
+        "deals": 2269.4921404797205,
+        "cpa": 2000.8600862746969
+      }
+    },
+    "affiliates": {
+      "spend": 2220885.41,
+      "crm_last_touch": {
+        "deals": 1647.0,
+        "cpa": 1348.4428718882818
+      },
+      "platform_reported": {
+        "conversions": 65985.0,
+        "deals": 3060.481880393909,
+        "cpa": 725.6652699783847
+      }
+    },
+    "webinars": {
+      "spend": 1856102.09,
+      "crm_last_touch": {
+        "deals": 1464.0,
+        "cpa": 1267.8292964480875
+      },
+      "platform_reported": {
+        "conversions": 42528.0,
+        "deals": 1972.511531550991,
+        "cpa": 940.9841515808741
+      }
+    }
+  }
+}
