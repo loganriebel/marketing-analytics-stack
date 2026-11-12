@@ -1,0 +1,9 @@
+# Paths are relative to the repo root: run dbt from there with
+#   dbt build --project-dir warehouse --profiles-dir warehouse
+marketing_analytics_stack:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: data/warehouse.duckdb
+      threads: 4

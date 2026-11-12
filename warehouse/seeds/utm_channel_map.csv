@@ -1,0 +1,14 @@
+utm_source,utm_medium,channel_id
+google,cpc,paid_search
+facebook,paid_social,meta
+instagram,paid_social,meta
+linkedin,paid_social,linkedin
+youtube,video,youtube
+dsp,display,display
+programmatic,display,display
+webinar,event,webinars
+google,organic,organic_search
+bing,organic,organic_search
+(direct),(none),direct
+partner,referral,referral
+review_site,referral,referral

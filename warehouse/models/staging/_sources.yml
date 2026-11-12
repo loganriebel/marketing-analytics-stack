@@ -1,0 +1,27 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      CSV exports in data/raw/, one per source system, written by the simulator.
+      Every column lands as text; the staging models own the types.
+    config:
+      meta:
+        external_location: "read_csv('data/raw/{name}.csv', header = true, all_varchar = true)"
+    tables:
+      - name: regions
+        description: Sales territories from the CRM.
+      - name: ads_google_weekly
+        description: Google Ads weekly geo report. SEARCH rows are paid search, VIDEO rows are YouTube. Cost is in micros.
+      - name: ads_meta_weekly
+        description: Meta Ads weekly report by region name. Leads are what Meta claims.
+      - name: ads_linkedin_weekly
+        description: LinkedIn Ads weekly report by region code.
+      - name: ads_display_weekly
+        description: Programmatic display (DSP) weekly report, with post-click and post-view conversions.
+      - name: webinar_events
+        description: One row per regional webinar from the webinar tool, with total cost and registrants.
+      - name: crm_leads
+        description: CRM lead records with last-touch UTM source and medium and the date each funnel stage was reached.
+      - name: crm_opportunities
+        description: CRM opportunities, one per converted lead, with amount, stage and close date.

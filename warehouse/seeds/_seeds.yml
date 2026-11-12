@@ -1,0 +1,23 @@
+version: 2
+
+seeds:
+  - name: channels
+    description: Channel list owned by marketing ops. Paid channels have spend; the rest are CRM-only sources.
+    columns:
+      - name: channel_id
+        data_tests: [unique, not_null]
+
+  - name: utm_channel_map
+    description: Maps a lowercased UTM source and medium pair to a channel.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [utm_source, utm_medium]
+    columns:
+      - name: channel_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('channels')
+                field: channel_id

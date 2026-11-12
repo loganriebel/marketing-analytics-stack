@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: int_paid_media_weekly
+    description: Spend, delivery and platform-claimed conversions for all six paid channels at week x region x channel.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [week_start, region_id, channel_id]
+    columns:
+      - name: channel_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('channels')
+                field: channel_id
+      - name: platform_conversions
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+
+  - name: int_week_spine
+    description: One row per Monday-start week in the reporting window.
+    columns:
+      - name: week_start
+        data_tests: [unique, not_null]

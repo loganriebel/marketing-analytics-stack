@@ -1,0 +1,175 @@
+version: 2
+
+models:
+  - name: dim_channel
+    description: Golden channel dimension. Six paid channels plus the three unpaid CRM sources.
+    columns:
+      - name: channel_id
+        data_tests: [unique, not_null]
+      - name: channel_name
+        data_tests: [unique, not_null]
+      - name: channel_group
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [search, paid_social, video, display, events, organic]
+      - name: marketing_role
+        description: How the team budgets the channel. Performance chases demand that exists; brand creates it.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [performance, brand, events, unpaid]
+      - name: is_paid
+        data_tests: [not_null]
+      - name: has_delivery_metrics
+        description: True when the channel reports impressions and clicks.
+        data_tests: [not_null]
+
+  - name: fct_channel_weekly
+    description: >
+      Golden paid media table. One row per week x region x paid channel, zero-filled.
+      platform_conversions is each platform's own claim. sourced_leads, sourced_opportunities
+      and sourced_pipeline are the CRM's last-touch credit. Neither measures incrementality.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [week_start, region_id, channel_id]
+    columns:
+      - name: week_start
+        description: Monday of the week.
+        data_tests: [not_null]
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_regions')
+                field: region_id
+      - name: channel_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_channel')
+                field: channel_id
+      - name: spend
+        description: Media spend in USD.
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 250000
+      - name: impressions
+        description: Null for channels without delivery metrics (webinars).
+        data_tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+      - name: clicks
+        data_tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+      - name: platform_conversions
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+      - name: sourced_leads
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+      - name: sourced_opportunities
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+      - name: sourced_pipeline
+        description: Opportunity amount in USD, counted in the week the opportunity was created.
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+
+  - name: fct_funnel
+    description: >
+      Golden funnel table. One row per week x region x lead source channel, zero-filled.
+      Each stage is counted in the week it was reached. Rates such as MQL to SQL belong
+      in the metrics layer, not here.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [week_start, region_id, channel_id]
+    columns:
+      - name: week_start
+        data_tests: [not_null]
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_regions')
+                field: region_id
+      - name: channel_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_channel')
+                field: channel_id
+      - name: leads
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+      - name: mqls
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+      - name: sqls
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+      - name: opportunities
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+      - name: pipeline_amount
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+      - name: won_deals
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+      - name: won_revenue
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+      - name: lost_deals
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0

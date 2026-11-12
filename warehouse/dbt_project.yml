@@ -1,0 +1,41 @@
+name: marketing_analytics_stack
+version: "0.1.0"
+config-version: 2
+profile: marketing_analytics_stack
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+flags:
+  send_anonymous_usage_stats: false
+
+models:
+  marketing_analytics_stack:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table
+
+seeds:
+  marketing_analytics_stack:
+    channels:
+      +column_types:
+        channel_id: varchar
+        channel_name: varchar
+        channel_group: varchar
+        marketing_role: varchar
+        source_system: varchar
+        is_paid: boolean
+        has_delivery_metrics: boolean
+        sort_order: integer
+    utm_channel_map:
+      +column_types:
+        utm_source: varchar
+        utm_medium: varchar
+        channel_id: varchar

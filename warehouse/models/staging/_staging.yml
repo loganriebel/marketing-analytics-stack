@@ -1,0 +1,178 @@
+version: 2
+
+models:
+  - name: stg_regions
+    description: One row per sales territory.
+    columns:
+      - name: region_id
+        data_tests: [unique, not_null]
+      - name: region_name
+        data_tests: [unique, not_null]
+      - name: sales_area
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [NA, EMEA, APAC]
+      - name: target_accounts
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 1
+
+  - name: stg_ads_google
+    description: Google Ads rows split into paid search and YouTube, cost converted from micros to dollars.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [week_start, region_id, channel_id]
+    columns:
+      - name: channel_id
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [paid_search, youtube]
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_regions')
+                field: region_id
+      - name: spend
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+
+  - name: stg_ads_meta
+    description: Meta Ads rows with the region name resolved to a region id.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [week_start, region_id]
+    columns:
+      - name: region_id
+        description: Null here means Meta sent a region name the CRM does not know.
+        data_tests: [not_null]
+      - name: spend
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+
+  - name: stg_ads_linkedin
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [week_start, region_id]
+    columns:
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_regions')
+                field: region_id
+      - name: spend
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+
+  - name: stg_ads_display
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [week_start, region_id]
+    columns:
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_regions')
+                field: region_id
+      - name: spend
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+
+  - name: stg_webinar_events
+    description: One row per webinar.
+    columns:
+      - name: event_id
+        data_tests: [unique, not_null]
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_regions')
+                field: region_id
+      - name: cost
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+      - name: attendees
+        data_tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+
+  - name: stg_crm_leads
+    description: One row per lead, with the last-touch UTM pair mapped to a channel.
+    columns:
+      - name: lead_id
+        data_tests: [unique, not_null]
+      - name: created_date
+        data_tests: [not_null]
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_regions')
+                field: region_id
+      - name: channel_id
+        description: Null here means a UTM pair is missing from the utm_channel_map seed.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('channels')
+                field: channel_id
+
+  - name: stg_crm_opportunities
+    description: One row per opportunity.
+    columns:
+      - name: opportunity_id
+        data_tests: [unique, not_null]
+      - name: lead_id
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_crm_leads')
+                field: lead_id
+      - name: stage
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [open, closed_won, closed_lost]
+      - name: amount
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 1000000

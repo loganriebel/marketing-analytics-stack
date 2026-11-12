@@ -1,0 +1,10 @@
+channel_id,channel_name,channel_group,marketing_role,source_system,is_paid,has_delivery_metrics,sort_order
+paid_search,Paid Search,search,performance,google_ads,true,true,1
+meta,Meta,paid_social,brand,meta_ads,true,true,2
+linkedin,LinkedIn,paid_social,performance,linkedin_ads,true,true,3
+youtube,YouTube,video,brand,google_ads,true,true,4
+display,Display Retargeting,display,performance,dsp,true,true,5
+webinars,Webinars,events,events,webinar_tool,true,false,6
+organic_search,Organic Search,organic,unpaid,crm,false,false,7
+direct,Direct,organic,unpaid,crm,false,false,8
+referral,Referral,organic,unpaid,crm,false,false,9
