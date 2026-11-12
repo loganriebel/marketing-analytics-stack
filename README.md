@@ -10,7 +10,7 @@ The public version of the stack I run at work: dashboards, Claude on golden tabl
 
 - Sales-assisted motion: inbound lead, SDR call, demo, 14-day trial, close.
 - Short cycle: a lead closes in about two weeks; nine in ten close in 6 to 27 days.
-- First-year contracts run about $2,700 on average, and it closes about 250 deals a week.
+- First-year contracts run about $2,800 on average, and it closes about 210 deals a week.
 - About $14M a year in paid media across nine channels, sold in 20 regions across North America, Europe, and APAC.
 - About 50 SDRs and 70 AEs.
 
@@ -18,13 +18,20 @@ The public version of the stack I run at work: dashboards, Claude on golden tabl
 
 Fernhook grew on paid search, and its CRM credits every deal to the last UTM touch.
 
-- **The mix drifted to performance.** Budget reviews reward the channels closest to the click: search, retargeting, affiliates. Connected TV, YouTube, and Meta look weak in last touch, so they get cut. Performance took 70% of spend in 2023 and 80% in 2025.
-- **Search keeps getting more expensive.** Last-touch search cost per lead rose from $65 in 2023 to $84 in 2025. Each new dollar buys less.
-- **Growth stalled.** In 2025 spend held near the 2024 level, and closed-won deals fell 10%. Blended cost per deal rose from about $1,050 to $1,150.
+- **The mix drifted to performance.** Budget reviews reward the channels closest to the click: search, retargeting, affiliates. Connected TV, YouTube, and Meta look weak in last touch, so they get cut. Performance took 67% of spend in 2023 and 80% in 2025.
+- **Search keeps getting more expensive.** Last-touch search cost per lead rose from $73 in 2023 to $93 in 2025.
+- **Growth stalled.** In 2025 spend rose 4% over 2024, and closed-won deals fell 8%. Blended cost per deal rose from about $1,180 to $1,330.
 - **Nobody agrees on the numbers.** Every ad platform claims credit for the same deals, so their totals add up to far more than the CRM has. Last touch never credits Connected TV at all.
 - **Finance has stopped trusting marketing.** When the CFO asks what a channel returns, the team can show last-touch numbers or platform numbers, and neither holds up.
 
 **The goal:** use an MMM to give finance one honest number, the overall marketing cost per acquisition (CPA), plus the true CPA of each channel. Then lower it by moving budget between channels at the same total spend.
+
+**The questions the MMM has to answer:**
+
+1. How many deals does each channel add, after controls?
+2. What is Fernhook's real marketing cost per deal, overall and by channel?
+3. Where should the next dollar go, and what would a budget shift do at the same total?
+4. How much of the 2025 drop came from marketing, and how much from the hiring freeze, pricing, and the market?
 
 ## The model setup
 
@@ -36,8 +43,8 @@ Every table is weekly, by region, for 156 weeks (2023 to 2025).
 
 | Channel | Role | What Fernhook buys | Raw export |
 |---|---|---|---|
-| Paid search, non-brand | Performance | Google ads on category searches like "fleet maintenance software". 65% of search spend. | `ads_google_weekly` |
-| Paid search, brand | Performance | Google ads on searches for "Fernhook". 35% of search spend. | `ads_google_weekly` |
+| Paid search, non-brand | Performance | Google ads on category searches like "fleet maintenance software". About 65% of search spend. | `ads_google_weekly` |
+| Paid search, brand | Performance | Google ads on searches for "Fernhook". About 35% of search spend, planned against non-brand. | `ads_google_weekly` |
 | LinkedIn | Performance | Lead-gen form ads to fleet and operations managers. | `ads_linkedin_weekly` |
 | Display retargeting | Performance | Programmatic ads that follow past site visitors. | `ads_display_weekly` |
 | Affiliates and partners | Performance | Placement and sponsor fees with resellers, fleet consultants, and review sites. | `partners_weekly` |
@@ -59,18 +66,18 @@ Every table is weekly, by region, for 156 weeks (2023 to 2025).
 
 Two modeling traps are built in on purpose, because real teams hit them:
 
-- **Brand search spend follows demand.** People search "Fernhook" after they see CTV, YouTube, or Meta, and brand search spend rises with them. A naive model will credit brand search for demand other channels created. Regional brand-search pauses act as holdout tests.
+- **Brand search spend follows demand.** Brand search spend rises and falls with how many people search "Fernhook", and other channels drive some of those searches. A naive model cannot tell whether brand search causes deals or just follows them. Regional brand-search pauses act as holdout tests.
 - **Affiliate commissions are not media spend.** Commissions are paid per closed deal, so they follow sales instead of causing them. Only placement and sponsor fees enter the model.
 
 ## Three views of the same spend
 
 | View | Where it lives | What it gets wrong |
 |---|---|---|
-| Platform-reported conversions | `ads_*`, `ctv_weekly`, `partners_weekly`; `fct_channel_weekly.platform_conversions` | Every platform over-claims. Brand search and display claim buyers who were already coming. |
-| CRM last touch | `crm_leads` UTMs; `fct_channel_weekly.sourced_*` | Brand search gets credit for demand CTV, YouTube, and Meta created. CTV gets nothing. |
+| Platform-reported conversions | `ads_*`, `ctv_weekly`, `partners_weekly`; `fct_channel_weekly.platform_conversions` | Each platform counts conversions it touched, not ones it caused, so their totals overlap. |
+| CRM last touch | `crm_leads` UTMs; `fct_channel_weekly.sourced_*` | It credits the final click. Channels people watch but rarely click, like CTV and YouTube, get little; brand search gets a lot. |
 | The truth | `sim/truth/truth.json` only | Nothing. It is the answer key, and no dbt model or later agent may read it. |
 
-The true effects are built in: carryover (adstock), diminishing returns (saturation), seasonality, trend, and noise. Non-brand search is past its saturation point. Brand search mostly buys clicks that would have come anyway. Display retargeting has almost no true effect. CTV, YouTube, and Meta are underfunded. Lead quality differs by channel, so cheap leads are not always good leads.
+The true effects are built in: carryover (adstock), diminishing returns (saturation), lead quality that differs by channel, seasonality, trend, and noise. Each run draws every true parameter from a realistic range, so nothing in the answer key is typed into the code. The simulator holds the ranges; the drawn values live only in `truth.json`, and the MMM step is graded against them.
 
 ## How the spend is set up
 
@@ -81,8 +88,8 @@ Spend has to move a lot, and not in lockstep, or no model can tell the channels 
 - **Webinars** are regional events, so their spend lands in one region and one week at a time.
 - **Non-brand search** is always on and saturated, so on its own it moves with the baseline. Regional budget tests and pauses keep it measurable.
 - **Affiliate fees** step up or down at quarterly contract renewals.
-- **Budget drift:** non-brand search, display, and affiliates grow each year; CTV, YouTube, and Meta shrink. That is the last-touch habit playing out.
-- National weekly spend for any two channels correlates at under 0.45.
+- **Budget history:** each January plan moves in a step, and the team made seven changes between plans. Examples: an attribution review in April 2024 cut YouTube and CTV, two reseller contracts ended in November 2024, and Meta got a retest in June 2025.
+- National weekly spend for any two channels correlates at under 0.6.
 
 ## Layout
 
