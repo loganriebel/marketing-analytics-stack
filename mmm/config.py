@@ -67,7 +67,7 @@ RESPONSE_MULTIPLIERS = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0]
 # Budget shift guardrails: no channel moves more than half its own spend.
 OPT_BOUNDS = (0.5, 1.5)
 
-SAMPLER = {"chains": 4, "draws": 1000, "tune": 1500, "target_accept": 0.95, "random_seed": 4}
+SAMPLER = {"chains": 4, "draws": 2000, "tune": 1500, "target_accept": 0.95, "random_seed": 4}
 
 GATES = {
     "rhat_max": 1.01,
