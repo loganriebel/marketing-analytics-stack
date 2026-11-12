@@ -1,8 +1,8 @@
 # marketing-analytics-stack
 
-The public version of the stack I run at work: dashboards, Claude on golden tables, MMM for budget asks. All data is synthetic.
+An example of the stack I run at work: dashboards, Claude on golden tables, MMM for budget asks. All data is synthetic.
 
-**Status:** step 1 of 6. The fake company, its raw data, the dbt golden tables, and an [EDA and data validation report](docs/eda/EDA.md) are built and tested. Metrics layer, Claude evals, Tableau, and MMM come next.
+**Status:** step 2 of 6. The fake company, its raw data, the dbt golden tables, an [EDA and data validation report](docs/eda/EDA.md), the governed metrics layer, and the Claude eval are built and tested. Tableau and the MMM come next.
 
 ## The company
 
@@ -11,20 +11,30 @@ The public version of the stack I run at work: dashboards, Claude on golden tabl
 - Sales-assisted motion: inbound lead, SDR call, demo, 14-day trial, close.
 - Short cycle: a lead closes in about two weeks; nine in ten close in 6 to 27 days.
 - First-year contracts run about $2,800 on average, and it closes about 210 deals a week.
-- About $14M a year in paid media across nine channels, sold in 20 regions across North America, Europe, and APAC.
+- About $14M a year in paid media across nine channels.
+- Sold only in seven Midwest states: Minnesota, Wisconsin, Illinois, Iowa, Ohio, North Dakota, and South Dakota. They split into 20 metro markets in four sales areas.
 - About 50 SDRs and 70 AEs.
+
+| Sales area | Markets |
+|---|---|
+| Illinois and Iowa | Chicago, Rockford, Peoria, Quad Cities, Des Moines, Cedar Rapids |
+| Ohio | Cleveland, Columbus, Cincinnati, Dayton, Toledo, Akron |
+| Wisconsin | Milwaukee, Madison, Green Bay |
+| Upper Midwest | Minneapolis-St. Paul, Rochester, Duluth, Fargo (ND), Sioux Falls (SD) |
+
+**The seasons drive the business.** Fleets shop for software when the season turns: AC switches on in late spring (May and June) and heat switches on in late fall (October and November). The slowest stretch runs from mid-July into September, when crews are busy with AC calls and then coast before heat. Winter after the holidays is soft, and the holidays dip hard. The seasons arrive a little earlier or later by latitude: heat season starts in Fargo and Duluth a few weeks before Cincinnati and Columbus.
 
 ## The problem
 
 Fernhook grew on paid search, and its CRM credits every deal to the last UTM touch.
 
-- **The mix drifted to performance.** Budget reviews reward the channels closest to the click: search, retargeting, affiliates. Connected TV, YouTube, and Meta look weak in last touch, so they get cut. Performance took 67% of spend in 2023 and 80% in 2025.
-- **Search keeps getting more expensive.** Last-touch search cost per lead rose from $73 in 2023 to $93 in 2025.
-- **Growth stalled.** In 2025 spend rose 4% over 2024, and closed-won deals fell 8%. Blended cost per deal rose from about $1,180 to $1,330.
+- **The mix drifted to performance.** Budget reviews reward the channels closest to the click: search, retargeting, affiliates. Connected TV, YouTube, and Meta look weak in last touch, so they get cut. Performance took 66% of spend in 2023 and 77% in 2025.
+- **Search keeps getting more expensive.** Last-touch search cost per lead rose from $74 in 2023 to $94 in 2025.
+- **Growth stalled.** In 2025 spend rose 1% over 2024, and closed-won deals fell 12%. Blended cost per deal rose from about $1,230 to $1,410.
 - **Nobody agrees on the numbers.** Every ad platform claims credit for the same deals, so their totals add up to far more than the CRM has. Last touch never credits Connected TV at all.
 - **Finance has stopped trusting marketing.** When the CFO asks what a channel returns, the team can show last-touch numbers or platform numbers, and neither holds up.
 
-**The goal:** use an MMM to give finance one honest number, the overall marketing cost per acquisition (CPA), plus the true CPA of each channel. Then lower it by moving budget between channels at the same total spend.
+**The goal:** Use an MMM to give finance one honest number, the overall marketing cost per acquisition (CPA), plus the true CPA of each channel. Then lower it by moving budget between channels at the same total spend.
 
 **The questions the MMM has to answer:**
 
@@ -32,6 +42,21 @@ Fernhook grew on paid search, and its CRM credits every deal to the last UTM tou
 2. What is Fernhook's real marketing cost per deal, overall and by channel?
 3. Where should the next dollar go, and what would a budget shift do at the same total?
 4. How much of the 2025 drop came from marketing, and how much from the hiring freeze, pricing, and the market?
+
+## Claude on governed metrics
+
+Ad-hoc questions are where trust breaks. Each analyst, or each AI prompt, defines "paid media" or "a 2025 deal" a little differently, and the numbers drift. So every metric is defined once in a MetricFlow semantic layer on top of the golden tables (35 metrics, from spend and leads to CPL, CPA, and ROAS), and Claude reaches the data through a small MCP server that only answers with those definitions.
+
+To test it, headless Claude answered 50 ad-hoc questions twice: once through the governed MCP server, and once with read-only SQL on the raw source tables. 42 questions have an answer computed in plain SQL; 8 should be refused (churn, NPS, true incremental CTV cost, a channel Fernhook doesn't buy).
+
+| Arm | Answerable correct | Correct refusals | Wrong refusals | Overall | Cost |
+|---|---|---|---|---|---|
+| Claude + governed metrics (MCP) | 42/42 (100%) | 8/8 | 0 | 50/50 | $3.23 |
+| Claude + raw tables (SQL) | 22/42 (52%) | 8/8 | 3 | 30/50 | $4.98 |
+
+Model `claude-sonnet-5-5`, one pass per arm, same instructions, built-in tools off. Per-question results: [evals/RESULTS.md](evals/RESULTS.md).
+
+Why the raw arm missed: it had to invent definitions. It left partner fees and webinars out of "paid media", grouped search and YouTube as "Google", counted deals by calendar close date instead of the house week rule, and could not answer share-of-spend questions without channel roles. Every one of those is a definition the semantic layer settles once.
 
 ## The model setup
 
@@ -50,7 +75,7 @@ Every table is weekly, by region, for 156 weeks (2023 to 2025).
 | Affiliates and partners | Performance | Placement and sponsor fees with resellers, fleet consultants, and review sites. | `partners_weekly` |
 | Meta | Brand | Prospecting video to small-business owners. | `ads_meta_weekly` |
 | YouTube | Brand | Prospecting video. | `ads_google_weekly` |
-| Connected TV (CTV) | Brand | Streaming TV ads, run as a test in 8 US markets. Cheaper to start and geo-target than broadcast TV. | `ctv_weekly` |
+| Connected TV (CTV) | Brand | Streaming TV ads, run as a test in 8 of the 20 markets. Cheaper to start and geo-target than broadcast TV. | `ctv_weekly` |
 | Webinars | Events | Regional live webinars. | `webinar_events` |
 
 **Controls:** what moves deals besides paid media (`fct_controls_weekly`).
@@ -62,11 +87,12 @@ Every table is weekly, by region, for 156 weeks (2023 to 2025).
 | Year-end promo | 15% off annual plans for trials started mid-November to mid-December. Lifts the win rate. | `promo_calendar` |
 | List price | Rose 10% in July 2024. Bigger deals, slightly lower win rate. | `promo_calendar` |
 | Fleet activity index | Market demand. When fleets are busy, more of them shop for software. | `fleet_activity_index_weekly` |
-| Seasonality and trend | Holiday dips, a summer slowdown, and steady organic growth. | the calendar |
+| Seasonality and trend | Busy at the spring and fall switchovers, a lull from mid-July into September, a soft winter, holiday dips, and steady organic growth. Timing shifts a little by latitude. | the calendar; `dim_region.latitude` |
 
-Two modeling traps are built in on purpose, because real teams hit them:
+Three modeling traps are built in on purpose, because real teams hit them:
 
-- **Brand search spend follows demand.** Brand search spend rises and falls with how many people search "Fernhook", and other channels drive some of those searches. A naive model cannot tell whether brand search causes deals or just follows them. Regional brand-search pauses act as holdout tests.
+- **Brand search spend follows demand.** Brand search spend rises and falls with how many people search "Fernhook", and other channels drive some of those searches. A naive model cannot tell whether brand search causes deals or just follows them. Planned regional brand tests act as holdouts: twice a year a few markets pause brand search for 4 to 6 weeks.
+- **Brand pushes are timed to demand.** Meta, YouTube, and CTV push before and into the busy seasons, the same weeks fleets shop anyway. A model without seasonality will mix up the season and the media. Each market's push lands on its own week and at its own size, and the size changes from season to season, so a model with market-level seasonality can still tell them apart.
 - **Affiliate commissions are not media spend.** Commissions are paid per closed deal, so they follow sales instead of causing them. Only placement and sponsor fees enter the model.
 
 ## Three views of the same spend
@@ -83,12 +109,14 @@ The true effects are built in: carryover (adstock), diminishing returns (saturat
 
 Spend has to move a lot, and not in lockstep, or no model can tell the channels apart.
 
-- **Flighting:** CTV and YouTube run in on/off flights, Meta and LinkedIn run in bursts with pauses, non-brand search and display are always on.
-- **Regions:** each channel is spread unevenly across the 20 regions, and most channels have a few weeks where a region goes dark. Those act like natural geo holdouts. CTV runs in only 8 regions, on its own schedule in each.
-- **Webinars** are regional events, so their spend lands in one region and one week at a time.
-- **Non-brand search** is always on, so on its own it moves with the baseline. Regional budget tests and pauses keep it measurable.
-- **Affiliate fees** step up or down at quarterly contract renewals.
-- **Budget history:** each January plan moves in a step, and the team made seven changes between plans. Examples: an attribution review in April 2024 cut YouTube and CTV, two reseller contracts ended in November 2024, and Meta got a retest in June 2025.
+- **Performance channels are always on.** Brand search, non-brand search, LinkedIn, display, and affiliates run every week in every market. They pause only in planned tests.
+- **Brand channels follow the season.** YouTube runs national flights several weeks ahead of each busy season, and each flight skips about one market in four. Meta is always on and pushes closer to the season and into it. CTV runs its own flight in each test market. All three ease off in the slow weeks.
+- **Pushes are not in lockstep.** Each market's Meta and CTV push starts on its own week and runs at its own size, and each season's push gets its own budget.
+- **Markets:** each channel is spread unevenly across the 20 markets, and always-on budgets are re-split across markets every quarter. CTV runs in only 8 markets.
+- **Planned regional tests:** twice a year a few markets pause brand search for 4 to 6 weeks. Non-brand search runs its own tests twice a year: 2 markets pause and 2 get extra budget for 6 to 8 weeks. Markets take turns.
+- **Webinars** are regional events, so their spend lands in one market and one week at a time.
+- **Affiliate fees** step up or down when each market's partner contracts renew every quarter.
+- **Budget history:** each January plan moves in a step, and the team made seven changes between plans. Examples: an attribution review in April 2024 cut YouTube and CTV, a cost cut in August 2024 trimmed LinkedIn, Meta, and display, and Meta got a retest in June 2025.
 - National weekly spend for any two channels correlates at under 0.6.
 
 ## Quality control
@@ -106,7 +134,9 @@ In this repo the same kinds of checks run on demand: the dbt tests in `dbt build
 ```
 sim/             seeded simulator (python -m sim) and the answer key in sim/truth/
 data/raw/        CSV exports, one per source system (generated, not committed)
-warehouse/       dbt project on DuckDB: staging, intermediate, marts
+warehouse/       dbt project on DuckDB: staging, intermediate, marts, semantic layer
+servers/         MCP servers: governed metrics, and raw SQL for the eval baseline
+evals/           50-question eval set, runner, scorer, results
 eda/             EDA and validation report (python -m eda), reads the warehouse only
 docs/eda/        the generated report and charts
 tests/           pytest: determinism, no truth leak, scenario guards
@@ -129,7 +159,9 @@ py -3.11 -m venv .venv
 .venv\Scripts\python -m sim
 .venv\Scripts\dbt build --project-dir warehouse --profiles-dir warehouse
 .venv\Scripts\python -m eda
+.venv\Scripts\python -m evals.run --arm both
+.venv\Scripts\python -m evals.score
 .venv\Scripts\python -m pytest -q
 ```
 
-The same seed always writes byte-identical files.
+The same seed always writes byte-identical files. The eval needs the Claude CLI signed in (`claude auth login`); it saves each answer as it lands and resumes if cut off.

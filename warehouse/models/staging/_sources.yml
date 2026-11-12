@@ -10,7 +10,7 @@ sources:
         external_location: "read_csv('data/raw/{name}.csv', header = true, all_varchar = true)"
     tables:
       - name: regions
-        description: Sales territories from the CRM.
+        description: Sales regions (Midwest metro markets) from the CRM.
       - name: ads_google_weekly
         description: >
           Google Ads weekly geo report. SEARCH rows split into brand and non-brand by

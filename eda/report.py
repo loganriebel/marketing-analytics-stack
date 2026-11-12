@@ -222,10 +222,9 @@ def seasonal_index(d) -> pd.DataFrame:
 
 def chart_seasonality(si: pd.DataFrame) -> str:
     fig, ax = plt.subplots(figsize=(10, 3.6))
-    ax.axvspan(27, 34, color=BAND, linewidth=0)
-    ax.axvspan(46, 50, color=BAND, linewidth=0)
-    ax.text(30.5, 47, "Summer", ha="center", color=INK2, fontsize=8.5)
-    ax.text(48, 47, "Year-end promo", ha="center", color=INK2, fontsize=8.5)
+    for lo, hi, label in ((19, 25, "Spring switchover"), (29, 37, "Summer lull"), (40, 45, "Fall switchover")):
+        ax.axvspan(lo, hi, color=BAND, linewidth=0)
+        ax.text((lo + hi) / 2, 47, label, ha="center", color=INK2, fontsize=8.5)
     ax.axhline(100, color=AXIS, linewidth=0.8)
     ax.plot(si.index, si.leads_idx, color=S1, label="Leads")
     ax.plot(si.index, si.deals_idx, color=S2, label="Closed-won deals")
@@ -407,15 +406,16 @@ def watch_notes(d, prof) -> dict[str, str]:
                              "can look like it causes demand. The regional pauses are the cleanest evidence of what it adds.",
         "paid_search_nonbrand": f"always on and seasonal (correlation with total leads {corr_nb:.2f}), so most of its signal comes "
                                 "from the regional budget tests and pauses, not from week-to-week swings.",
-        "meta": "short pauses and multi-week pushes give clean on/off contrasts; the June 2025 retest adds a late step up.",
-        "linkedin": (f"{int(prof.loc['linkedin'].pauses)} short regional pauses give clean on/off contrasts, and "
-                     "spend fell each year, so the later years carry less signal."),
-        "youtube": "flights are national, so on/off weeks line up with seasonality and other channels; long carryover means "
-                   "effects can show up in off-weeks.",
+        "meta": "pushes land on the busy seasons, so spend rises when demand does. Each market's push comes on its own "
+                "week and at its own size, and that is the contrast to learn from; the June 2025 retest adds a late step up.",
+        "linkedin": "always on with no pauses, so its signal comes from quarterly market re-splits and plan changes.",
+        "youtube": "flights are national and run ahead of each busy season, so they line up with the run-up in demand; "
+                   "long carryover means effects can land in the busy weeks after a flight ends.",
         "ctv": f"runs in only {int(prof.loc['ctv'].regions_used)} regions. The other 12 regions are a natural comparison group, and "
-               "rotating market flights add contrast.",
+               "each test market times its own flights.",
         "display": "always on and retargets people who already visited, so it overlaps with demand from every other channel.",
-        "affiliates": (f"fees change only at contract renewals, so there are few distinct spend levels to learn from, and "
+        "affiliates": (f"fees change only when each market's contracts renew, so there are few distinct spend levels to "
+                       "learn from, and "
                        f"the top 5 regions take {prof.loc['affiliates'].top5_spend_share:.0%} of spend against "
                        f"{prof.loc['affiliates'].top5_account_share:.0%} of accounts."),
         "webinars": "spend lands in one region and one week at a time, a strong natural experiment.",
@@ -450,9 +450,10 @@ def build(con) -> str:
     season = [  # (period, expectation, seen, holds)
         ("Holiday weeks (51, 52, 1)", "well below 100", si.loc[[51, 52, 1], "leads_idx"].mean(), lambda v: v < 90),
         ("Thanksgiving week (47)", "below 100", si.loc[47, "leads_idx"], lambda v: v < 100),
-        ("Summer (weeks 27 to 34)", "below 100", si.loc[27:34, "leads_idx"].mean(), lambda v: v < 98),
-        ("Q1 after the holidays (weeks 3 to 13)", "above 100", si.loc[3:13, "leads_idx"].mean(), lambda v: v > 102),
-        ("Fall (weeks 36 to 45)", "above 100", si.loc[36:45, "leads_idx"].mean(), lambda v: v > 102),
+        ("Winter after the holidays (weeks 3 to 9)", "below 100", si.loc[3:9, "leads_idx"].mean(), lambda v: v < 100),
+        ("Spring switchover, AC on (weeks 19 to 25)", "above 100", si.loc[19:25, "leads_idx"].mean(), lambda v: v > 102),
+        ("Summer lull into early fall (weeks 29 to 37)", "below 100", si.loc[29:37, "leads_idx"].mean(), lambda v: v < 98),
+        ("Fall switchover, heat on (weeks 40 to 45)", "above 100", si.loc[40:45, "leads_idx"].mean(), lambda v: v > 102),
     ]
     season_rows = [{"Period": n, "Expected": e, "Leads index (100 = average week)": f"{v:.0f}",
                     "Holds": "Yes" if f(v) else "No"} for n, e, v, f in season]
@@ -503,8 +504,9 @@ def build(con) -> str:
           })), "",
           "The last few weeks of 2025 are undercounted for deals, because those leads have not had time to close.", "",
           "## 3. Seasonality", "",
-          "Expected pattern for fleet software: a deep holiday dip in late December and early January, a smaller dip at "
-          "Thanksgiving, a softer July and August, and strength in Q1 and the fall when operators plan for the next season.", "",
+          "Expected pattern for Midwest service fleets: busy when the season turns (AC switching on in late spring, heat "
+          "switching on in late fall), a lull from mid-July into September, a soft winter, a deep holiday dip in late "
+          "December and early January, and a smaller dip at Thanksgiving.", "",
           f"![Seasonality]({img['season']})", "",
           _table(pd.DataFrame(season_rows)), "",
           f"{season_note} During the year-end promo (weeks 46 to 50), deals run {promo_lift - 1:+.0%} relative to leads, "

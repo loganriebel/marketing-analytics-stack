@@ -25,8 +25,8 @@ DIMENSIONS = {
     "channel_group": ("channel__channel_group", "search, paid_social, video, ctv, display, partners, events, owned, organic"),
     "marketing_role": ("channel__marketing_role", "performance, brand, events, owned, unpaid"),
     "is_paid": ("channel__is_paid", "true for the nine paid channels"),
-    "region": ("region__region_name", "One of 20 sales regions, e.g. US Texas, DACH"),
-    "sales_area": ("region__sales_area", "NA, EMEA or APAC"),
+    "region": ("region__region_name", "One of 20 Midwest metro markets, e.g. Chicago, Fargo"),
+    "sales_area": ("region__sales_area", "Illinois and Iowa, Ohio, Wisconsin or Upper Midwest"),
 }
 GRAINS = ("week", "month", "quarter", "year")
 OPERATORS = ("=", "!=", "in", "not in")

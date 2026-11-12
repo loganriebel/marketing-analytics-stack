@@ -1,9 +1,10 @@
 """Every knob of the simulated company lives here.
 
 Fernhook Software is fictional. It sells fleet-maintenance and work-order software
-to small fleets (5 to 50 vehicles): local delivery, HVAC and plumbing service vans,
-landscaping crews. Sales-assisted motion with a 14-day trial, so a lead usually
-closes in 7 to 30 days. Nothing here describes a real company.
+to small fleets (5 to 50 vehicles) in 20 Midwest metro markets: local delivery,
+HVAC and plumbing service vans, landscaping crews. Sales-assisted motion with a
+14-day trial, so a lead usually closes in 7 to 30 days. Nothing here describes a
+real company.
 
 Three layers live here. The company's history (budgets, headcount, promos) is set
 directly. The measurement layer (last-touch UTMs, platform reporting) follows how
@@ -29,37 +30,44 @@ N_WEEKS = 156
 BURN_IN_WEEKS = 26
 L_MAX = 12  # adstock memory in weeks
 
-# (code, name, sales_area, target_accounts). Target accounts set market size.
+# Fernhook sells in seven states: Minnesota, Wisconsin, Illinois, Iowa, Ohio, North
+# Dakota and South Dakota. Each market is a metro and its service area.
+# (code, metro market, state, sales_area, target_accounts, latitude). Target accounts
+# count small fleets in the service area, so farm-belt hubs like Fargo and Sioux Falls
+# run larger than their metro population alone and still close a few deals a week.
+# State is the main city's state. Latitude moves the seasons.
 REGIONS = [
-    ("US_NE", "US Northeast", "NA", 31_000),
-    ("US_MA", "US Mid-Atlantic", "NA", 27_000),
-    ("US_SE", "US Southeast", "NA", 25_000),
-    ("US_FL", "US Florida", "NA", 18_000),
-    ("US_GL", "US Great Lakes", "NA", 29_000),
-    ("US_MW", "US Midwest", "NA", 22_000),
-    ("US_PL", "US Plains", "NA", 11_000),
-    ("US_TX", "US Texas", "NA", 36_000),
-    ("US_MT", "US Mountain", "NA", 13_000),
-    ("US_SW", "US Southwest", "NA", 15_000),
-    ("US_CA", "US California", "NA", 40_000),
-    ("US_PNW", "US Pacific Northwest", "NA", 16_000),
-    ("CA_E", "Canada East", "NA", 17_000),
-    ("CA_W", "Canada West", "NA", 10_000),
-    ("EU_UKI", "UK and Ireland", "EMEA", 23_000),
-    ("EU_DACH", "DACH", "EMEA", 20_000),
-    ("EU_BNL", "Benelux", "EMEA", 9_000),
-    ("EU_NOR", "Nordics", "EMEA", 8_000),
-    ("AP_ANZ", "Australia and New Zealand", "APAC", 12_000),
-    ("AP_SEA", "Southeast Asia", "APAC", 7_000),
+    ("CHI", "Chicago", "IL", "Illinois and Iowa", 68_000, 41.9),
+    ("RFD", "Rockford", "IL", "Illinois and Iowa", 11_000, 42.3),
+    ("PIA", "Peoria", "IL", "Illinois and Iowa", 11_000, 40.7),
+    ("MLI", "Quad Cities", "IA", "Illinois and Iowa", 12_000, 41.5),
+    ("DSM", "Des Moines", "IA", "Illinois and Iowa", 16_000, 41.6),
+    ("CID", "Cedar Rapids", "IA", "Illinois and Iowa", 10_000, 42.0),
+    ("CLE", "Cleveland", "OH", "Ohio", 29_000, 41.5),
+    ("CMH", "Columbus", "OH", "Ohio", 29_000, 40.0),
+    ("CVG", "Cincinnati", "OH", "Ohio", 29_000, 39.1),
+    ("DAY", "Dayton", "OH", "Ohio", 15_000, 39.8),
+    ("TOL", "Toledo", "OH", "Ohio", 13_000, 41.7),
+    ("CAK", "Akron", "OH", "Ohio", 13_000, 41.1),
+    ("MKE", "Milwaukee", "WI", "Wisconsin", 25_000, 43.0),
+    ("MSN", "Madison", "WI", "Wisconsin", 14_000, 43.1),
+    ("GRB", "Green Bay", "WI", "Wisconsin", 10_000, 44.5),
+    ("MSP", "Minneapolis-St. Paul", "MN", "Upper Midwest", 40_000, 45.0),
+    ("RST", "Rochester", "MN", "Upper Midwest", 8_000, 44.0),
+    ("DLH", "Duluth", "MN", "Upper Midwest", 9_000, 46.8),
+    ("FAR", "Fargo", "ND", "Upper Midwest", 9_000, 46.9),
+    ("FSD", "Sioux Falls", "SD", "Upper Midwest", 9_000, 43.5),
 ]
-# CTV runs as a market test, only in these US regions.
-CTV_REGIONS = ["US_NE", "US_SE", "US_FL", "US_GL", "US_MW", "US_TX", "US_SW", "US_CA"]
+# CTV runs as a market test, only in these markets: a north-to-south spread of
+# mid-size and large markets, with Chicago left out because its TV is the priciest.
+CTV_REGIONS = ["MSP", "MKE", "MSN", "DSM", "MLI", "TOL", "CMH", "CVG"]
 
 AREA = {
     # base_leads: organic demand per account; amount: deal size multiplier
-    "NA": {"base_leads": 1.00, "amount": 1.00},
-    "EMEA": {"base_leads": 0.90, "amount": 0.92},
-    "APAC": {"base_leads": 0.80, "amount": 0.85},
+    "Illinois and Iowa": {"base_leads": 1.00, "amount": 1.00},
+    "Ohio": {"base_leads": 0.97, "amount": 0.97},
+    "Wisconsin": {"base_leads": 1.00, "amount": 0.99},
+    "Upper Midwest": {"base_leads": 1.04, "amount": 1.02},
 }
 
 PAID_CHANNELS = ["paid_search_brand", "paid_search_nonbrand", "meta", "linkedin",
@@ -73,45 +81,71 @@ ORIGINS = ["base", "email"] + PAID_CHANNELS  # what truly caused a lead
 CRM_CHANNELS = PAID_CHANNELS + ["email", "organic_search", "direct", "referral"]
 
 # --- Spend plan for planned channels ----------------------------------------
-# weekly_budget: national $/week at window start. yearly_drift: the log change in
-# each January plan; every channel-year also gets its own planning noise, so plans
-# move in steps, not smooth curves. Mid-year decisions are in BUDGET_EVENTS.
-# flight: always_on | bursts | flights | regional_flights. dark_rate: expected
-# regional pauses per region over the horizon (natural geo holdouts). tilt_sigma:
-# how unevenly a channel is spread across regions beyond market size.
+# weekly_budget: national $/week at window start, averaged over the year.
+# yearly_drift: the log change in each January plan; every channel-year also gets
+# its own planning noise, so plans move in steps, not smooth curves. Mid-year
+# decisions are in BUDGET_EVENTS. tilt_sigma: how unevenly a channel is spread
+# across markets beyond market size. region_sigma: week-to-week market noise.
+# quarter_region_sigma: how much each market's budget moves when always-on budgets
+# are re-split across markets every quarter.
+#
+# Performance channels are always on. Brand channels follow the brand team's
+# planning calendar (PLANNING): they push before and into each busy season and soften
+# in the slow weeks. push.lead: weeks before the planned peak a push starts.
+# push.geo: "market" buys each market on its own timing; "national" buys one flight
+# for the country and leaves a share of markets out of each flight.
 SPEND = {
-    # Always-on search moves with the baseline, so the team runs regional budget
-    # tests (pauses and uneven regional budgets) to keep it measurable.
+    # Always-on search leans into busy seasons, so the team runs planned regional
+    # budget tests (pauses and heavy-ups) to keep it measurable.
     "paid_search_nonbrand": {"weekly_budget": 65_000, "yearly_drift": 0.14, "quarter_sigma": 0.18,
                              "weekly_sigma": 0.08, "flight": "always_on", "season_follow": 0.3,
-                             "dark_rate": 0.6, "dark_len": (4, 8), "tilt_sigma": 0.30,
-                             "region_sigma": 0.22},
+                             "tilt_sigma": 0.30, "region_sigma": 0.22, "quarter_region_sigma": 0.10,
+                             "tests": {"arms": [(0.0, 2), (1.7, 2)], "len": (6, 8)}},
+    # Meta prospecting is always on and pushes into each busy season. Each market's
+    # buy has its own timing and size, and each season's push gets its own budget.
     "meta": {"weekly_budget": 30_000, "yearly_drift": -0.08, "quarter_sigma": 0.15,
-             "weekly_sigma": 0.12, "flight": "bursts", "season_follow": 0.0,
-             "dark_rate": 0.9, "dark_len": (6, 10), "tilt_sigma": 0.40,
-             "region_sigma": 0.18},
+             "weekly_sigma": 0.10, "flight": "seasonal_push", "tilt_sigma": 0.40, "region_sigma": 0.15,
+             "push": {"geo": "market", "lead": 4, "len": (4, 7), "mult": 1.35, "mult_sigma": 0.20,
+                      "season_sigma": 0.40, "timing_sigma": 1.5, "market_timing_sigma": 1.5,
+                      "market_mult_sigma": 0.25, "sustain": 1.0, "slow": 0.85}},
     "linkedin": {"weekly_budget": 26_000, "yearly_drift": 0.04, "quarter_sigma": 0.20,
-                 "weekly_sigma": 0.10, "flight": "bursts", "season_follow": 0.0,
-                 "dark_rate": 0.7, "dark_len": (6, 10), "tilt_sigma": 0.45,
-                 "region_sigma": 0.15},
+                 "weekly_sigma": 0.10, "flight": "always_on", "season_follow": 0.0,
+                 "tilt_sigma": 0.45, "region_sigma": 0.18, "quarter_region_sigma": 0.30},
+    # YouTube flights are bought nationally and run ahead of the season, to build
+    # awareness before fleets start shopping.
     "youtube": {"weekly_budget": 22_000, "yearly_drift": -0.10, "quarter_sigma": 0.20,
-                "weekly_sigma": 0.10, "flight": "flights", "season_follow": 0.0,
-                "dark_rate": 0.6, "dark_len": (6, 10), "tilt_sigma": 0.35,
-                "region_sigma": 0.15},
+                "weekly_sigma": 0.10, "flight": "seasonal_push", "tilt_sigma": 0.35, "region_sigma": 0.15,
+                "push": {"geo": "national", "lead": 8, "len": (5, 8), "mult": 3.0, "mult_sigma": 0.20,
+                         "timing_sigma": 1.5, "market_share": 0.75, "sustain": 0.35, "slow": 0.30}},
+    # CTV is a market test: each test market runs its own flight ahead of each busy
+    # season, on its own timing, and goes dark between flights.
     "ctv": {"weekly_budget": 22_000, "yearly_drift": -0.08, "quarter_sigma": 0.15,
-           "weekly_sigma": 0.05, "flight": "regional_flights", "season_follow": 0.0,
-           "dark_rate": 0.0, "dark_len": (0, 0), "tilt_sigma": 0.25,
-           "region_sigma": 0.08, "on_weeks": (3, 6), "off_weeks": (4, 10)},
+            "weekly_sigma": 0.05, "flight": "seasonal_push", "tilt_sigma": 0.25, "region_sigma": 0.08,
+            "push": {"geo": "market", "lead": 8, "len": (6, 9), "mult": 1.0, "mult_sigma": 0.20,
+                     "season_sigma": 0.35, "timing_sigma": 2.0, "market_timing_sigma": 5.0,
+                     "market_mult_sigma": 0.25, "sustain": 0.0, "slow": 0.0}},
     "display": {"weekly_budget": 22_000, "yearly_drift": 0.10, "quarter_sigma": 0.20,
                 "weekly_sigma": 0.20, "flight": "always_on", "season_follow": 0.0,
-                "dark_rate": 0.9, "dark_len": (6, 10), "tilt_sigma": 0.35,
-                "region_sigma": 0.20},
-    # Partner placement and sponsor fees, set at quarterly contract renewals.
-    # Per-deal commissions are cost of sale and stay out of media spend.
-    "affiliates": {"weekly_budget": 12_000, "yearly_drift": 0.03, "quarter_sigma": 0.25,
+                "tilt_sigma": 0.35, "region_sigma": 0.20, "quarter_region_sigma": 0.20},
+    # Partner placement and sponsor fees with local resellers and fleet consultants,
+    # set when each market's contracts renew every quarter. Per-deal commissions are
+    # cost of sale and stay out of media spend.
+    "affiliates": {"weekly_budget": 12_000, "yearly_drift": 0.03, "quarter_sigma": 0.15,
                    "weekly_sigma": 0.04, "flight": "always_on", "season_follow": 0.0,
-                   "dark_rate": 0.2, "dark_len": (6, 12), "tilt_sigma": 0.50,
-                   "region_sigma": 0.05},
+                   "tilt_sigma": 0.50, "region_sigma": 0.05, "quarter_region_sigma": 0.35},
+}
+
+# The brand team's planning calendar: the ISO weeks it expects each busy season to
+# peak, its rule of thumb for how the peak moves per degree of latitude (fall comes
+# earlier up north), and the slow weeks it softens. Close to the real calendar, but
+# a plan, not the truth.
+PLANNING = {
+    "ref_latitude": 42.5,
+    "spring_peak_week": 22,
+    "fall_peak_week": 42,
+    "spring_weeks_per_degree": 0.15,
+    "fall_weeks_per_degree": -0.30,
+    "slow_weeks": [(3, 9), (29, 37)],
 }
 
 YEAR_PLAN_SIGMA = 0.07
@@ -125,7 +159,7 @@ BUDGET_EVENTS = [
     (date(2024, 4, 1), "Attribution review: video and CTV show few last-touch leads",
      {"youtube": -0.31, "ctv": -0.34, "paid_search_nonbrand": 0.12, "affiliates": 0.21}),
     (date(2024, 8, 5), "Cost cut during the hiring freeze",
-     {"linkedin": -0.19, "meta": -0.17}),
+     {"linkedin": -0.19, "meta": -0.17, "display": -0.15}),
     (date(2024, 11, 4), "Two reseller contracts end", {"affiliates": -0.24}),
     (date(2025, 2, 3), "New fiscal year: more for what last touch rewards",
      {"paid_search_nonbrand": 0.09, "display": 0.13}),
@@ -135,15 +169,19 @@ BUDGET_EVENTS = [
 
 # Brand search spend follows search volume for "Fernhook": baseline demand plus the
 # searches other channels create. The plan sets it at about 35% of search, measured
-# against the non-brand plan; actual spend lands wherever demand takes it. Regional
-# pauses are the brand-search holdout tests a cautious team would run.
+# against the non-brand plan; actual spend lands wherever demand takes it. Twice a
+# year the team runs a planned brand test: a few markets pause brand search for a
+# few weeks while the rest keep bidding.
 BRAND_SEARCH = {
     "planned_share_of_search": 0.35,
     "demand_from": {"ctv": 0.6, "youtube": 0.5, "meta": 0.3},
     "noise_sigma": 0.10,
-    "dark_rate": 0.5,
-    "dark_len": (4, 8),
+    "tests": {"arms": [(0.0, 3)], "len": (4, 6)},
 }
+# Planned regional tests run in two waves a year. Each wave starts on its own week
+# within its half-year, and markets rotate so each one takes a turn. A test's arms are
+# (spend multiple, markets): 0.0 pauses those markets, 1.7 gives them extra budget.
+GEO_TEST_WAVE_WEEKS = 26
 
 # Webinars are regional field events, not an ad platform.
 WEBINARS = {
@@ -194,12 +232,23 @@ BASE = {
     "national_shock_sigma": 0.04,       # the part the market-activity index tracks
     "national_shock_rho": 0.6,
 }
-# Fourier terms on ISO week of year plus holiday dips.
+# Midwest service-trade calendar, on ISO week of year. Fleets shop for software when
+# the season turns: AC switches on in late spring and heat switches on in late fall.
+# The deepest lull runs from mid-July into September, when crews are busy with AC
+# calls and then coast before heat; deep winter after the holidays is a milder dip.
+# Each bump is a smooth hump in log demand. Each run draws every bump's week, size and
+# width, how far the switchovers move per degree of latitude (spring comes later up
+# north, heat comes earlier), and a small timing offset for each market.
 SEASON = {
-    "fourier": [(1, 0.08, 0.05), (2, 0.04, 0.0)],  # (harmonic, sin_coef, cos_coef)
+    "ref_latitude": 42.5,
+    "spring_peak": {"week": (21.0, 23.0), "size": (0.13, 0.20), "width": (3.0, 4.0)},
+    "fall_peak": {"week": (41.5, 43.5), "size": (0.15, 0.22), "width": (2.5, 3.5)},
+    "summer_lull": {"week": (32.0, 34.0), "size": (0.18, 0.26), "width": (4.0, 5.0)},
+    "winter_dip": {"week": (5.0, 7.0), "size": (0.03, 0.08), "width": (3.0, 4.0)},
+    "spring_weeks_per_degree": (0.20, 0.40),
+    "fall_weeks_per_degree": (0.35, 0.60),
+    "market_offset_sigma_weeks": (0.3, 0.6),
     "holiday_weeks": {52: 0.55, 53: 0.55, 1: 0.60, 51: 0.80, 47: 0.85},
-    "summer_weeks": (27, 34),
-    "summer_mult": 0.92,
 }
 # Fleet activity index: a public-style weekly index of commercial fleet miles.
 # Baseline demand moves with it in logs (elasticity drawn per run); it is published
@@ -219,7 +268,7 @@ SALES = {
     "attrition_per_month": 0.006,
     "freeze": (date(2024, 7, 1), date(2025, 1, 31)),  # hiring freeze
     "freeze_attrition_per_month": 0.02,
-    "area_offset": {"NA": 0.0, "EMEA": -0.10, "APAC": -0.14},
+    "area_offset": {"Illinois and Iowa": 0.0, "Ohio": -0.03, "Wisconsin": -0.04, "Upper Midwest": -0.08},
     "region_sigma": 0.06,
     "month_sigma": 0.03,
     "sdr_elasticity_range": (0.30, 0.50),
