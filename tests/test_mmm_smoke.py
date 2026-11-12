@@ -1,4 +1,4 @@
-"""Fast smoke fit of the MMM: 2 regions, 80 weeks, a few hundred draws (~1 minute).
+"""Fast smoke fit of the MMM: 2 markets, 100 weeks, a few hundred draws (~1 minute).
 
 Needs .venv-mmm (requirements-mmm.txt) and a built warehouse:
     .venv-mmm\\Scripts\\python -m pytest tests/test_mmm_smoke.py tests/test_mmm_no_truth_leak.py -q
@@ -25,7 +25,7 @@ if not C.WAREHOUSE.exists():
 @pytest.fixture(scope="module")
 def smoke(tmp_path_factory):
     tmp = tmp_path_factory.mktemp("mmm")
-    res = fit.run(holdout_weeks=8, name="smoke", regions=["EU_NOR", "US_CA"], n_weeks=80,
+    res = fit.run(holdout_weeks=8, name="smoke", regions=["CAK", "CMH"], n_weeks=100,
                   sampler={"chains": 2, "draws": 100, "tune": 150}, out_dir=tmp / "out",
                   fit_dir=tmp / "fits", write=True, quiet=True)
     scales = json.loads((tmp / "fits" / "smoke_scales.json").read_text())
@@ -43,7 +43,7 @@ def test_lead_to_close_kernel_matches_readme():
 
 
 def test_fit_runs_with_lift_test_and_reports_gates(smoke):
-    assert "brand_pause_lift" in smoke["mmm"].model.named_vars
+    assert "pause_lift_tests" in smoke["mmm"].model.named_vars
     d = smoke["diagnostics"]
     for key in ("rhat_max", "ess_bulk_min", "divergence_rate", "ppc", "holdout"):
         assert key in d

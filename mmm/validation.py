@@ -56,6 +56,13 @@ def residual_checks(resid: np.ndarray) -> dict:
     }
 
 
+def _season(da) -> np.ndarray:
+    """(draw, date, geo) seasonality, broadcasting when it is shared by every geo."""
+    if "geo" in da.dims:
+        return da.transpose("draw", "date", "geo").values
+    return da.transpose("draw", "date").values[:, :, None]
+
+
 def pointwise(idata, mmm, design) -> dict:
     """Pointwise log-likelihood (chain, draw, obs) and the posterior mean of mu.
 
@@ -77,7 +84,7 @@ def pointwise(idata, mmm, design) -> dict:
         mu = (p["intercept_contribution"].transpose("draw", "geo").values[:, None, :]
               + p["channel_contribution"].sum("channel").transpose("draw", "date", "geo").values
               + p["control_contribution"].sum("control").transpose("draw", "date", "geo").values
-              + p["yearly_seasonality_contribution"].transpose("draw", "date").values[:, :, None])
+              + _season(p["yearly_seasonality_contribution"]))
         sigma = p["y_sigma"].transpose("draw", "geo").values[:, None, :]
         ll = stats.norm.logpdf(y_scaled[None], loc=mu, scale=sigma)
         ll_chains.append(ll.reshape(ll.shape[0], -1))
@@ -106,30 +113,32 @@ def loo(idata, loglik: np.ndarray) -> dict:
     }
 
 
+def _labels(da) -> list[str]:
+    """az.summary-style labels for every element of a parameter array."""
+    dims = [d for d in da.dims if d not in ("chain", "draw")]
+    if not dims:
+        return [da.name]
+    grids = np.meshgrid(*[da[d].values for d in dims], indexing="ij")
+    return [f"{da.name}[{', '.join(str(g.flat[i]) for g in grids)}]" for i in range(grids[0].size)]
+
+
 def flatten(ds: xr.Dataset) -> pd.Series:
     """Per-parameter values from an arviz result, labeled like az.summary rows."""
     out = {}
     for v, da in ds.data_vars.items():
-        if not da.dims:
-            out[v] = float(da)
-            continue
-        (dim,) = da.dims
-        out.update({f"{v}[{k}]": float(x) for k, x in zip(da[dim].values, da.values)})
+        da = da.rename(v)
+        out.update(dict(zip(_labels(da), np.ravel(da.values).astype(float))))
     return pd.Series(out)
 
 
 def parameter_table(idata, var_names: list[str]) -> pd.DataFrame:
-    """One row per model parameter. Each variable here has at most one extra dim."""
+    """One row per model parameter."""
     summ = az.summary(idata, var_names=var_names, hdi_prob=C.HDI_PROB, kind="all", round_to="none")
     above = {}
     for v in var_names:
-        da = idata.posterior[v]
-        (dim,) = [d for d in da.dims if d not in ("chain", "draw")] or [None]
+        da = idata.posterior[v].rename(v)
         share = (da > 0).mean(("chain", "draw"))
-        if dim is None:
-            above[v] = float(share)
-        else:
-            above.update({f"{v}[{k}]": float(x) for k, x in zip(da[dim].values, share.values)})
+        above.update(dict(zip(_labels(share), np.ravel(share.values).astype(float))))
     summ.insert(0, "parameter", summ.index)
     summ["p_above_zero"] = summ.parameter.map(above)
     return summ.reset_index(drop=True)

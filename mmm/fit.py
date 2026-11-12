@@ -31,11 +31,13 @@ from . import baselines, lift_tests, validation  # noqa: E402
 from . import config as C  # noqa: E402
 from .data import Panel, affiliate_spend_check, load_panel  # noqa: E402
 from .estimands import Engine, MediaPosterior, hdi  # noqa: E402
-from .model import add_brand_lift, build_design, make_mmm  # noqa: E402
+from .model import LIFT_NAME, add_pause_lifts, build_design, make_mmm  # noqa: E402
 from .optimize import optimize_mix  # noqa: E402
 
-FREE_VARS = ["intercept_contribution", "adstock_alpha", "saturation_slope", "saturation_kappa",
-             "saturation_beta", "gamma_control", "gamma_fourier", "y_sigma"]
+
+def free_vars(mmm) -> list[str]:
+    """Every sampled parameter, hyperpriors and offsets included, as named in the posterior."""
+    return [v.name for v in mmm.model.free_RVs]
 
 
 def _pp_deals(pp, mmm, design) -> np.ndarray:
@@ -55,9 +57,10 @@ def _interval_coverage(draws: np.ndarray, observed: np.ndarray, prob=C.HDI_PROB)
 
 def diagnostics(mmm, idata, design, panel: Panel) -> dict:
     # Unrounded: az.summary rounds r-hat to 2 decimals, which turns 1.0095 into a gate fail.
-    rhat = validation.flatten(az.rhat(idata, var_names=FREE_VARS))
-    ess_bulk = validation.flatten(az.ess(idata, var_names=FREE_VARS, method="bulk"))
-    ess_tail = validation.flatten(az.ess(idata, var_names=FREE_VARS, method="tail"))
+    free = free_vars(mmm)
+    rhat = validation.flatten(az.rhat(idata, var_names=free))
+    ess_bulk = validation.flatten(az.ess(idata, var_names=free, method="bulk"))
+    ess_tail = validation.flatten(az.ess(idata, var_names=free, method="tail"))
     n_div = int(idata.sample_stats.diverging.sum())
     n_samples = int(idata.sample_stats.diverging.size)
     out = {
@@ -242,13 +245,12 @@ def _prepare(holdout_weeks: int, regions=None, n_weeks=None) -> dict:
         raise RuntimeError(f"affiliate spend is not placement fees only: {affiliate}")
 
     design = build_design(panel, holdout_weeks)
-    lift_rows = lift_tests.estimate(panel, design.n_train)
-    lift = lift_tests.pooled(lift_rows) if len(lift_rows) else None
+    lift_rows, tests = lift_tests.all_tests(panel, design.n_train)
 
     X, y = design.train()
     mmm = make_mmm(design)
     mmm.build_model(X, y)
-    lift_entered = add_brand_lift(mmm, lift) if lift else None
+    lift_entered = add_pause_lifts(mmm, tests) if tests else None
     return {"panel": panel, "affiliate": affiliate, "design": design, "mmm": mmm,
             "lift_rows": lift_rows, "lift_entered": lift_entered}
 
@@ -258,7 +260,7 @@ def _evaluate(prep, idata, run_meta, out_dir, fit_dir, write, estimand_draws, lo
     t0 = time.time()
     panel, design, mmm = prep["panel"], prep["design"], prep["mmm"]
     name = run_meta["fit"]
-    if "brand_pause_lift" not in mmm.model.named_vars and prep["lift_entered"]:
+    if LIFT_NAME not in mmm.model.named_vars and prep["lift_entered"]:
         raise RuntimeError("lift test likelihood missing from the fitted model")
 
     with warnings.catch_warnings():
@@ -281,7 +283,7 @@ def _evaluate(prep, idata, run_meta, out_dir, fit_dir, write, estimand_draws, lo
         write_json(out_dir / f"diagnostics_{name}.json",
                    {"meta": run_meta, "diagnostics": diag, "gates": gates,
                     "affiliate_check": prep["affiliate"], "lift_tests": lift})
-        validation.parameter_table(idata, FREE_VARS).to_csv(
+        validation.parameter_table(idata, free_vars(mmm)).to_csv(
             out_dir / f"parameters_{name}.csv", index=False, float_format="%.6g")
     if not gates["all_pass"]:
         log(f"[{name}] a health gate failed: no estimands written")

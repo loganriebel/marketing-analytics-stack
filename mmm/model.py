@@ -13,8 +13,10 @@ Design (reasons in docs/mmm/README.md):
   brand channels.
 * Controls act on leads, so they get the same lead-to-close kernel. Webinars are an
   events program, not bought media, so their cost enters as a control.
-* Brand search gets a skeptical prior (its spend follows demand) plus a pooled lift
-  test from the regional pauses.
+* Seasonality per market, partially pooled: the Midwest shares one season, and
+  latitude shifts it a few weeks.
+* Brand search gets a skeptical prior (its spend follows demand). Brand and non-brand
+  search get pooled lift tests from their planned regional pauses.
 """
 
 from __future__ import annotations
@@ -232,7 +234,14 @@ def model_config(design: Design, channels: list[str]) -> dict:
         "likelihood": Prior("Normal", sigma=Prior("HalfNormal", sigma=0.5 * ybar, dims="geo"),
                             dims=("date", "geo")),
         "gamma_control": Prior("Normal", mu=0.0, sigma=0.25 * ybar, dims="control"),
-        "gamma_fourier": Prior("Normal", mu=0.0, sigma=0.2 * ybar, dims="fourier_mode"),
+        # Market seasonality = the shared Midwest shape + a small market shift.
+        "gamma_fourier": Prior(
+            "Normal",
+            mu=Prior("Normal", mu=0.0, sigma=0.2 * ybar, dims="fourier_mode"),
+            sigma=Prior("HalfNormal", sigma=0.05 * ybar, dims="fourier_mode"),
+            dims=("geo", "fourier_mode"),
+            centered=False,
+        ),
         "adstock_alpha": Prior("Beta", alpha=2, beta=3, dims="channel"),
         "saturation_slope": Prior("LogNormal", mu=_by_channel(np.log(slope0), channels),
                                   sigma=_by_channel(slope_prior[:, 1], channels), dims="channel"),
@@ -251,25 +260,26 @@ def make_mmm(design: Design, channels: list[str] | None = None) -> MMM:
         adstock=LaggedGeometricAdstock(l_max=C.ADSTOCK_L_MAX, normalize=True),
         saturation=ZeroSafeHillSaturation(),
         control_columns=CONTROL_COLUMNS,
-        yearly_seasonality=2,
+        yearly_seasonality=C.FOURIER_MODES,
         model_config=model_config(design, channels),
     )
 
 
-def add_brand_lift(mmm: MMM, lift: dict) -> dict:
-    """Add the pooled brand-pause lift test through add_lift_test_measurements.
+def add_pause_lifts(mmm: MMM, tests: list[dict]) -> list[dict]:
+    """Add the pooled pause lift tests (one per channel) via add_lift_test_measurements.
 
     PyMC-Marketing compares absolute lifts. A pooled test with the wrong sign (deals
     rose during pauses) is entered as a zero drop: the closest value a monotone
     saturation curve can reach.
     """
-    delta_y = lift["delta_y"]
-    entered = delta_y if delta_y < 0 else -1e-9
-    df = pd.DataFrame([{
-        "geo": mmm.model.coords["geo"][0],
-        "channel": lift["channel"],
-        "x": lift["x"], "delta_x": lift["delta_x"],
-        "delta_y": entered, "sigma": lift["sigma"],
-    }])
-    mmm.add_lift_test_measurements(df, dist=pmd.Normal, name="brand_pause_lift")
-    return {**lift, "delta_y_entered": entered}
+    rows, entered = [], []
+    for t in tests:
+        delta_y = t["delta_y"] if t["delta_y"] < 0 else -1e-9
+        rows.append({"geo": mmm.model.coords["geo"][0], "channel": t["channel"], "x": t["x"],
+                     "delta_x": t["delta_x"], "delta_y": delta_y, "sigma": t["sigma"]})
+        entered.append({**t, "delta_y_entered": delta_y})
+    mmm.add_lift_test_measurements(pd.DataFrame(rows), dist=pmd.Normal, name=LIFT_NAME)
+    return entered
+
+
+LIFT_NAME = "pause_lift_tests"

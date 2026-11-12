@@ -44,6 +44,11 @@ ADSTOCK_L_MAX = GEO_L_MAX + LAG_WEEKS - 1
 # README: "a lead closes in about two weeks; nine in ten close in 6 to 27 days".
 CLOSE_DAYS_P05, CLOSE_DAYS_P95 = 6.0, 27.0
 
+# Yearly seasonality: two switchover peaks, a summer lull and a soft winter need
+# three Fourier modes. Seasons shift by latitude, so each market gets its own
+# curve, partially pooled toward the shared Midwest shape.
+FOURIER_MODES = 3
+
 # Close weeks with a visible dip in national won deals (holiday leads closing late).
 HOLIDAY_CLOSE_WEEKS = {"wk52": (52, 53), "wk01": (1,), "wk02": (2,), "wk03": (3,)}
 
