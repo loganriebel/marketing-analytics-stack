@@ -5,6 +5,7 @@ select
     marketing_role,
     source_system,
     is_paid,
-    has_delivery_metrics,
+    reports_impressions,
+    reports_clicks,
     sort_order
 from {{ ref('channels') }}

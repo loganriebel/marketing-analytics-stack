@@ -1,5 +1,6 @@
 -- Every paid channel at one grain: week x region x channel. Rows exist only where
--- there was spend, the same way the platforms export them.
+-- there was spend, the same way the platforms export them. A metric a source does
+-- not report stays null.
 with ads as (
     select week_start, region_id, channel_id, spend, impressions, clicks, platform_conversions
     from {{ ref('stg_ads_google') }}
@@ -12,6 +13,31 @@ with ads as (
     union all
     select week_start, region_id, channel_id, spend, impressions, clicks, platform_conversions
     from {{ ref('stg_ads_display') }}
+),
+
+tv as (
+    select
+        week_start,
+        region_id,
+        channel_id,
+        sum(spend) as spend,
+        sum(impressions) as impressions,
+        cast(null as bigint) as clicks,
+        sum(platform_conversions) as platform_conversions
+    from {{ ref('stg_tv') }}
+    group by 1, 2, 3
+),
+
+partners as (
+    select
+        week_start,
+        region_id,
+        channel_id,
+        spend,
+        cast(null as bigint) as impressions,
+        clicks,
+        platform_conversions
+    from {{ ref('stg_partners') }}
 ),
 
 webinars as (
@@ -29,5 +55,9 @@ webinars as (
 )
 
 select * from ads
+union all
+select * from tv
+union all
+select * from partners
 union all
 select * from webinars

@@ -1,4 +1,4 @@
--- Both facts are zero-filled grids: every week x region x channel row exists.
+-- All facts are zero-filled grids: every week x region (x channel) row exists.
 with sizes as (
     select
         (select count(*) from {{ ref('int_week_spine') }}) as weeks,
@@ -14,3 +14,7 @@ union all
 select 'fct_funnel'
 from sizes
 where (select count(*) from {{ ref('fct_funnel') }}) <> weeks * regions * all_channels
+union all
+select 'fct_controls_weekly'
+from sizes
+where (select count(*) from {{ ref('fct_controls_weekly') }}) <> weeks * regions

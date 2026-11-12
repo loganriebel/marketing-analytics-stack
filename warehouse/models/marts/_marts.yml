@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: dim_channel
-    description: Golden channel dimension. Six paid channels plus the three unpaid CRM sources.
+    description: Golden channel dimension. Nine paid channels, owned email, and three unpaid CRM sources.
     columns:
       - name: channel_id
         data_tests: [unique, not_null]
@@ -13,18 +13,21 @@ models:
           - not_null
           - accepted_values:
               arguments:
-                values: [search, paid_social, video, display, events, organic]
+                values: [search, paid_social, video, tv, display, partners, events, owned, organic]
       - name: marketing_role
         description: How the team budgets the channel. Performance chases demand that exists; brand creates it.
         data_tests:
           - not_null
           - accepted_values:
               arguments:
-                values: [performance, brand, events, unpaid]
+                values: [performance, brand, events, owned, unpaid]
       - name: is_paid
         data_tests: [not_null]
-      - name: has_delivery_metrics
-        description: True when the channel reports impressions and clicks.
+      - name: reports_impressions
+        description: True when the source reports impressions. TV does; partners and webinars do not.
+        data_tests: [not_null]
+      - name: reports_clicks
+        description: True when the source reports clicks. TV and webinars do not.
         data_tests: [not_null]
 
   - name: fct_channel_weekly
@@ -173,3 +176,67 @@ models:
           - accepted_range:
               arguments:
                 min_value: 0
+
+  - name: fct_controls_weekly
+    description: >
+      Golden controls table. One row per week x region with the non-media drivers
+      of deals: sales headcount, email volume, the promo and price calendar, and the
+      fleet activity index. Pair it with fct_channel_weekly (spend) and
+      fct_funnel.won_deals (the outcome) for the MMM.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [week_start, region_id]
+    columns:
+      - name: week_start
+        data_tests: [not_null]
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_regions')
+                field: region_id
+      - name: sdr_headcount
+        description: SDRs on the roster in the month the week starts.
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 50
+      - name: ae_headcount
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 50
+      - name: emails_sent
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+      - name: email_opens
+        data_tests: [not_null]
+      - name: email_clicks
+        data_tests: [not_null]
+      - name: is_discount_promo
+        description: True when the week starts inside a discount promo window.
+        data_tests: [not_null]
+      - name: list_price_index
+        description: 1.00 at the original list price; 1.10 after the 10% increase.
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 2
+      - name: fleet_activity_index
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 50
+                max_value: 150

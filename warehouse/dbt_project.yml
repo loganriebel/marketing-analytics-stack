@@ -32,10 +32,12 @@ seeds:
         marketing_role: varchar
         source_system: varchar
         is_paid: boolean
-        has_delivery_metrics: boolean
+        reports_impressions: boolean
+        reports_clicks: boolean
         sort_order: integer
     utm_channel_map:
       +column_types:
         utm_source: varchar
         utm_medium: varchar
+        utm_campaign: varchar
         channel_id: varchar

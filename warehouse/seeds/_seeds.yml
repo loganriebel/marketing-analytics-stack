@@ -8,11 +8,13 @@ seeds:
         data_tests: [unique, not_null]
 
   - name: utm_channel_map
-    description: Maps a lowercased UTM source and medium pair to a channel.
+    description: >
+      Maps a lowercased UTM source, medium and campaign to a channel. A blank
+      campaign matches any campaign; only search needs it, to split brand from non-brand.
     data_tests:
       - unique_combination_of_columns:
           arguments:
-            combination_of_columns: [utm_source, utm_medium]
+            combination_of_columns: [utm_source, utm_medium, utm_campaign]
     columns:
       - name: channel_id
         data_tests:

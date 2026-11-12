@@ -8,7 +8,8 @@ with spine as (
         regions.region_name,
         regions.sales_area,
         channels.channel_id,
-        channels.has_delivery_metrics
+        channels.reports_impressions,
+        channels.reports_clicks
     from {{ ref('int_week_spine') }} as weeks
     cross join {{ ref('stg_regions') }} as regions
     cross join {{ ref('dim_channel') }} as channels
@@ -49,8 +50,8 @@ select
     spine.sales_area,
     spine.channel_id,
     coalesce(media.spend, 0) as spend,
-    case when spine.has_delivery_metrics then coalesce(media.impressions, 0) end as impressions,
-    case when spine.has_delivery_metrics then coalesce(media.clicks, 0) end as clicks,
+    case when spine.reports_impressions then coalesce(media.impressions, 0) end as impressions,
+    case when spine.reports_clicks then coalesce(media.clicks, 0) end as clicks,
     coalesce(media.platform_conversions, 0) as platform_conversions,
     coalesce(leads.sourced_leads, 0) as sourced_leads,
     coalesce(opportunities.sourced_opportunities, 0) as sourced_opportunities,

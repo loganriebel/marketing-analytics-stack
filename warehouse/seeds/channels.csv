@@ -1,10 +1,14 @@
-channel_id,channel_name,channel_group,marketing_role,source_system,is_paid,has_delivery_metrics,sort_order
-paid_search,Paid Search,search,performance,google_ads,true,true,1
-meta,Meta,paid_social,brand,meta_ads,true,true,2
-linkedin,LinkedIn,paid_social,performance,linkedin_ads,true,true,3
-youtube,YouTube,video,brand,google_ads,true,true,4
-display,Display Retargeting,display,performance,dsp,true,true,5
-webinars,Webinars,events,events,webinar_tool,true,false,6
-organic_search,Organic Search,organic,unpaid,crm,false,false,7
-direct,Direct,organic,unpaid,crm,false,false,8
-referral,Referral,organic,unpaid,crm,false,false,9
+channel_id,channel_name,channel_group,marketing_role,source_system,is_paid,reports_impressions,reports_clicks,sort_order
+paid_search_brand,Paid Search Brand,search,performance,google_ads,true,true,true,1
+paid_search_nonbrand,Paid Search Non-Brand,search,performance,google_ads,true,true,true,2
+meta,Meta,paid_social,brand,meta_ads,true,true,true,3
+linkedin,LinkedIn,paid_social,performance,linkedin_ads,true,true,true,4
+youtube,YouTube,video,brand,google_ads,true,true,true,5
+tv,TV,tv,brand,tv_agency,true,true,false,6
+display,Display Retargeting,display,performance,dsp,true,true,true,7
+affiliates,Affiliates and Partners,partners,performance,partner_platform,true,false,true,8
+webinars,Webinars,events,events,webinar_tool,true,false,false,9
+email,Email,owned,owned,email_platform,false,false,false,10
+organic_search,Organic Search,organic,unpaid,crm,false,false,false,11
+direct,Direct,organic,unpaid,crm,false,false,false,12
+referral,Referral,organic,unpaid,crm,false,false,false,13

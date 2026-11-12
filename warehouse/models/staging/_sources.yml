@@ -12,16 +12,30 @@ sources:
       - name: regions
         description: Sales territories from the CRM.
       - name: ads_google_weekly
-        description: Google Ads weekly geo report. SEARCH rows are paid search, VIDEO rows are YouTube. Cost is in micros.
+        description: >
+          Google Ads weekly geo report. SEARCH rows split into brand and non-brand by
+          campaign name; VIDEO rows are YouTube. Cost is in micros.
       - name: ads_meta_weekly
         description: Meta Ads weekly report by region name. Leads are what Meta claims.
       - name: ads_linkedin_weekly
         description: LinkedIn Ads weekly report by region code.
       - name: ads_display_weekly
-        description: Programmatic display (DSP) weekly report, with post-click and post-view conversions.
+        description: Programmatic display retargeting (DSP) weekly report, with post-click and post-view conversions.
+      - name: tv_weekly
+        description: TV agency weekly delivery by market and buy type (linear or CTV), with vendor-attributed leads.
+      - name: partners_weekly
+        description: Partner platform weekly placement and sponsor fees, clicks, and referred signups it claims.
       - name: webinar_events
         description: One row per regional webinar from the webinar tool, with total cost and registrants.
       - name: crm_leads
-        description: CRM lead records with last-touch UTM source and medium and the date each funnel stage was reached.
+        description: CRM lead records with last-touch UTM source, medium and campaign, and the date each funnel stage was reached.
       - name: crm_opportunities
         description: CRM opportunities, one per converted lead, with amount, stage and close date.
+      - name: sales_capacity_monthly
+        description: Sales ops roster of SDRs and AEs by region and month.
+      - name: email_weekly
+        description: Email platform weekly sends, unique opens and unique clicks by region.
+      - name: promo_calendar
+        description: Pricing and promotion calendar from finance.
+      - name: fleet_activity_index_weekly
+        description: Weekly commercial fleet activity index, a market-demand signal.

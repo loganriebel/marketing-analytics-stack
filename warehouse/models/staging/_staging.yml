@@ -21,18 +21,19 @@ models:
                 min_value: 1
 
   - name: stg_ads_google
-    description: Google Ads rows split into paid search and YouTube, cost converted from micros to dollars.
+    description: Google Ads rows split into brand search, non-brand search and YouTube, cost converted from micros to dollars.
     data_tests:
       - unique_combination_of_columns:
           arguments:
             combination_of_columns: [week_start, region_id, channel_id]
     columns:
       - name: channel_id
+        description: Null here means a campaign name the brand and non-brand rule does not recognize.
         data_tests:
           - not_null
           - accepted_values:
               arguments:
-                values: [paid_search, youtube]
+                values: [paid_search_brand, paid_search_nonbrand, youtube]
       - name: region_id
         data_tests:
           - not_null
@@ -176,3 +177,126 @@ models:
               arguments:
                 min_value: 1
                 max_value: 1000000
+
+  - name: stg_tv
+    description: TV delivery by market, week and buy type.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [week_start, region_id, buy_type]
+    columns:
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_regions')
+                field: region_id
+      - name: buy_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [linear, ctv]
+      - name: spend
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+
+  - name: stg_partners
+    description: Partner placement and sponsor fees by region and week. Commissions are not media spend.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [week_start, region_id]
+    columns:
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_regions')
+                field: region_id
+      - name: spend
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+
+  - name: stg_sales_capacity
+    description: SDR and AE headcount by region and month.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [month_start, region_id]
+    columns:
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_regions')
+                field: region_id
+      - name: sdr_headcount
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 50
+      - name: ae_headcount
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 50
+
+  - name: stg_email
+    description: Email sends, unique opens and unique clicks by region and week.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [week_start, region_id]
+    columns:
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_regions')
+                field: region_id
+      - name: emails_sent
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+
+  - name: stg_promo_calendar
+    description: One row per promotion or price change.
+    columns:
+      - name: promo_id
+        data_tests: [unique, not_null]
+      - name: promo_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [discount, price_change]
+      - name: start_date
+        data_tests: [not_null]
+
+  - name: stg_fleet_activity_index
+    description: One row per week.
+    columns:
+      - name: week_start
+        data_tests: [unique, not_null]
+      - name: fleet_activity_index
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 50
+                max_value: 150
