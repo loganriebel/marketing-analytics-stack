@@ -7,6 +7,8 @@ __pycache__/
 data/raw/
 data/*.duckdb
 data/*.duckdb.wal
+# development worlds for the MMM (other sim seeds), rebuilt from their seed
+data/dev/
 
 warehouse/target/
 warehouse/logs/

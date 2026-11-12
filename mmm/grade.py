@@ -153,7 +153,8 @@ def _fmt(x, nd=0):
 
 def to_markdown(g: dict) -> str:
     m = g["model"]
-    lines = [f"# MMM grade: {g['fit']}", "",
+    lines = [f"# MMM grade: {g['fit']} fit, seed {g['seed']}", "",
+             "Webinars are a control in the MMM, so the 8 media channels are graded.", "",
              f"90% HDI coverage: {m['hdi_coverage']['covered']} of {m['hdi_coverage']['of']} "
              f"({100 * m['hdi_coverage']['rate']:.0f}%).", "",
              "Point estimates are posterior medians.", "",
@@ -218,12 +219,16 @@ def grade(outputs: Path = C.OUTPUT_DIR, truth_path: Path = TRUTH_PATH) -> dict:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--outputs", type=Path, default=C.OUTPUT_DIR)
+    ap.add_argument("--truth", type=Path, default=TRUTH_PATH,
+                    help="answer key of the world the outputs came from (a dev seed's own file)")
+    ap.add_argument("--grade-dir", type=Path, default=GRADE_DIR)
     args = ap.parse_args(argv)
-    g = grade(args.outputs)
-    GRADE_DIR.mkdir(parents=True, exist_ok=True)
-    (GRADE_DIR / f"grade_{g['fit']}.json").write_text(json.dumps(g, indent=2) + "\n", encoding="utf-8")
+    g = grade(args.outputs, args.truth)
+    args.grade_dir.mkdir(parents=True, exist_ok=True)
+    stem = f"grade_{g['fit']}" + ("" if g["seed"] == 2026 else f"_seed{g['seed']}")
+    (args.grade_dir / f"{stem}.json").write_text(json.dumps(g, indent=2) + "\n", encoding="utf-8")
     md = to_markdown(g)
-    (GRADE_DIR / f"grade_{g['fit']}.md").write_text(md, encoding="utf-8")
+    (args.grade_dir / f"{stem}.md").write_text(md, encoding="utf-8")
     print(md)
     return 0
 

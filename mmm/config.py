@@ -3,6 +3,7 @@ or a modeling choice explained in docs/mmm/README.md."""
 
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 from pathlib import Path
 
@@ -10,9 +11,11 @@ import numpy as np
 from scipy import optimize, stats
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-WAREHOUSE = REPO_ROOT / "data" / "warehouse.duckdb"
-OUTPUT_DIR = REPO_ROOT / "mmm" / "outputs"
-FIT_DIR = REPO_ROOT / "mmm" / "fits"
+# Env overrides point a run at another simulated world (a development seed)
+# without touching this checkout's warehouse or committed outputs.
+WAREHOUSE = Path(os.environ.get("MMM_WAREHOUSE", REPO_ROOT / "data" / "warehouse.duckdb"))
+OUTPUT_DIR = Path(os.environ.get("MMM_OUTPUT_DIR", REPO_ROOT / "mmm" / "outputs"))
+FIT_DIR = Path(os.environ.get("MMM_FIT_DIR", REPO_ROOT / "mmm" / "fits"))
 
 CHANNELS = [
     "paid_search_brand",
