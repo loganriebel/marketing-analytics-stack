@@ -1,4 +1,5 @@
 .venv/
+.venv-mmm/
 __pycache__/
 .pytest_cache/
 
@@ -12,3 +13,6 @@ warehouse/logs/
 warehouse/dbt_packages/
 warehouse/.user.yml
 logs/
+
+# MMM posterior files (large, rebuilt by python -m mmm)
+mmm/fits/
