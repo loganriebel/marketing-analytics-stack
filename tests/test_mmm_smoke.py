@@ -1,4 +1,4 @@
-"""Fast smoke fit of the MMM: 2 markets, 100 weeks, a few hundred draws (~1 minute).
+"""Fast smoke fit of the MMM and the brand-search stage: 2 markets, 100 weeks, a few hundred draws (~1 minute).
 
 Needs .venv-mmm (requirements-mmm.txt) and a built warehouse:
     .venv-mmm\\Scripts\\python -m pytest tests/test_mmm_smoke.py tests/test_mmm_no_truth_leak.py -q
@@ -43,7 +43,9 @@ def test_lead_to_close_kernel_matches_readme():
 
 
 def test_fit_runs_with_lift_test_and_reports_gates(smoke):
-    assert "pause_lift_tests" in smoke["mmm"].model.named_vars
+    # paid search is always on in the current world, so there may be no pauses to test
+    has_tests = bool(smoke["lift_tests"]["pooled"])
+    assert ("pause_lift_tests" in smoke["mmm"].model.named_vars) == has_tests
     d = smoke["diagnostics"]
     for key in ("rhat_max", "ess_bulk_min", "divergence_rate", "ppc", "holdout"):
         assert key in d
