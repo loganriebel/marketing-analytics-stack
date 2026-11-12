@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -89,9 +90,12 @@ def ask(question: str, arm: str, model: str, workdir: Path, timeout: int) -> dic
            "--tools", "", "--strict-mcp-config", "--mcp-config", str(cfg_path),
            "--allowedTools", ",".join(spec["tools"]), "--setting-sources", "",
            "--append-system-prompt", SYSTEM, "--max-turns", "20", "--no-session-persistence"]
+    # Load MCP tools up front; with tool search on, they stay deferred behind ToolSearch,
+    # which --tools "" removes, so Claude would see no tools at all.
+    env = {**os.environ, "ENABLE_TOOL_SEARCH": "false"}
     started = time.time()
     proc = subprocess.run(cmd, cwd=workdir, capture_output=True, text=True, encoding="utf-8",
-                          timeout=timeout, shell=False)
+                          timeout=timeout, shell=False, env=env)
     elapsed = round(time.time() - started, 1)
     try:
         out = json.loads(proc.stdout)
