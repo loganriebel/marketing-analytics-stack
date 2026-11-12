@@ -263,6 +263,20 @@ def run(holdout_weeks: int = C.HOLDOUT_WEEKS, name: str | None = None, regions=N
     return result
 
 
+def outputs_from_saved(name: str, out_dir: Path = C.OUTPUT_DIR, fit_dir: Path = C.FIT_DIR,
+                       estimand_draws: int = 2000) -> dict:
+    """Rebuild outputs from a saved fit whose gates passed, without sampling again."""
+    diag = json.loads((out_dir / f"diagnostics_{name}.json").read_text(encoding="utf-8"))
+    if not diag["gates"]["all_pass"]:
+        raise RuntimeError(f"fit {name} failed a health gate: {diag['gates']['checks']}")
+    idata = az.from_netcdf(fit_dir / f"{name}.nc")
+    scales = json.loads((fit_dir / f"{name}_scales.json").read_text(encoding="utf-8"))
+    panel = load_panel()
+    post = MediaPosterior.from_idata(idata, scales["channel_scale"], scales["target_scale"],
+                                     panel.channels, max_draws=estimand_draws)
+    return write_outputs(Engine(post, panel), panel, diag["meta"], out_dir)
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--holdout", type=int, default=C.HOLDOUT_WEEKS)
@@ -270,7 +284,12 @@ def main(argv=None) -> int:
     ap.add_argument("--draws", type=int, default=C.SAMPLER["draws"])
     ap.add_argument("--tune", type=int, default=C.SAMPLER["tune"])
     ap.add_argument("--chains", type=int, default=C.SAMPLER["chains"])
+    ap.add_argument("--report-only", action="store_true",
+                    help="rebuild outputs from the saved fit instead of sampling")
     args = ap.parse_args(argv)
+    if args.report_only:
+        outputs_from_saved(args.name or ("holdout" if args.holdout else "full"))
+        return 0
     res = run(holdout_weeks=args.holdout, name=args.name,
               sampler={"draws": args.draws, "tune": args.tune, "chains": args.chains})
     print(json.dumps(_jsonable({"diagnostics": res["diagnostics"], "gates": res["gates"]}), indent=2))
