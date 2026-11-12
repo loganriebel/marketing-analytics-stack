@@ -35,6 +35,7 @@ seeds:
         reports_impressions: boolean
         reports_clicks: boolean
         sort_order: integer
+        buying_model: varchar
     utm_channel_map:
       +column_types:
         utm_source: varchar

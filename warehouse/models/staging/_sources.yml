@@ -37,5 +37,7 @@ sources:
         description: Email platform weekly sends, unique opens and unique clicks by region.
       - name: promo_calendar
         description: Pricing and promotion calendar from finance.
+      - name: media_plan_changes
+        description: Marketing's log of budget changes made between annual plans.
       - name: fleet_activity_index_weekly
         description: Weekly commercial fleet activity index, a market-demand signal.

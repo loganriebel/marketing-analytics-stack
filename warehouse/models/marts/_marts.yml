@@ -29,6 +29,9 @@ models:
       - name: reports_clicks
         description: True when the source reports clicks. CTV and webinars do not.
         data_tests: [not_null]
+      - name: buying_model
+        description: How the team buys the channel, from the media plan.
+        data_tests: [not_null]
 
   - name: fct_channel_weekly
     description: >

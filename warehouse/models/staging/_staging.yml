@@ -288,6 +288,28 @@ models:
       - name: start_date
         data_tests: [not_null]
 
+  - name: stg_media_plan_changes
+    description: One row per channel per dated budget change.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [change_date, channel_id]
+    columns:
+      - name: channel_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('channels')
+                field: channel_id
+      - name: budget_change_pct
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: -100
+                max_value: 200
+
   - name: stg_fleet_activity_index
     description: One row per week.
     columns:
