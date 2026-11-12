@@ -1,6 +1,19 @@
 version: 2
 
 models:
+  - name: dim_region
+    description: Golden region dimension. One row per sales region.
+    columns:
+      - name: region_id
+        data_tests: [unique, not_null]
+      - name: region_name
+        data_tests: [unique, not_null]
+      - name: sales_area
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [NA, EMEA, APAC]
+
   - name: dim_channel
     description: Golden channel dimension. Nine paid channels, owned email, and three unpaid CRM sources.
     columns:

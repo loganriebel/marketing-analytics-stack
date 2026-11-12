@@ -1,0 +1,156 @@
+version: 2
+
+models:
+  - name: metricflow_time_spine
+    description: One row per day; MetricFlow's calendar.
+    config:
+      materialized: table
+    time_spine:
+      standard_granularity_column: date_day
+    columns:
+      - name: date_day
+        granularity: day
+        data_tests: [unique, not_null]
+
+semantic_models:
+  - name: channel_weekly
+    description: Paid media by week, region and channel. Weeks belong to the period that contains their Monday.
+    model: ref('fct_channel_weekly')
+    defaults:
+      agg_time_dimension: week_start
+    primary_entity: channel_region_week
+    entities:
+      - name: channel
+        type: foreign
+        expr: channel_id
+      - name: region
+        type: foreign
+        expr: region_id
+    dimensions:
+      - name: week_start
+        type: time
+        type_params:
+          time_granularity: week
+    measures:
+      - name: spend
+        description: Media spend in USD.
+        agg: sum
+      - name: impressions
+        agg: sum
+      - name: clicks
+        agg: sum
+      - name: platform_conversions
+        description: Conversions each ad platform claims for itself. Platforms overlap, so these do not add up to real leads.
+        agg: sum
+
+  - name: funnel
+    description: >
+      Funnel events by week, region and the lead's last-touch source channel. Each stage is counted in the
+      week it was reached, so a lead created in one week can become a deal in a later week.
+    model: ref('fct_funnel')
+    defaults:
+      agg_time_dimension: week_start
+    primary_entity: source_region_week
+    entities:
+      - name: channel
+        type: foreign
+        expr: channel_id
+      - name: region
+        type: foreign
+        expr: region_id
+    dimensions:
+      - name: week_start
+        type: time
+        type_params:
+          time_granularity: week
+    measures:
+      - name: leads
+        agg: sum
+      - name: mqls
+        agg: sum
+      - name: sqls
+        agg: sum
+      - name: opportunities
+        agg: sum
+      - name: pipeline
+        description: Opportunity amount in USD, counted when the opportunity is created.
+        agg: sum
+        expr: pipeline_amount
+      - name: closed_won_deals
+        agg: sum
+        expr: won_deals
+      - name: closed_won_revenue
+        description: First-year contract value of closed-won deals, in USD.
+        agg: sum
+        expr: won_revenue
+      - name: closed_lost_deals
+        agg: sum
+        expr: lost_deals
+
+  - name: controls_weekly
+    description: Non-media drivers by week and region.
+    model: ref('fct_controls_weekly')
+    defaults:
+      agg_time_dimension: week_start
+    primary_entity: region_week
+    entities:
+      - name: region
+        type: foreign
+        expr: region_id
+    dimensions:
+      - name: week_start
+        type: time
+        type_params:
+          time_granularity: week
+    measures:
+      - name: emails_sent
+        agg: sum
+      - name: email_opens
+        agg: sum
+      - name: email_clicks
+        agg: sum
+      - name: sdr_headcount
+        description: SDRs on the roster in the last week of the period, summed across regions.
+        agg: sum
+        non_additive_dimension:
+          name: week_start
+          window_choice: max
+      - name: ae_headcount
+        description: AEs on the roster in the last week of the period, summed across regions.
+        agg: sum
+        non_additive_dimension:
+          name: week_start
+          window_choice: max
+      - name: fleet_activity_index_avg
+        agg: average
+        expr: fleet_activity_index
+
+  - name: channels
+    description: One row per channel.
+    model: ref('dim_channel')
+    entities:
+      - name: channel
+        type: primary
+        expr: channel_id
+    dimensions:
+      - name: channel_name
+        type: categorical
+      - name: channel_group
+        type: categorical
+      - name: marketing_role
+        type: categorical
+      - name: is_paid
+        type: categorical
+
+  - name: regions
+    description: One row per sales region.
+    model: ref('dim_region')
+    entities:
+      - name: region
+        type: primary
+        expr: region_id
+    dimensions:
+      - name: region_name
+        type: categorical
+      - name: sales_area
+        type: categorical

@@ -1,0 +1,239 @@
+version: 2
+
+# The governed metric set. Every number Claude reports through the MCP server
+# comes from one of these definitions. Weeks start on Monday and belong to the
+# month, quarter and year that contain that Monday.
+
+metrics:
+  # --- media ------------------------------------------------------------------
+  - name: spend
+    label: Spend
+    description: Paid media spend in USD.
+    type: simple
+    type_params:
+      measure: spend
+  - name: impressions
+    label: Impressions
+    description: Ad impressions. Not reported for webinars or affiliates.
+    type: simple
+    type_params:
+      measure: impressions
+  - name: clicks
+    label: Clicks
+    description: Ad clicks. Not reported for CTV or webinars.
+    type: simple
+    type_params:
+      measure: clicks
+  - name: platform_conversions
+    label: Platform-reported conversions
+    description: >
+      Conversions each ad platform claims for itself (webinar registrants for webinars). Platforms count
+      conversions they touched, so totals overlap and exceed real leads.
+    type: simple
+    type_params:
+      measure: platform_conversions
+  - name: ctr
+    label: CTR
+    description: Clicks divided by impressions.
+    type: ratio
+    type_params:
+      numerator: clicks
+      denominator: impressions
+  - name: cpc
+    label: CPC
+    description: Spend divided by clicks, in USD.
+    type: ratio
+    type_params:
+      numerator: spend
+      denominator: clicks
+  - name: cpm
+    label: CPM
+    description: Spend per thousand impressions, in USD.
+    type: derived
+    type_params:
+      expr: spend / impressions * 1000
+      metrics:
+        - name: spend
+        - name: impressions
+  - name: platform_cost_per_conversion
+    label: Platform cost per conversion
+    description: Spend divided by platform-reported conversions. Uses the platforms' own claims, not CRM data.
+    type: ratio
+    type_params:
+      numerator: spend
+      denominator: platform_conversions
+
+  # --- funnel -------------------------------------------------------------------
+  - name: leads
+    label: Leads
+    description: New CRM leads, counted in the week created. Grouped by channel this is the last-touch source.
+    type: simple
+    type_params:
+      measure: leads
+  - name: mqls
+    label: MQLs
+    description: Leads that became marketing-qualified, counted in the week they qualified.
+    type: simple
+    type_params:
+      measure: mqls
+  - name: sqls
+    label: SQLs
+    description: MQLs that became sales-qualified, counted in the week they qualified.
+    type: simple
+    type_params:
+      measure: sqls
+  - name: opportunities
+    label: Opportunities
+    description: Opportunities created, counted in the week created.
+    type: simple
+    type_params:
+      measure: opportunities
+  - name: pipeline
+    label: Pipeline
+    description: Opportunity amount in USD, counted in the week the opportunity was created.
+    type: simple
+    type_params:
+      measure: pipeline
+  - name: closed_won_deals
+    label: Closed-won deals
+    description: Deals won, counted in the week they closed.
+    type: simple
+    type_params:
+      measure: closed_won_deals
+  - name: closed_won_revenue
+    label: Closed-won revenue
+    description: First-year contract value of deals won, in USD, counted in the week they closed.
+    type: simple
+    type_params:
+      measure: closed_won_revenue
+  - name: closed_lost_deals
+    label: Closed-lost deals
+    description: Deals lost, counted in the week they closed.
+    type: simple
+    type_params:
+      measure: closed_lost_deals
+  - name: mql_rate
+    label: MQL rate
+    description: MQLs divided by leads in the same period (event-week basis, not a cohort rate).
+    type: ratio
+    type_params:
+      numerator: mqls
+      denominator: leads
+  - name: sql_rate
+    label: SQL rate
+    description: SQLs divided by MQLs in the same period (event-week basis).
+    type: ratio
+    type_params:
+      numerator: sqls
+      denominator: mqls
+  - name: opportunity_rate
+    label: Opportunity rate
+    description: Opportunities divided by SQLs in the same period (event-week basis).
+    type: ratio
+    type_params:
+      numerator: opportunities
+      denominator: sqls
+  - name: win_rate
+    label: Win rate
+    description: Closed-won deals divided by all closed deals (won plus lost) in the same period.
+    type: derived
+    type_params:
+      expr: closed_won_deals / (closed_won_deals + closed_lost_deals)
+      metrics:
+        - name: closed_won_deals
+        - name: closed_lost_deals
+  - name: avg_deal_size
+    label: Average deal size
+    description: Closed-won revenue divided by closed-won deals, in USD.
+    type: ratio
+    type_params:
+      numerator: closed_won_revenue
+      denominator: closed_won_deals
+
+  # --- efficiency ----------------------------------------------------------------
+  - name: cost_per_lead
+    label: Cost per lead (CPL)
+    description: >
+      Spend divided by leads. Grouped by channel it is last-touch CPL. Without a channel grouping it is blended
+      CPL: all paid spend over all leads, including unpaid sources.
+    type: ratio
+    type_params:
+      numerator: spend
+      denominator: leads
+  - name: cost_per_acquisition
+    label: Cost per acquisition (CPA)
+    description: >
+      Spend divided by closed-won deals, also called CAC from paid media. Grouped by channel it is last-touch
+      CPA. Without a channel grouping it is blended CPA over all deals.
+    type: ratio
+    type_params:
+      numerator: spend
+      denominator: closed_won_deals
+  - name: roas
+    label: ROAS
+    description: >
+      Closed-won revenue divided by spend. Grouped by channel it uses last-touch credit. It is not incremental
+      return; that needs the MMM.
+    type: ratio
+    type_params:
+      numerator: closed_won_revenue
+      denominator: spend
+  - name: pipeline_per_dollar
+    label: Pipeline per dollar
+    description: Pipeline divided by spend. Grouped by channel it uses last-touch credit.
+    type: ratio
+    type_params:
+      numerator: pipeline
+      denominator: spend
+
+  # --- controls --------------------------------------------------------------------
+  - name: emails_sent
+    label: Emails sent
+    description: Marketing emails sent.
+    type: simple
+    type_params:
+      measure: emails_sent
+  - name: email_opens
+    label: Email opens
+    description: Unique email opens.
+    type: simple
+    type_params:
+      measure: email_opens
+  - name: email_clicks
+    label: Email clicks
+    description: Unique email clicks.
+    type: simple
+    type_params:
+      measure: email_clicks
+  - name: email_open_rate
+    label: Email open rate
+    description: Unique opens divided by emails sent.
+    type: ratio
+    type_params:
+      numerator: email_opens
+      denominator: emails_sent
+  - name: email_click_rate
+    label: Email click rate
+    description: Unique clicks divided by emails sent.
+    type: ratio
+    type_params:
+      numerator: email_clicks
+      denominator: emails_sent
+  - name: sdr_headcount
+    label: SDR headcount
+    description: SDRs on the roster in the last week of the period, summed across regions.
+    type: simple
+    type_params:
+      measure: sdr_headcount
+  - name: ae_headcount
+    label: AE headcount
+    description: AEs on the roster in the last week of the period, summed across regions.
+    type: simple
+    type_params:
+      measure: ae_headcount
+  - name: fleet_activity_index
+    label: Fleet activity index
+    description: Average weekly fleet activity index, a market-demand signal (100 = typical).
+    type: simple
+    type_params:
+      measure: fleet_activity_index_avg
