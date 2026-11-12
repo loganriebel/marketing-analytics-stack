@@ -12,13 +12,13 @@ Built by `python -m eda` from the dbt warehouse only: the golden tables plus a f
 | fct_channel_weekly is a full grid | 28,080 rows (expected 28,080) | Pass |
 | fct_funnel is a full grid | 40,560 rows (expected 40,560) | Pass |
 | fct_controls_weekly is a full grid | 3,120 rows (expected 3,120) | Pass |
-| Spend matches the platform exports | $41.8M in both; difference $0.00 | Pass |
+| Spend matches the platform exports | $41.9M in both; difference $0.00 | Pass |
 | No negative values; clicks never exceed impressions | 0 bad rows | Pass |
-| Every lead maps to a channel | 0 unmapped of 828,558; 19% recorded as direct | Pass |
+| Every lead maps to a channel | 0 unmapped of 825,356; 19% recorded as direct | Pass |
 | Lead to close (won deals) | median 14 days; 80% between 8 and 24 | Pass |
-| Censoring at the end of the window | 39% of opportunities from the last 4 weeks are still open; treat the final weeks of deals as incomplete | Note |
+| Censoring at the end of the window | 37% of opportunities from the last 4 weeks are still open; treat the final weeks of deals as incomplete | Note |
 | Promo and price calendar loaded | 4 entries | Pass |
-| Channels are not collinear | largest correlation 0.54 (Display Retargeting and Affiliates and Partners); largest VIF 1.8 | Pass |
+| Channels are not collinear | largest correlation 0.51 (Meta and LinkedIn); largest VIF 1.8 | Pass |
 
 ## 2. Outcome and spend over time
 
@@ -26,27 +26,39 @@ Built by `python -m eda` from the dbt warehouse only: the golden tables plus a f
 
 | Year | Paid spend | Leads | Closed-won deals | New contract value | Spend per deal |
 |---|---|---|---|---|---|
-| 2023 | $14.6M | 246,845 | 11,287 | $30.4M | $1,292 |
-| 2024 | $13.3M | 232,223 | 11,336 | $32.0M | $1,177 |
-| 2025 | $13.9M | 233,889 | 10,445 | $30.9M | $1,331 |
+| 2023 | $14.1M | 239,628 | 11,108 | $30.0M | $1,272 |
+| 2024 | $13.8M | 238,450 | 11,149 | $31.2M | $1,241 |
+| 2025 | $13.9M | 227,575 | 10,013 | $29.7M | $1,393 |
 
 The last few weeks of 2025 are undercounted for deals, because those leads have not had time to close.
 
 ## 3. Seasonality
 
-Expected pattern for fleet software: a deep holiday dip in late December and early January, a smaller dip at Thanksgiving, a softer July and August, and strength in Q1 and the fall when operators plan for the next season.
+Expected pattern for Midwest service fleets: busy when the season turns (AC switching on in late spring, heat switching on in late fall), a lull from mid-July into September, a soft winter, a deep holiday dip in late December and early January, and a smaller dip at Thanksgiving.
 
 ![Seasonality](img/seasonality.png)
 
 | Period | Expected | Leads index (100 = average week) | Holds |
 |---|---|---|---|
-| Holiday weeks (51, 52, 1) | well below 100 | 77 | Yes |
-| Thanksgiving week (47) | below 100 | 90 | Yes |
-| Summer (weeks 27 to 34) | below 100 | 101 | No |
-| Q1 after the holidays (weeks 3 to 13) | above 100 | 109 | Yes |
-| Fall (weeks 36 to 45) | above 100 | 95 | No |
+| Holiday weeks (51, 52, 1) | well below 100 | 74 | Yes |
+| Thanksgiving week (47) | below 100 | 96 | Yes |
+| Winter after the holidays (weeks 3 to 9) | below 100 | 93 | Yes |
+| Spring switchover, AC on (weeks 19 to 25) | above 100 | 108 | Yes |
+| Summer lull into early fall (weeks 29 to 37) | below 100 | 97 | Yes |
+| Fall switchover, heat on (weeks 40 to 45) | above 100 | 114 | Yes |
 
-3 of 5 expectations hold. Not seen: summer, fall. The MMM should learn seasonality from the data rather than impose the planning calendar. During the year-end promo (weeks 46 to 50), deals run +11% relative to leads, which is what a discount on annual plans should do.
+6 of 6 expectations hold. The data matches the planning calendar. During the year-end promo (weeks 46 to 50), deals run +6% relative to leads, which is what a discount on annual plans should do.
+
+The seasons do not arrive on the same week everywhere. Below is when the fall busy season lands in each sales area, north to south, measured on leads from unpaid sources (organic search, direct, referral), which carry less of the media calendar than paid sources. The middle week weights each week by how far its 3-week average sits above 100.
+
+| Sales area | Average latitude | Middle of the fall busy season (ISO week) | Fall peak week |
+|---|---|---|---|
+| Upper Midwest | 44.6 | 40.5 | 40 |
+| Great Lakes | 42.2 | 41.2 | 42 |
+| Ohio Valley | 39.7 | 40.6 | 41 |
+| Plains | 39.7 | 42.6 | 44 |
+
+The fall season lands about 2.1 weeks earlier in the Upper Midwest than in the Plains.
 
 ## 4. How the media was flighted
 
@@ -56,15 +68,15 @@ Expected pattern for fleet software: a deep holiday dip in late December and ear
 
 | Channel | Weeks on (of 156) | Regions used | Typical run in a region (weeks) | Typical pause (weeks) |
 |---|---|---|---|---|
-| Paid Search Brand | 156 | 20 | 154 | 6 |
-| Paid Search Non-Brand | 156 | 20 | 122 | 6 |
-| Meta | 142 | 20 | 21 | 4 |
-| LinkedIn | 148 | 20 | 43 | 4 |
-| YouTube | 90 | 20 | 5 | 5 |
-| Connected TV | 155 | 8 | 5 | 7 |
-| Display Retargeting | 156 | 20 | 67 | 8 |
-| Affiliates and Partners | 156 | 20 | 156 | 10 |
-| Webinars | 112 | 19 | 1 | 10 |
+| Paid Search Brand | 156 | 20 | 82 | 6 |
+| Paid Search Non-Brand | 156 | 20 | 92 | 7 |
+| Meta | 156 | 20 | 156 | none |
+| LinkedIn | 156 | 20 | 156 | none |
+| YouTube | 156 | 20 | 156 | none |
+| Connected TV | 121 | 8 | 8 | 15 |
+| Display Retargeting | 156 | 20 | 156 | none |
+| Affiliates and Partners | 156 | 20 | 156 | none |
+| Webinars | 119 | 20 | 1 | 9 |
 
 Media plan changes logged between annual plans:
 
@@ -79,6 +91,7 @@ Media plan changes logged between annual plans:
 | 2024-04-01 | Connected TV | -34% | Attribution review: video and CTV show few last-touch leads |
 | 2024-04-01 | Paid Search Non-Brand | +12% | Attribution review: video and CTV show few last-touch leads |
 | 2024-04-01 | YouTube | -31% | Attribution review: video and CTV show few last-touch leads |
+| 2024-08-05 | Display Retargeting | -15% | Cost cut during the hiring freeze |
 | 2024-08-05 | LinkedIn | -19% | Cost cut during the hiring freeze |
 | 2024-08-05 | Meta | -17% | Cost cut during the hiring freeze |
 | 2024-11-04 | Affiliates and Partners | -24% | Two reseller contracts end |
@@ -93,15 +106,15 @@ Media plan changes logged between annual plans:
 
 | Year | Performance | Brand | Events |
 |---|---|---|---|
-| 2023 | 67% | 28% | 5% |
-| 2024 | 76% | 20% | 5% |
-| 2025 | 80% | 16% | 4% |
+| 2023 | 67% | 29% | 5% |
+| 2024 | 74% | 21% | 5% |
+| 2025 | 77% | 18% | 6% |
 
 ## 6. Reporting sources disagree
 
 ![Claims vs CRM](img/claims_vs_crm.png)
 
-Platforms claim 755,152 conversions in total; the CRM credits 401,887 leads to paid channels. Connected TV gets 0 last-touch leads because nobody clicks a TV ad. Neither source measures what a channel adds; that is the MMM's job.
+Platforms claim 784,225 conversions in total; the CRM credits 405,176 leads to paid channels. Connected TV gets 0 last-touch leads because nobody clicks a TV ad. Neither source measures what a channel adds; that is the MMM's job.
 
 ## 7. Controls
 
@@ -118,102 +131,102 @@ What the data shows about how each channel was bought and reported. These are ob
 
 ### Paid Search Brand
 
-*Performance channel.* Bids on searches for Fernhook. Spend follows how many people search the brand, with occasional regional pauses.
+*Performance channel.* Bids on searches for Fernhook. Spend follows how many people search the brand. Twice a year a few markets pause it for a few weeks as a planned brand test.
 
-- **When it ran:** On every week of the window; used in 20 of 20 regions, with about 20 active in a typical on-week. Always on within each region, apart from 6 regional pauses of about 6 weeks.
-- **Spend:** 2023: $2.4M, 2024: $2.4M, 2025: $2.5M. Highest in Q1, lowest in Q4; the biggest week was 1.3 times a typical on-week. The top 5 regions take 43% of its spend and hold 41% of target accounts.
+- **When it ran:** On every week of the window; used in 20 of 20 regions, with about 19 active in a typical on-week. Always on within each region, apart from 18 regional pauses of about 6 weeks.
+- **Spend:** 2023: $2.5M, 2024: $2.4M, 2025: $2.4M. Highest in Q2, lowest in Q1; the biggest week was 1.3 times a typical on-week. The top 5 regions take 46% of its spend and hold 45% of target accounts.
 - **Plan changes:** none between annual plans.
-- **Reporting:** the platform claims 121,121 conversions; the CRM credits 133,689 last-touch leads (0.9 times). Last-touch cost per lead: 2023: $50, 2024: $56, 2025: $59.
-- **What to watch in the MMM:** its weekly spend tracks total leads closely (correlation 0.78). Spend that follows demand can look like it causes demand. The regional pauses are the cleanest evidence of what it adds.
+- **Reporting:** the platform claims 119,511 conversions; the CRM credits 133,516 last-touch leads (0.9 times). Last-touch cost per lead: 2023: $52, 2024: $55, 2025: $60.
+- **What to watch in the MMM:** its weekly spend tracks total leads closely (correlation 0.79). Spend that follows demand can look like it causes demand. The regional pauses are the cleanest evidence of what it adds.
 
 ### Paid Search Non-Brand
 
-*Performance channel.* Always on. Budgets lean into busy seasons, and the team runs regional budget tests and pauses.
+*Performance channel.* Always on. Budgets lean into busy seasons. Twice a year the team runs planned regional tests: a few markets pause and a few get extra budget.
 
-- **When it ran:** On every week of the window; used in 20 of 20 regions, with about 20 active in a typical on-week. Always on within each region, apart from 9 regional pauses of about 6 weeks.
-- **Spend:** 2023: $3.6M, 2024: $4.1M, 2025: $5.1M. Highest in Q2, lowest in Q4; the biggest week was 1.7 times a typical on-week. The top 5 regions take 46% of its spend and hold 38% of target accounts.
+- **When it ran:** On every week of the window; used in 20 of 20 regions, with about 19 active in a typical on-week. Always on within each region, apart from 12 regional pauses of about 7 weeks.
+- **Spend:** 2023: $3.7M, 2024: $4.2M, 2025: $5.2M. Highest in Q2, lowest in Q4; the biggest week was 1.6 times a typical on-week. The top 5 regions take 46% of its spend and hold 43% of target accounts.
 - **Plan changes:** Apr 2023 +7% (Q1 review: CTV test expands, YouTube trimmed); Apr 2024 +12% (Attribution review: video and CTV show few last-touch leads); Feb 2025 +9% (New fiscal year: more for what last touch rewards).
-- **Reporting:** the platform claims 158,662 conversions; the CRM credits 107,813 last-touch leads (1.5 times). Last-touch cost per lead: 2023: $108, 2024: $112, 2025: $133.
-- **What to watch in the MMM:** always on and seasonal (correlation with total leads 0.28), so most of its signal comes from the regional budget tests and pauses, not from week-to-week swings.
+- **Reporting:** the platform claims 165,275 conversions; the CRM credits 113,269 last-touch leads (1.5 times). Last-touch cost per lead: 2023: $107, 2024: $109, 2025: $129.
+- **What to watch in the MMM:** always on and seasonal (correlation with total leads 0.20), so most of its signal comes from the regional budget tests and pauses, not from week-to-week swings.
 
 ### Meta
 
-*Brand channel.* Always-on prospecting with multi-week pushes and short pauses between creative rounds.
+*Brand channel.* Always-on prospecting that pushes before and into the spring and fall busy seasons and eases off in slow weeks. Each market's timing differs.
 
-- **When it ran:** On 142 of 156 weeks nationally; used in 20 of 20 regions, with about 19 active in a typical on-week. Within a region it typically runs 21 weeks on, then pauses for 4 weeks (95 regional pauses in all).
-- **Spend:** 2023: $1.9M, 2024: $1.0M, 2025: $1.1M. Highest in Q1, lowest in Q4; the biggest week was 2.8 times a typical on-week. The top 5 regions take 47% of its spend and hold 32% of target accounts.
+- **When it ran:** On every week of the window; used in 20 of 20 regions, with about 20 active in a typical on-week. Always on in every region it uses.
+- **Spend:** 2023: $1.5M, 2024: $1.4M, 2025: $1.0M. Highest in Q3, lowest in Q2; the biggest week was 2.3 times a typical on-week. The top 5 regions take 46% of its spend and hold 36% of target accounts.
 - **Plan changes:** Oct 2023 -12% (Q4 plan: more retargeting for year-end); Aug 2024 -17% (Cost cut during the hiring freeze); Jun 2025 +23% (Meta retest after a new creative agency).
-- **Reporting:** the platform claims 199,379 conversions; the CRM credits 57,360 last-touch leads (3.5 times). Last-touch cost per lead: 2023: $78, 2024: $64, 2025: $66.
-- **What to watch in the MMM:** short pauses and multi-week pushes give clean on/off contrasts; the June 2025 retest adds a late step up.
+- **Reporting:** the platform claims 197,956 conversions; the CRM credits 55,058 last-touch leads (3.6 times). Last-touch cost per lead: 2023: $72, 2024: $72, 2025: $67.
+- **What to watch in the MMM:** pushes land on the busy seasons, so spend rises when demand does. Each market's push comes on its own week and at its own size, and that is the contrast to learn from; the June 2025 retest adds a late step up.
 
 ### LinkedIn
 
-*Performance channel.* Lead-gen forms run always on, with pushes and short regional pauses.
+*Performance channel.* Lead-gen forms, always on. Market budgets are re-split every quarter.
 
-- **When it ran:** On 148 of 156 weeks nationally; used in 20 of 20 regions, with about 19 active in a typical on-week. Always on within each region, apart from 49 regional pauses of about 4 weeks.
-- **Spend:** 2023: $1.8M, 2024: $1.4M, 2025: $1.0M. Highest in Q2, lowest in Q3; the biggest week was 2.9 times a typical on-week. The top 5 regions take 47% of its spend and hold 40% of target accounts.
+- **When it ran:** On every week of the window; used in 20 of 20 regions, with about 20 active in a typical on-week. Always on in every region it uses.
+- **Spend:** 2023: $1.4M, 2024: $1.4M, 2025: $1.1M. Highest in Q3, lowest in Q1; the biggest week was 1.8 times a typical on-week. The top 5 regions take 48% of its spend and hold 37% of target accounts.
 - **Plan changes:** Aug 2024 -19% (Cost cut during the hiring freeze).
-- **Reporting:** the platform claims 44,962 conversions; the CRM credits 22,005 last-touch leads (2.0 times). Last-touch cost per lead: 2023: $205, 2024: $191, 2025: $174.
-- **What to watch in the MMM:** 49 short regional pauses give clean on/off contrasts, and spend fell each year, so the later years carry less signal.
+- **Reporting:** the platform claims 42,314 conversions; the CRM credits 20,476 last-touch leads (2.1 times). Last-touch cost per lead: 2023: $194, 2024: $191, 2025: $177.
+- **What to watch in the MMM:** always on with no pauses, so its signal comes from quarterly market re-splits and plan changes.
 
 ### YouTube
 
-*Brand channel.* Bought in national flights of four to eight weeks. Each flight targets about three in four regions.
+*Brand channel.* National flights that run several weeks ahead of each busy season, with a low level in between. Each flight targets about three in four markets.
 
-- **When it ran:** On 90 of 156 weeks nationally; used in 20 of 20 regions, with about 14 active in a typical on-week. Within a region it typically runs 5 weeks on, then pauses for 5 weeks (216 regional pauses in all).
-- **Spend:** 2023: $0.6M, 2024: $0.6M, 2025: $0.3M. Highest in Q1, lowest in Q4; the biggest week was 2.3 times a typical on-week. The top 5 regions take 42% of its spend and hold 39% of target accounts.
+- **When it ran:** On every week of the window; used in 20 of 20 regions, with about 20 active in a typical on-week. Always on in every region it uses.
+- **Spend:** 2023: $1.2M, 2024: $0.8M, 2025: $0.4M. Highest in Q3, lowest in Q1; the biggest week was 15.5 times a typical on-week. The top 5 regions take 48% of its spend and hold 41% of target accounts.
 - **Plan changes:** Apr 2023 -22% (Q1 review: CTV test expands, YouTube trimmed); Apr 2024 -31% (Attribution review: video and CTV show few last-touch leads); Jun 2025 -14% (Meta retest after a new creative agency).
-- **Reporting:** the platform claims 32,812 conversions; the CRM credits 2,097 last-touch leads (15.6 times). Last-touch cost per lead: 2023: $706, 2024: $752, 2025: $735.
-- **What to watch in the MMM:** flights are national, so on/off weeks line up with seasonality and other channels; long carryover means effects can show up in off-weeks.
+- **Reporting:** the platform claims 65,261 conversions; the CRM credits 3,566 last-touch leads (18.3 times). Last-touch cost per lead: 2023: $690, 2024: $663, 2025: $709.
+- **What to watch in the MMM:** flights are national and run ahead of each busy season, so they line up with the run-up in demand; long carryover means effects can land in the busy weeks after a flight ends.
 
 ### Connected TV
 
-*Brand channel.* A market test in 8 US regions. Each market runs its own on/off flights, so markets rotate.
+*Brand channel.* A market test in 8 markets. Each runs its own flight ahead of each busy season and goes dark between flights.
 
-- **When it ran:** On 155 of 156 weeks nationally; used in 8 of 20 regions, with about 3 active in a typical on-week. Within a region it typically runs 5 weeks on, then pauses for 7 weeks (101 regional pauses in all).
-- **Spend:** 2023: $1.6M, 2024: $1.0M, 2025: $0.8M. Highest in Q3, lowest in Q1; the biggest week was 3.1 times a typical on-week. The top 5 regions take 71% of its spend and hold 37% of target accounts.
+- **When it ran:** On 121 of 156 weeks nationally; used in 8 of 20 regions, with about 3 active in a typical on-week. Within a region it typically runs 8 weeks on, then pauses for 15 weeks (40 regional pauses in all).
+- **Spend:** 2023: $1.4M, 2024: $0.7M, 2025: $1.0M. Highest in Q2, lowest in Q1; the biggest week was 6.0 times a typical on-week. The top 5 regions take 74% of its spend and hold 34% of target accounts.
 - **Plan changes:** Apr 2023 +15% (Q1 review: CTV test expands, YouTube trimmed); Apr 2024 -34% (Attribution review: video and CTV show few last-touch leads).
-- **Reporting:** the platform claims 40,772 conversions; the CRM credits 0 last-touch leads (with no CRM credit to compare against). Last-touch cost per lead: not defined (no CRM credit).
-- **What to watch in the MMM:** runs in only 8 regions. The other 12 regions are a natural comparison group, and rotating market flights add contrast.
+- **Reporting:** the platform claims 42,414 conversions; the CRM credits 0 last-touch leads (with no CRM credit to compare against). Last-touch cost per lead: not defined (no CRM credit).
+- **What to watch in the MMM:** runs in only 8 regions. The other 12 regions are a natural comparison group, and each test market times its own flights.
 
 ### Display Retargeting
 
-*Performance channel.* Always-on retargeting of past site visitors, with regional pauses.
+*Performance channel.* Always-on retargeting of past site visitors. Market budgets are re-split every quarter.
 
-- **When it ran:** On every week of the window; used in 20 of 20 regions, with about 19 active in a typical on-week. Always on within each region, apart from 17 regional pauses of about 8 weeks.
-- **Spend:** 2023: $1.2M, 2024: $1.5M, 2025: $1.8M. Highest in Q3, lowest in Q1; the biggest week was 3.1 times a typical on-week. The top 5 regions take 47% of its spend and hold 35% of target accounts.
-- **Plan changes:** Oct 2023 +18% (Q4 plan: more retargeting for year-end); Feb 2025 +13% (New fiscal year: more for what last touch rewards).
-- **Reporting:** the platform claims 48,931 conversions; the CRM credits 22,767 last-touch leads (2.1 times). Last-touch cost per lead: 2023: $161, 2024: $202, 2025: $236.
+- **When it ran:** On every week of the window; used in 20 of 20 regions, with about 20 active in a typical on-week. Always on in every region it uses.
+- **Spend:** 2023: $1.2M, 2024: $1.5M, 2025: $1.4M. Highest in Q3, lowest in Q1; the biggest week was 1.8 times a typical on-week. The top 5 regions take 51% of its spend and hold 45% of target accounts.
+- **Plan changes:** Oct 2023 +18% (Q4 plan: more retargeting for year-end); Aug 2024 -15% (Cost cut during the hiring freeze); Feb 2025 +13% (New fiscal year: more for what last touch rewards).
+- **Reporting:** the platform claims 45,617 conversions; the CRM credits 21,695 last-touch leads (2.1 times). Last-touch cost per lead: 2023: $163, 2024: $201, 2025: $206.
 - **What to watch in the MMM:** always on and retargets people who already visited, so it overlaps with demand from every other channel.
 
 ### Affiliates and Partners
 
-*Performance channel.* Placement and sponsor fees set at quarterly contract renewals. Commissions are booked as cost of sale.
+*Performance channel.* Placement and sponsor fees with local resellers and fleet consultants, set when each market's contracts renew every quarter. Commissions are booked as cost of sale.
 
-- **When it ran:** On every week of the window; used in 20 of 20 regions, with about 20 active in a typical on-week. Always on within each region, apart from 3 regional pauses of about 10 weeks.
-- **Spend:** 2023: $0.7M, 2024: $0.7M, 2025: $0.8M. Highest in Q1, lowest in Q4; the biggest week was 1.7 times a typical on-week. The top 5 regions take 48% of its spend and hold 27% of target accounts.
+- **When it ran:** On every week of the window; used in 20 of 20 regions, with about 20 active in a typical on-week. Always on in every region it uses.
+- **Spend:** 2023: $0.5M, 2024: $0.7M, 2025: $0.6M. Highest in Q3, lowest in Q1; the biggest week was 1.5 times a typical on-week. The top 5 regions take 54% of its spend and hold 44% of target accounts.
 - **Plan changes:** Apr 2024 +21% (Attribution review: video and CTV show few last-touch leads); Nov 2024 -24% (Two reseller contracts end).
-- **Reporting:** the platform claims 65,985 conversions; the CRM credits 28,826 last-touch leads (2.3 times). Last-touch cost per lead: 2023: $78, 2024: $76, 2025: $77.
-- **What to watch in the MMM:** fees change only at contract renewals, so there are few distinct spend levels to learn from, and the top 5 regions take 48% of spend against 27% of accounts.
+- **Reporting:** the platform claims 56,248 conversions; the CRM credits 25,028 last-touch leads (2.2 times). Last-touch cost per lead: 2023: $70, 2024: $80, 2025: $69.
+- **What to watch in the MMM:** fees change only when each market's contracts renew, so there are few distinct spend levels to learn from, and the top 5 regions take 54% of spend against 44% of accounts.
 
 ### Webinars
 
 *Events channel.* Regional live events. Cost lands in the week of each event.
 
-- **When it ran:** On 112 of 156 weeks nationally; used in 19 of 20 regions, with about 2 active in a typical on-week. Spend comes in single weeks; a region typically goes 10 weeks between them.
-- **Spend:** 2023: $0.7M, 2024: $0.6M, 2025: $0.5M. Highest in Q3, lowest in Q1; the biggest week was 3.6 times a typical on-week. The top 5 regions take 42% of its spend and hold 37% of target accounts.
+- **When it ran:** On 119 of 156 weeks nationally; used in 20 of 20 regions, with about 2 active in a typical on-week. Spend comes in single weeks; a region typically goes 9 weeks between them.
+- **Spend:** 2023: $0.7M, 2024: $0.7M, 2025: $0.8M. Highest in Q1, lowest in Q4; the biggest week was 4.2 times a typical on-week. The top 5 regions take 46% of its spend and hold 45% of target accounts.
 - **Plan changes:** none between annual plans.
-- **Reporting:** the platform claims 42,528 conversions; the CRM credits 27,330 last-touch leads (1.6 times). Last-touch cost per lead: 2023: $66, 2024: $67, 2025: $72.
+- **Reporting:** the platform claims 49,630 conversions; the CRM credits 32,568 last-touch leads (1.5 times). Last-touch cost per lead: 2023: $65, 2024: $68, 2025: $66.
 - **What to watch in the MMM:** spend lands in one region and one week at a time, a strong natural experiment.
 
 ## 9. Strongest spend correlations
 
 | Channel A | Channel B | Correlation |
 |---|---|---|
-| Display Retargeting | Affiliates and Partners | 0.54 |
-| Paid Search Non-Brand | Connected TV | -0.39 |
-| Paid Search Brand | Paid Search Non-Brand | 0.39 |
-| Paid Search Brand | Meta | 0.35 |
-| Paid Search Non-Brand | Display Retargeting | 0.33 |
+| Meta | LinkedIn | 0.51 |
+| Paid Search Brand | Connected TV | 0.42 |
+| Paid Search Non-Brand | Meta | -0.40 |
+| YouTube | Connected TV | 0.34 |
+| YouTube | Affiliates and Partners | 0.34 |
 
-Variance inflation (VIF) of national weekly spend: Paid Search Non-Brand 1.8, Display Retargeting 1.8, Paid Search Brand 1.7, Affiliates and Partners 1.7, Connected TV 1.4, Meta 1.3, LinkedIn 1.3, YouTube 1.2, Webinars 1.0.
+Variance inflation (VIF) of national weekly spend: Paid Search Non-Brand 1.8, Meta 1.7, LinkedIn 1.6, Paid Search Brand 1.6, YouTube 1.6, Connected TV 1.5, Affiliates and Partners 1.4, Display Retargeting 1.2, Webinars 1.0.
