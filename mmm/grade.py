@@ -141,6 +141,24 @@ def grade_mediation(channels_out: dict, truth: dict) -> dict | None:
     return {"channels": rows, "hdi_coverage": {"covered": int(sum(cov)), "of": len(cov)}}
 
 
+def halo_shares(outputs: Path, channels_out: dict, truth: dict) -> dict:
+    """Upper funnel's share of brand searches (stage 1) and of brand-search deals."""
+    out, ts = {}, truth["summary"]
+    diag = next(iter(sorted(outputs.glob("diagnostics_*.json"))), None)
+    if diag and "upper_funnel_share_of_brand_searches" in ts:
+        bd = json.loads(diag.read_text(encoding="utf-8")).get("brand_demand", {})
+        est = bd.get("share_of_brand_spend_from_upper_funnel")
+        if est:
+            out["upper_funnel_share_of_brand_searches"] = _vs(est, ts["upper_funnel_share_of_brand_searches"])
+    brand = channels_out["channels"].get(C.BRAND, {})
+    if "deals_from_upper_funnel_searches" in brand and "upper_funnel_share_of_brand_search_deals" in ts:
+        share = brand["deals_from_upper_funnel_searches"]["median"] / brand["incremental_deals"]["median"]
+        out["upper_funnel_share_of_brand_search_deals"] = {
+            "true": ts["upper_funnel_share_of_brand_search_deals"], "median": share,
+            "note": "ratio of posterior medians; no HDI"}
+    return out
+
+
 def _total_curve(t: dict) -> dict | None:
     for k in TOTAL_CURVE_KEYS:
         if k in t:
@@ -229,6 +247,10 @@ def to_markdown(g: dict) -> str:
         lines += ["", f"Upper funnel through brand search: 90% HDI coverage {med['hdi_coverage']['covered']} "
                   f"of {med['hdi_coverage']['of']}.", "",
                   "| Channel | Metric | True | MMM (90% HDI) | Error |", "|---|---|---:|---:|---:|"]
+        for k, v in med.get("shares", {}).items():
+            rng = (f" ({v['hdi_90'][0]:.1%} to {v['hdi_90'][1]:.1%})" if "hdi_90" in v else "")
+            lines.append(f"| all | {k} | {v['true']:.1%} | {v['median']:.1%}{rng} | "
+                         f"{_fmt(_pct_err(v['median'], v['true']))}% |")
         for ch, r in med["channels"].items():
             for k, v in r.items():
                 lines.append(f"| {ch} | {k} | {_fmt(v['true'])} | {_fmt(v['median'])} ({_fmt(v['hdi_90'][0])} "
@@ -257,6 +279,9 @@ def grade(outputs: Path = C.OUTPUT_DIR, truth_path: Path = TRUTH_PATH) -> dict:
     med = grade_mediation(ch, truth)
     if med:
         g["mediation"] = med
+        shares = halo_shares(outputs, ch, truth)
+        if shares:
+            med["shares"] = shares
     opt_path = outputs / "optimizer.json"
     if opt_path.exists():
         g["optimizer"] = true_plan_gain(json.loads(opt_path.read_text(encoding="utf-8")), truth)
