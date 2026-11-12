@@ -1,0 +1,324 @@
+# 50 ad-hoc questions a marketing team asks. Ground truth for each answerable
+# question is plain SQL on the golden tables, run fresh at scoring time.
+# answer_type: number | percent (give 12.5 for 12.5%) | text | refusal.
+# Periods follow the house rule: a week belongs to the year, quarter and month
+# that contain its Monday (week_start).
+
+questions:
+  # --- media ----------------------------------------------------------------------
+  - id: q01
+    category: media
+    question: What was total paid media spend in 2024?
+    answer_type: number
+    sql: select sum(spend) from fct_channel_weekly where year(week_start) = 2024
+  - id: q02
+    category: media
+    question: How much did we spend on non-brand paid search in Q3 2025?
+    answer_type: number
+    sql: >
+      select sum(spend) from fct_channel_weekly
+      where channel_id = 'paid_search_nonbrand' and week_start between '2025-07-01' and '2025-09-30'
+  - id: q03
+    category: media
+    question: What percent of 2025 paid media spend went to brand-role channels?
+    answer_type: percent
+    sql: >
+      select 100.0 * sum(case when c.marketing_role = 'brand' then f.spend else 0 end) / sum(f.spend)
+      from fct_channel_weekly f join dim_channel c using (channel_id) where year(f.week_start) = 2025
+  - id: q04
+    category: media
+    question: Which paid channel had the highest spend in 2023?
+    answer_type: text
+    sql: >
+      select c.channel_name from fct_channel_weekly f join dim_channel c using (channel_id)
+      where year(f.week_start) = 2023 group by 1 order by sum(f.spend) desc limit 1
+  - id: q05
+    category: media
+    question: How much did we spend on Connected TV in the US Texas region in 2024?
+    answer_type: number
+    sql: >
+      select sum(spend) from fct_channel_weekly
+      where channel_id = 'ctv' and region_name = 'US Texas' and year(week_start) = 2024
+  - id: q06
+    category: media
+    question: How many Meta impressions did we get in the first half of 2025?
+    answer_type: number
+    sql: >
+      select sum(impressions) from fct_channel_weekly
+      where channel_id = 'meta' and week_start between '2025-01-01' and '2025-06-30'
+  - id: q07
+    category: media
+    question: What was LinkedIn's click-through rate in 2024, as a percent?
+    answer_type: percent
+    sql: >
+      select 100.0 * sum(clicks) / sum(impressions) from fct_channel_weekly
+      where channel_id = 'linkedin' and year(week_start) = 2024
+  - id: q08
+    category: media
+    question: What was the cost per click for non-brand paid search in Q2 2024?
+    answer_type: number
+    sql: >
+      select sum(spend) / sum(clicks) from fct_channel_weekly
+      where channel_id = 'paid_search_nonbrand' and week_start between '2024-04-01' and '2024-06-30'
+  - id: q09
+    category: media
+    question: What was YouTube's CPM in 2023?
+    answer_type: number
+    sql: >
+      select 1000.0 * sum(spend) / sum(impressions) from fct_channel_weekly
+      where channel_id = 'youtube' and year(week_start) = 2023
+  - id: q10
+    category: media
+    question: How many conversions did Meta report on its own platform in 2025?
+    answer_type: number
+    sql: >
+      select sum(platform_conversions) from fct_channel_weekly
+      where channel_id = 'meta' and year(week_start) = 2025
+  - id: q11
+    category: media
+    question: What was display retargeting's cost per platform-reported conversion in 2024?
+    answer_type: number
+    sql: >
+      select sum(spend) / sum(platform_conversions) from fct_channel_weekly
+      where channel_id = 'display' and year(week_start) = 2024
+
+  # --- funnel ------------------------------------------------------------------------
+  - id: q12
+    category: funnel
+    question: How many leads did we get in Q1 2025?
+    answer_type: number
+    sql: select sum(leads) from fct_funnel where week_start between '2025-01-01' and '2025-03-31'
+  - id: q13
+    category: funnel
+    question: How many leads came from organic search in 2024?
+    answer_type: number
+    sql: select sum(leads) from fct_funnel where channel_id = 'organic_search' and year(week_start) = 2024
+  - id: q14
+    category: funnel
+    question: How many MQLs did we get in March 2025?
+    answer_type: number
+    sql: select sum(mqls) from fct_funnel where week_start between '2025-03-01' and '2025-03-31'
+  - id: q15
+    category: funnel
+    question: How many opportunities were created in Q2 2024?
+    answer_type: number
+    sql: select sum(opportunities) from fct_funnel where week_start between '2024-04-01' and '2024-06-30'
+  - id: q16
+    category: funnel
+    question: How much pipeline did we create in 2023?
+    answer_type: number
+    sql: select sum(pipeline_amount) from fct_funnel where year(week_start) = 2023
+  - id: q17
+    category: funnel
+    question: How many closed-won deals did we have in 2025?
+    answer_type: number
+    sql: select sum(won_deals) from fct_funnel where year(week_start) = 2025
+  - id: q18
+    category: funnel
+    question: What was closed-won revenue in Q4 2024?
+    answer_type: number
+    sql: select sum(won_revenue) from fct_funnel where week_start between '2024-10-01' and '2024-12-31'
+  - id: q19
+    category: funnel
+    question: What was our win rate in 2024, as a percent of closed deals?
+    answer_type: percent
+    sql: select 100.0 * sum(won_deals) / (sum(won_deals) + sum(lost_deals)) from fct_funnel where year(week_start) = 2024
+  - id: q20
+    category: funnel
+    question: What was the average closed-won deal size in 2025?
+    answer_type: number
+    sql: select sum(won_revenue) / sum(won_deals) from fct_funnel where year(week_start) = 2025
+  - id: q21
+    category: funnel
+    question: What was the MQL rate for leads sourced from Meta in 2024, as a percent?
+    answer_type: percent
+    sql: >
+      select 100.0 * sum(mqls) / sum(leads) from fct_funnel
+      where channel_id = 'meta' and year(week_start) = 2024
+  - id: q22
+    category: funnel
+    question: How many closed-won deals did the EMEA sales area have in 2025?
+    answer_type: number
+    sql: select sum(won_deals) from fct_funnel where sales_area = 'EMEA' and year(week_start) = 2025
+  - id: q23
+    category: funnel
+    question: Which region had the most closed-won deals in 2024?
+    answer_type: text
+    sql: >
+      select region_name from fct_funnel where year(week_start) = 2024
+      group by 1 order by sum(won_deals) desc limit 1
+
+  # --- efficiency ----------------------------------------------------------------------
+  - id: q24
+    category: efficiency
+    question: What was our blended cost per closed-won deal (CPA) in 2025?
+    answer_type: number
+    sql: >
+      select (select sum(spend) from fct_channel_weekly where year(week_start) = 2025)
+           / (select sum(won_deals) from fct_funnel where year(week_start) = 2025)
+  - id: q25
+    category: efficiency
+    question: What was our blended CPA in 2023?
+    answer_type: number
+    sql: >
+      select (select sum(spend) from fct_channel_weekly where year(week_start) = 2023)
+           / (select sum(won_deals) from fct_funnel where year(week_start) = 2023)
+  - id: q26
+    category: efficiency
+    question: What was the last-touch cost per lead for brand paid search in 2025?
+    answer_type: number
+    sql: >
+      select (select sum(spend) from fct_channel_weekly where channel_id = 'paid_search_brand' and year(week_start) = 2025)
+           / (select sum(leads) from fct_funnel where channel_id = 'paid_search_brand' and year(week_start) = 2025)
+  - id: q27
+    category: efficiency
+    question: By what percent did non-brand paid search's last-touch cost per lead change from 2023 to 2025?
+    answer_type: percent
+    sql: >
+      with s as (select year(week_start) y, sum(spend) v from fct_channel_weekly where channel_id = 'paid_search_nonbrand' group by 1),
+           l as (select year(week_start) y, sum(leads) v from fct_funnel where channel_id = 'paid_search_nonbrand' group by 1),
+           c as (select s.y, s.v / l.v cpl from s join l using (y))
+      select 100.0 * ((select cpl from c where y = 2025) / (select cpl from c where y = 2023) - 1)
+  - id: q28
+    category: efficiency
+    question: What was YouTube's last-touch CPA in 2024?
+    answer_type: number
+    sql: >
+      select (select sum(spend) from fct_channel_weekly where channel_id = 'youtube' and year(week_start) = 2024)
+           / (select sum(won_deals) from fct_funnel where channel_id = 'youtube' and year(week_start) = 2024)
+  - id: q29
+    category: efficiency
+    question: What was the last-touch ROAS for affiliates in 2025?
+    answer_type: number
+    sql: >
+      select (select sum(won_revenue) from fct_funnel where channel_id = 'affiliates' and year(week_start) = 2025)
+           / (select sum(spend) from fct_channel_weekly where channel_id = 'affiliates' and year(week_start) = 2025)
+  - id: q30
+    category: efficiency
+    question: What was our blended cost per lead in Q4 2025?
+    answer_type: number
+    sql: >
+      select (select sum(spend) from fct_channel_weekly where week_start between '2025-10-01' and '2025-12-31')
+           / (select sum(leads) from fct_funnel where week_start between '2025-10-01' and '2025-12-31')
+  - id: q31
+    category: efficiency
+    question: How much pipeline per dollar of spend did LinkedIn generate in 2023, on a last-touch basis?
+    answer_type: number
+    sql: >
+      select (select sum(pipeline_amount) from fct_funnel where channel_id = 'linkedin' and year(week_start) = 2023)
+           / (select sum(spend) from fct_channel_weekly where channel_id = 'linkedin' and year(week_start) = 2023)
+  - id: q32
+    category: efficiency
+    question: Among paid channels with at least one last-touch closed-won deal in 2025, which had the lowest last-touch CPA?
+    answer_type: text
+    sql: >
+      with s as (select channel_id, sum(spend) sp from fct_channel_weekly where year(week_start) = 2025 group by 1),
+           d as (select channel_id, sum(won_deals) w from fct_funnel where year(week_start) = 2025 group by 1)
+      select c.channel_name from s join d using (channel_id) join dim_channel c using (channel_id)
+      where d.w > 0 order by s.sp / d.w limit 1
+  - id: q33
+    category: efficiency
+    question: What was the combined last-touch cost per lead for brand and non-brand paid search in 2024?
+    answer_type: number
+    sql: >
+      select (select sum(spend) from fct_channel_weekly
+              where channel_id in ('paid_search_brand', 'paid_search_nonbrand') and year(week_start) = 2024)
+           / (select sum(leads) from fct_funnel
+              where channel_id in ('paid_search_brand', 'paid_search_nonbrand') and year(week_start) = 2024)
+
+  # --- mix and trends -------------------------------------------------------------------
+  - id: q34
+    category: trend
+    question: What percent of 2023 paid media spend went to performance-role channels?
+    answer_type: percent
+    sql: >
+      select 100.0 * sum(case when c.marketing_role = 'performance' then f.spend else 0 end) / sum(f.spend)
+      from fct_channel_weekly f join dim_channel c using (channel_id) where year(f.week_start) = 2023
+  - id: q35
+    category: trend
+    question: By what percent did closed-won deals change from 2024 to 2025?
+    answer_type: percent
+    sql: >
+      select 100.0 * ((select sum(won_deals) from fct_funnel where year(week_start) = 2025)
+                    / (select sum(won_deals) from fct_funnel where year(week_start) = 2024) - 1)
+  - id: q36
+    category: trend
+    question: What was total paid media spend in the week starting 2025-06-02?
+    answer_type: number
+    sql: select sum(spend) from fct_channel_weekly where week_start = '2025-06-02'
+  - id: q37
+    category: trend
+    question: In how many weeks of 2024 did we spend anything on YouTube?
+    answer_type: number
+    sql: >
+      select count(*) from (select week_start from fct_channel_weekly
+      where channel_id = 'youtube' and year(week_start) = 2024 group by 1 having sum(spend) > 0)
+
+  # --- controls --------------------------------------------------------------------------
+  - id: q38
+    category: controls
+    question: How many marketing emails did we send in 2025?
+    answer_type: number
+    sql: select sum(emails_sent) from fct_controls_weekly where year(week_start) = 2025
+  - id: q39
+    category: controls
+    question: What was the email open rate in 2024, as a percent?
+    answer_type: percent
+    sql: select 100.0 * sum(email_opens) / sum(emails_sent) from fct_controls_weekly where year(week_start) = 2024
+  - id: q40
+    category: controls
+    question: How many AEs did we have across all regions in the last week of 2024?
+    answer_type: number
+    sql: select sum(ae_headcount) from fct_controls_weekly where week_start = '2024-12-30'
+  - id: q41
+    category: controls
+    question: How many SDRs did we have across all regions in the last week of June 2024?
+    answer_type: number
+    sql: select sum(sdr_headcount) from fct_controls_weekly where week_start = '2024-06-24'
+  - id: q42
+    category: controls
+    question: What was the average fleet activity index in 2025?
+    answer_type: number
+    sql: select avg(fleet_activity_index) from fct_controls_weekly where year(week_start) = 2025
+
+  # --- should refuse: no metric, no data, or needs a causal model ---------------------------
+  - id: q43
+    category: refusal
+    question: What was the true incremental CPA of Connected TV in 2025?
+    answer_type: refusal
+    why: Incremental effects need the MMM; neither platform claims nor last touch measure them.
+  - id: q44
+    category: refusal
+    question: What was our customer churn rate in 2025?
+    answer_type: refusal
+    why: No retention or churn data.
+  - id: q45
+    category: refusal
+    question: What is the NPS of customers acquired through LinkedIn?
+    answer_type: refusal
+    why: No survey data.
+  - id: q46
+    category: refusal
+    question: Which Meta campaign had the best cost per lead in 2024?
+    answer_type: refusal
+    why: Spend has no campaign grain outside search.
+  - id: q47
+    category: refusal
+    question: What was our gross margin in 2025?
+    answer_type: refusal
+    why: No cost-of-goods or finance data.
+  - id: q48
+    category: refusal
+    question: How many closed-won deals came from fleets with more than 100 vehicles?
+    answer_type: refusal
+    why: No firmographic data.
+  - id: q49
+    category: refusal
+    question: What is the customer lifetime value of a deal sourced from paid search?
+    answer_type: refusal
+    why: No retention or renewal data, so LTV is not defined.
+  - id: q50
+    category: refusal
+    question: What was our CPA on TikTok in 2025?
+    answer_type: refusal
+    why: Fernhook does not buy TikTok.
