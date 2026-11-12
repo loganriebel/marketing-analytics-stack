@@ -21,6 +21,10 @@ from . import config as C
 TRUTH_PATH = C.REPO_ROOT / "sim" / "truth" / "truth.json"
 GRADE_DIR = C.REPO_ROOT / "mmm" / "grading"
 METRICS = ["incremental_deals", "cpa", "marginal_cpa", "roi_revenue"]
+# Upper funnel through brand search; graded where both the answer key and the outputs have them.
+MEDIATED = ["incremental_deals_via_brand_search", "incremental_deals_total", "cpa_total",
+            "marginal_cpa_total"]
+TOTAL_CURVE_KEYS = ("response_curve_total", "total_response_curve")
 
 
 def _pct_err(est, true):
@@ -119,6 +123,31 @@ def grade_baseline(base: dict, key: str, truth: dict) -> dict:
     }
 
 
+def grade_mediation(channels_out: dict, truth: dict) -> dict | None:
+    rows = {}
+    for ch, m in channels_out["channels"].items():
+        t = truth["channels"].get(ch, {})
+        keys = [k for k in MEDIATED if k in m and k in t]
+        if not keys:
+            continue
+        rows[ch] = {}
+        for k in keys:
+            lo, hi = m[k]["hdi_90"]
+            rows[ch][k] = {"true": t[k], "median": m[k]["median"], "hdi_90": [lo, hi],
+                           "covered": bool(lo <= t[k] <= hi), "pct_error": _pct_err(m[k]["median"], t[k])}
+    if not rows:
+        return None
+    cov = [v["covered"] for r in rows.values() for v in r.values()]
+    return {"channels": rows, "hdi_coverage": {"covered": int(sum(cov)), "of": len(cov)}}
+
+
+def _total_curve(t: dict) -> dict | None:
+    for k in TOTAL_CURVE_KEYS:
+        if k in t:
+            return t[k]
+    return None
+
+
 def true_plan_gain(optimizer: dict, truth: dict) -> dict:
     """Run the optimizer's plan through the true, noise-free response curves.
 
@@ -127,8 +156,13 @@ def true_plan_gain(optimizer: dict, truth: dict) -> dict:
     """
     gain, rows = 0.0, []
     for p in optimizer["plan"]:
-        rc = truth["channels"][p["channel"]]["response_curve"]
-        f = interpolate.PchipInterpolator(rc["spend_multiplier"], rc["incremental_deals"])
+        t = truth["channels"][p["channel"]]
+        # An upper-funnel plan row includes deals via brand search, so score it on the
+        # true total curve when the answer key has one.
+        total = _total_curve(t) if "brand_search_spend_change" in p else None
+        rc = total or t["response_curve"]
+        ys = rc.get("incremental_deals_total", rc.get("incremental_deals"))
+        f = interpolate.PchipInterpolator(rc["spend_multiplier"], ys)
         d = float(f(p["multiplier"]) - f(1.0))
         gain += d
         rows.append({"channel": p["channel"], "multiplier": p["multiplier"],
@@ -190,6 +224,16 @@ def to_markdown(g: dict) -> str:
     for k, v in t.items():
         lines.append(f"| {k} | {_fmt(v['true'])} | {_fmt(v['median'])} ({_fmt(v['hdi_90'][0])} to "
                      f"{_fmt(v['hdi_90'][1])}) | {'yes' if v['covered'] else 'no'} |")
+    if "mediation" in g:
+        med = g["mediation"]
+        lines += ["", f"Upper funnel through brand search: 90% HDI coverage {med['hdi_coverage']['covered']} "
+                  f"of {med['hdi_coverage']['of']}.", "",
+                  "| Channel | Metric | True | MMM (90% HDI) | Error |", "|---|---|---:|---:|---:|"]
+        for ch, r in med["channels"].items():
+            for k, v in r.items():
+                lines.append(f"| {ch} | {k} | {_fmt(v['true'])} | {_fmt(v['median'])} ({_fmt(v['hdi_90'][0])} "
+                             f"to {_fmt(v['hdi_90'][1])}){'' if v['covered'] else ' (miss)'} | "
+                             f"{_fmt(v['pct_error'])}% |")
     if "optimizer" in g:
         o = g["optimizer"]
         lines += ["", f"Optimizer plan at the same total spend: model predicts {_fmt(o['model_deal_change'])} "
@@ -210,6 +254,9 @@ def grade(outputs: Path = C.OUTPUT_DIR, truth_path: Path = TRUTH_PATH) -> dict:
         "crm_last_touch": grade_baseline(base, "crm_last_touch", truth),
         "platform_reported": grade_baseline(base, "platform_reported", truth),
     }
+    med = grade_mediation(ch, truth)
+    if med:
+        g["mediation"] = med
     opt_path = outputs / "optimizer.json"
     if opt_path.exists():
         g["optimizer"] = true_plan_gain(json.loads(opt_path.read_text(encoding="utf-8")), truth)
