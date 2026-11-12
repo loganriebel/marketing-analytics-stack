@@ -16,6 +16,13 @@ from pathlib import Path
 
 os.environ.setdefault("PYTENSOR_FLAGS", "cxx=")  # no C compiler on Windows; nutpie uses numba
 
+import pytensor  # noqa: E402
+
+# Without a C compiler PyTensor's default mode is pure Python. PyMC-Marketing
+# recomputes every deterministic after sampling, which took 58 of the first fit's
+# 65 minutes (sampling itself took 6). Numba makes that and predictive draws fast.
+pytensor.config.mode = "NUMBA"
+
 import arviz as az  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
@@ -207,7 +214,8 @@ def run(holdout_weeks: int = C.HOLDOUT_WEEKS, name: str | None = None, regions=N
         warnings.simplefilter("ignore")
         idata = mmm.fit(X, y, nuts_sampler="nutpie", progressbar=False,
                         chains=sampler["chains"], draws=sampler["draws"], tune=sampler["tune"],
-                        target_accept=sampler["target_accept"], random_seed=sampler["random_seed"])
+                        target_accept=sampler["target_accept"], random_seed=sampler["random_seed"],
+                        nuts_sampler_kwargs={"low_rank_modified_mass_matrix": True})
     log(f"[{name}] sampled in {time.time() - t0:.0f}s")
     fit_dir.mkdir(parents=True, exist_ok=True)
     idata.to_netcdf(fit_dir / f"{name}.nc")
