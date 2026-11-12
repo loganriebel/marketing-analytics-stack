@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: stg_regions
-    description: One row per sales territory.
+    description: One row per sales region, a Midwest metro market.
     columns:
       - name: region_id
         data_tests: [unique, not_null]
@@ -12,13 +12,21 @@ models:
         data_tests:
           - accepted_values:
               arguments:
-                values: [NA, EMEA, APAC]
+                values: [Great Lakes, Ohio Valley, Upper Midwest, Plains]
       - name: target_accounts
         data_tests:
           - not_null
           - accepted_range:
               arguments:
                 min_value: 1
+      - name: latitude
+        description: Latitude of the market's main city. Seasons arrive at different weeks north to south.
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 36
+                max_value: 49
 
   - name: stg_ads_google
     description: Google Ads rows split into brand search, non-brand search and YouTube, cost converted from micros to dollars.

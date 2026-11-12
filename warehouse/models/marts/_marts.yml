@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: dim_region
-    description: Golden region dimension. One row per sales region.
+    description: Golden region dimension. One row per sales region, a Midwest metro market.
     columns:
       - name: region_id
         data_tests: [unique, not_null]
@@ -12,7 +12,15 @@ models:
         data_tests:
           - accepted_values:
               arguments:
-                values: [NA, EMEA, APAC]
+                values: [Great Lakes, Ohio Valley, Upper Midwest, Plains]
+      - name: latitude
+        description: Latitude of the market's main city. Seasons arrive at different weeks north to south.
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 36
+                max_value: 49
 
   - name: dim_channel
     description: Golden channel dimension. Nine paid channels, owned email, and three unpaid CRM sources.
