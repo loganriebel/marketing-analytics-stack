@@ -127,3 +127,23 @@ def test_find_pauses_on_a_synthetic_panel():
                   np.zeros((T, G)))
     pauses = lift_tests.find_pauses(panel)
     assert [(p.region, p.start, p.weeks) for p in pauses] == [("B", 10, 5)]
+
+
+def test_brand_demand_and_mediation(smoke):
+    from mmm import brand_demand
+    from mmm.mediation import Mediation
+
+    panel, design, eng = smoke["panel"], smoke["design"], smoke["engine"]
+    scale = dict(zip(C.CHANNELS, eng.post.channel_scale))
+    demand = brand_demand.fit(panel, design.n_train, scale,
+                              {"chains": 2, "draws": 100, "tune": 150, "target_accept": 0.9, "random_seed": 1})
+    assert {"rhat", "ess_bulk", "divergences"} <= set(demand.diagnostics["gates"])
+    med = Mediation(eng, demand, scale)
+    # the actual path through the path scorer equals the multiplier scorer
+    assert np.allclose(eng.deals_for_path(C.BRAND, eng.scaled_path(C.BRAND)), eng.deals(C.BRAND, 1.0))
+    for u in med.channels:
+        assert np.allclose(med.via_brand(u, 1.0), 0.0)
+        via = -med.via_brand(u, 0.0)
+        assert (via >= -1e-9).all()  # removing created searches never adds brand deals
+        e = med.channel_estimands(u, eng.channel_estimands(u))
+        assert e["incremental_deals_total"]["median"] >= eng.channel_estimands(u)["incremental_deals"]["median"] - 1e-6

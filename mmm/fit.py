@@ -27,11 +27,12 @@ import arviz as az  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
-from . import baselines, lift_tests, validation  # noqa: E402
+from . import baselines, brand_demand, lift_tests, validation  # noqa: E402
 from . import config as C  # noqa: E402
 from .data import Panel, affiliate_spend_check, load_panel  # noqa: E402
 from .estimands import Engine, MediaPosterior, hdi  # noqa: E402
 from .model import LIFT_NAME, add_pause_lifts, build_design, make_mmm  # noqa: E402
+from .mediation import Mediation  # noqa: E402
 from .optimize import optimize_mix  # noqa: E402
 
 
@@ -148,13 +149,20 @@ def write_json(path: Path, obj) -> None:
     path.write_text(json.dumps(_jsonable(obj), indent=2) + "\n", encoding="utf-8")
 
 
-def write_outputs(engine: Engine, panel: Panel, run_meta: dict, out_dir: Path) -> dict:
+def write_outputs(engine: Engine, panel: Panel, run_meta: dict, out_dir: Path,
+                  mediation: Mediation | None = None) -> dict:
     channels = list(panel.channels)
-    est, curves, weekly = {}, [], []
+    est, curves, total_curves, weekly = {}, [], [], []
     total_inc = np.zeros(engine.post.n_draws)
+    via_sum = np.zeros(engine.post.n_draws)
     for ch in channels:
         e = engine.channel_estimands(ch)
         total_inc += e["_draws"]["incremental_deals"]
+        if mediation is not None and ch in mediation.channels:
+            m = mediation.channel_estimands(ch, e)
+            via_sum += m["_draws"]["via"]
+            e.update({k: v for k, v in m.items() if k != "_draws"})
+            total_curves += mediation.total_response_curve(ch)
         est[ch] = e
         curves += engine.response_curve(ch)
         w = engine.weekly(ch)[:, : len(panel.weeks)]
@@ -172,12 +180,20 @@ def write_outputs(engine: Engine, panel: Panel, run_meta: dict, out_dir: Path) -
         "incremental_cpa_paid_media": _summ(paid_spend / total_inc),
         "paid_media_share_of_deals": _summ(total_inc / all_deals),
     }
-    opt = optimize_mix(engine, channels)
+    if mediation is not None:
+        brand = est[C.BRAND]["_draws"]["incremental_deals"]
+        est[C.BRAND]["deals_from_upper_funnel_searches"] = _summ(via_sum)
+        est[C.BRAND]["deals_from_other_searches"] = _summ(brand - via_sum)
+    opt = optimize_mix(engine, channels, mediation)
 
     flat = []
     for ch, e in est.items():
         row = {"channel": ch, "spend": e["spend"]}
-        for k in ("incremental_deals", "cpa", "marginal_cpa", "roi_revenue"):
+        for k in ("incremental_deals", "cpa", "marginal_cpa", "roi_revenue",
+                  "incremental_deals_via_brand_search", "incremental_deals_total", "cpa_total",
+                  "marginal_cpa_total"):
+            if k not in e:
+                continue
             row[f"{k}_median"] = e[k]["median"]
             row[f"{k}_mean"] = e[k]["mean"]
             row[f"{k}_hdi_90_low"], row[f"{k}_hdi_90_high"] = e[k]["hdi_90"]
@@ -187,6 +203,9 @@ def write_outputs(engine: Engine, panel: Panel, run_meta: dict, out_dir: Path) -
     write_json(out_dir / "channels.json", {"meta": run_meta, "summary": summary, "channels": est})
     pd.DataFrame(flat).to_csv(out_dir / "channels.csv", index=False, float_format="%.4f")
     pd.DataFrame(curves).to_csv(out_dir / "response_curves.csv", index=False, float_format="%.4f")
+    if total_curves:
+        pd.DataFrame(total_curves).to_csv(out_dir / "response_curves_total.csv", index=False,
+                                          float_format="%.4f")
     contrib = pd.concat(weekly, ignore_index=True)
     contrib.to_csv(out_dir / "contributions_weekly.csv", index=False, float_format="%.4f")
     write_json(out_dir / "optimizer.json", {"meta": run_meta, **opt})
@@ -293,8 +312,22 @@ def _evaluate(prep, idata, run_meta, out_dir, fit_dir, write, estimand_draws, lo
                                      panel.channels, max_draws=estimand_draws)
     engine = Engine(post, panel)
     result["engine"] = engine
+
+    # Stage 1: what drives brand-search spend. Its numbers are reported only if its
+    # own gates pass; the MMM outputs do not depend on it.
+    scale = dict(zip(panel.channels, scales["channel_scale"]))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        demand = brand_demand.fit(panel, design.n_train, scale, run_meta["sampler"])
+    result["brand_demand"] = demand.diagnostics
+    log(f"[{name}] brand-search demand gates: {demand.diagnostics['gates']}")
+    mediation = Mediation(engine, demand, scale) if demand.diagnostics["all_pass"] else None
     if write:
-        result.update(write_outputs(engine, panel, run_meta, out_dir))
+        write_json(out_dir / f"diagnostics_{name}.json",
+                   {"meta": run_meta, "diagnostics": diag, "gates": gates,
+                    "affiliate_check": prep["affiliate"], "lift_tests": lift,
+                    "brand_demand": demand.diagnostics})
+        result.update(write_outputs(engine, panel, run_meta, out_dir, mediation))
         log(f"[{name}] outputs written to {out_dir} in {time.time() - t0:.0f}s")
     return result
 

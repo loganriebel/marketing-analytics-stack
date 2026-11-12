@@ -122,6 +122,24 @@ class Engine:
     def deals(self, channel: str, multiplier: float = 1.0) -> np.ndarray:
         return self.deals_by_region(channel, multiplier).sum(axis=1)
 
+    def scaled_path(self, channel: str) -> np.ndarray:
+        """(T + tail, G) actual spend per size unit on the model's channel scale."""
+        k = self.post.channels.index(channel)
+        x = self.spend(channel) / self.size[None, :] / self.post.channel_scale[k]
+        return np.vstack([x, np.zeros((self.tail, x.shape[1]))])
+
+    def deals_for_path(self, channel: str, x: np.ndarray) -> np.ndarray:
+        """(S,) deals over window plus tail for any scaled path, (T + tail, G) or per draw (S, T + tail, G)."""
+        k = self.post.channels.index(channel)
+        x = np.broadcast_to(x, (self.post.n_draws,) + x.shape[-2:])
+        w = lagged_geometric_weights_np(self.post.alpha[:, k])
+        a = np.zeros(x.shape)
+        for lag in range(w.shape[1]):
+            a[:, lag:] += w[:, lag, None, None] * x[:, : x.shape[1] - lag]
+        h = hill_np(a, self.post.slope[:, k, None, None], self.post.kappa[:, k, None, None])
+        per_size = self.post.beta[:, k, None, None] * h * self.post.target_scale
+        return (per_size.sum(axis=1) * self.size[None, :]).sum(axis=1)
+
     def weekly(self, channel: str) -> np.ndarray:
         """(S, T + tail) national weekly contribution of the actual path."""
         k = self.post.channels.index(channel)
