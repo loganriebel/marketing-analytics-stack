@@ -162,6 +162,7 @@ def write_outputs(engine: Engine, panel: Panel, run_meta: dict, out_dir: Path) -
     for ch, e in est.items():
         row = {"channel": ch, "spend": e["spend"]}
         for k in ("incremental_deals", "cpa", "marginal_cpa", "roi_revenue"):
+            row[f"{k}_median"] = e[k]["median"]
             row[f"{k}_mean"] = e[k]["mean"]
             row[f"{k}_hdi_90_low"], row[f"{k}_hdi_90_high"] = e[k]["hdi_90"]
         flat.append(row)
