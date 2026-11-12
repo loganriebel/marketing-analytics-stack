@@ -106,9 +106,21 @@ def loo(idata, loglik: np.ndarray) -> dict:
     }
 
 
+def flatten(ds: xr.Dataset) -> pd.Series:
+    """Per-parameter values from an arviz result, labeled like az.summary rows."""
+    out = {}
+    for v, da in ds.data_vars.items():
+        if not da.dims:
+            out[v] = float(da)
+            continue
+        (dim,) = da.dims
+        out.update({f"{v}[{k}]": float(x) for k, x in zip(da[dim].values, da.values)})
+    return pd.Series(out)
+
+
 def parameter_table(idata, var_names: list[str]) -> pd.DataFrame:
     """One row per model parameter. Each variable here has at most one extra dim."""
-    summ = az.summary(idata, var_names=var_names, hdi_prob=C.HDI_PROB, kind="all")
+    summ = az.summary(idata, var_names=var_names, hdi_prob=C.HDI_PROB, kind="all", round_to="none")
     above = {}
     for v in var_names:
         da = idata.posterior[v]

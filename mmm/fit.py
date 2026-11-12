@@ -47,15 +47,18 @@ def _interval_coverage(draws: np.ndarray, observed: np.ndarray, prob=C.HDI_PROB)
 
 
 def diagnostics(mmm, idata, design, panel: Panel) -> dict:
-    summ = az.summary(idata, var_names=FREE_VARS, kind="diagnostics")
+    # Unrounded: az.summary rounds r-hat to 2 decimals, which turns 1.0095 into a gate fail.
+    rhat = validation.flatten(az.rhat(idata, var_names=FREE_VARS))
+    ess_bulk = validation.flatten(az.ess(idata, var_names=FREE_VARS, method="bulk"))
+    ess_tail = validation.flatten(az.ess(idata, var_names=FREE_VARS, method="tail"))
     n_div = int(idata.sample_stats.diverging.sum())
     n_samples = int(idata.sample_stats.diverging.size)
     out = {
-        "rhat_max": float(summ.r_hat.max()),
-        "rhat_worst": str(summ.r_hat.idxmax()),
-        "ess_bulk_min": float(summ.ess_bulk.min()),
-        "ess_bulk_worst": str(summ.ess_bulk.idxmin()),
-        "ess_tail_min": float(summ.ess_tail.min()),
+        "rhat_max": float(rhat.max()),
+        "rhat_worst": str(rhat.idxmax()),
+        "ess_bulk_min": float(ess_bulk.min()),
+        "ess_bulk_worst": str(ess_bulk.idxmin()),
+        "ess_tail_min": float(ess_tail.min()),
         "divergences": n_div,
         "divergence_rate": n_div / n_samples,
         "n_samples": n_samples,
