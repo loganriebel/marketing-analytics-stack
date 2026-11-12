@@ -1,5 +1,5 @@
 """Guards that keep the sim true to its scenario: enough spend variation for an MMM,
-the planned search split, one near-zero channel, platforms that over-claim, and TV
+the planned search split, one near-zero channel, platforms that over-claim, and CTV
 that last touch never sees."""
 
 import numpy as np
@@ -26,14 +26,14 @@ def _spend_long(t: dict[str, pd.DataFrame]) -> pd.DataFrame:
                                           "FH_Search_NonBrand": "paid_search_nonbrand",
                                           "FH_YouTube_Prospecting": "youtube"})
     meta, li, dsp = t["ads_meta_weekly"], t["ads_linkedin_weekly"], t["ads_display_weekly"]
-    tv, partners, ev = t["tv_weekly"], t["partners_weekly"], t["webinar_events"]
+    ctv, partners, ev = t["ctv_weekly"], t["partners_weekly"], t["webinar_events"]
     region_by_name = dict(zip(t["regions"].region_name, t["regions"].region_code))
     parts = [
         pd.DataFrame({"week": g.week_start_date, "region": g.geo_target_region, "ch": google_channel, "spend": g.cost_micros / 1e6}),
         pd.DataFrame({"week": meta.date_start, "region": meta.region.map(region_by_name), "ch": "meta", "spend": meta.spend}),
         pd.DataFrame({"week": li.start_date, "region": li.region_code, "ch": "linkedin", "spend": li.cost_usd}),
         pd.DataFrame({"week": dsp.week, "region": dsp.region_code, "ch": "display", "spend": dsp.media_cost}),
-        pd.DataFrame({"week": tv.week_start, "region": tv.market, "ch": "tv", "spend": tv.gross_cost}),
+        pd.DataFrame({"week": ctv.week_start, "region": ctv.geo_region, "ch": "ctv", "spend": ctv.spend}),
         pd.DataFrame({"week": partners.week_start, "region": partners.region_code, "ch": "affiliates", "spend": partners.partner_fees}),
         pd.DataFrame({"week": _week(ev.event_date), "region": ev.region_code, "ch": "webinars", "spend": ev.total_cost}),
     ]
@@ -62,9 +62,9 @@ def test_display_is_the_near_zero_channel(sim):
     assert cpa["display"] > 5 * max(v for c, v in cpa.items() if c != "display")
 
 
-def test_tv_runs_only_in_tv_regions_and_never_wins_last_touch(sim):
-    tv_regions = set(sim.tables["tv_weekly"].market)
-    assert tv_regions == set(C.TV_REGIONS)
+def test_ctv_runs_only_in_ctv_regions_and_never_wins_last_touch(sim):
+    ctv_regions = set(sim.tables["ctv_weekly"].geo_region)
+    assert ctv_regions == set(C.CTV_REGIONS)
     leads = sim.tables["crm_leads"]
     assert not leads.utm_source.str.lower().isin(["tv", "ctv"]).any()
 
@@ -79,7 +79,7 @@ def test_platforms_over_claim(sim):
         "meta": t["ads_meta_weekly"].leads.sum(),
         "linkedin": t["ads_linkedin_weekly"].conversions.sum(),
         "display": (t["ads_display_weekly"].post_click_conversions + t["ads_display_weekly"].post_view_conversions).sum(),
-        "tv": t["tv_weekly"].vendor_attributed_leads.sum(),
+        "ctv": t["ctv_weekly"].attributed_leads.sum(),
         "affiliates": t["partners_weekly"].referred_signups.sum(),
         "webinars": t["webinar_events"].registrants.sum(),
     }
