@@ -12,25 +12,25 @@ An example of the stack I run at work: dashboards, Claude on golden tables, MMM 
 - Short cycle: a lead closes in about two weeks; nine in ten close in 6 to 27 days.
 - First-year contracts run about $2,800 on average, and it closes about 210 deals a week.
 - About $14M a year in paid media across nine channels.
-- Sold only in the Midwest: 20 metro markets in four sales areas, from Fargo and Minneapolis-St. Paul down to St. Louis and Wichita.
+- Sold only in seven Midwest states: Minnesota, Wisconsin, Illinois, Iowa, Ohio, North Dakota, and South Dakota. They split into 20 metro markets in four sales areas.
 - About 50 SDRs and 70 AEs.
 
 | Sales area | Markets |
 |---|---|
-| Great Lakes | Chicago, Detroit, Milwaukee, Cleveland, Grand Rapids, Toledo |
-| Ohio Valley | Columbus, Cincinnati, Indianapolis, Dayton |
-| Upper Midwest | Minneapolis-St. Paul, Madison, Green Bay, Fargo, Sioux Falls |
-| Plains | St. Louis, Kansas City, Omaha, Des Moines, Wichita |
+| Illinois and Iowa | Chicago, Rockford, Peoria, Quad Cities, Des Moines, Cedar Rapids |
+| Ohio | Cleveland, Columbus, Cincinnati, Dayton, Toledo, Akron |
+| Wisconsin | Milwaukee, Madison, Green Bay |
+| Upper Midwest | Minneapolis-St. Paul, Rochester, Duluth, Fargo (ND), Sioux Falls (SD) |
 
-**The seasons drive the business.** Fleets shop for software when the season turns: AC switches on in late spring (May and June) and heat switches on in late fall (October and November). The slowest stretch runs from mid-July into September, when crews are busy with AC calls and then coast before heat. Winter after the holidays is soft, and the holidays dip hard. The seasons arrive a little earlier or later by latitude: heat season starts in Fargo and Minneapolis a few weeks before St. Louis and Wichita.
+**The seasons drive the business.** Fleets shop for software when the season turns: AC switches on in late spring (May and June) and heat switches on in late fall (October and November). The slowest stretch runs from mid-July into September, when crews are busy with AC calls and then coast before heat. Winter after the holidays is soft, and the holidays dip hard. The seasons arrive a little earlier or later by latitude: heat season starts in Fargo and Duluth a few weeks before Cincinnati and Columbus.
 
 ## The problem
 
 Fernhook grew on paid search, and its CRM credits every deal to the last UTM touch.
 
-- **The mix drifted to performance.** Budget reviews reward the channels closest to the click: search, retargeting, affiliates. Connected TV, YouTube, and Meta look weak in last touch, so they get cut. Performance took 67% of spend in 2023 and 77% in 2025.
-- **Search keeps getting more expensive.** Last-touch search cost per lead rose from $75 in 2023 to $95 in 2025.
-- **Growth stalled.** In 2025 spend rose 1% over 2024, and closed-won deals fell 10%. Blended cost per deal rose from about $1,240 to $1,390.
+- **The mix drifted to performance.** Budget reviews reward the channels closest to the click: search, retargeting, affiliates. Connected TV, YouTube, and Meta look weak in last touch, so they get cut. Performance took 66% of spend in 2023 and 77% in 2025.
+- **Search keeps getting more expensive.** Last-touch search cost per lead rose from $74 in 2023 to $94 in 2025.
+- **Growth stalled.** In 2025 spend rose 1% over 2024, and closed-won deals fell 12%. Blended cost per deal rose from about $1,230 to $1,410.
 - **Nobody agrees on the numbers.** Every ad platform claims credit for the same deals, so their totals add up to far more than the CRM has. Last touch never credits Connected TV at all.
 - **Finance has stopped trusting marketing.** When the CFO asks what a channel returns, the team can show last-touch numbers or platform numbers, and neither holds up.
 
