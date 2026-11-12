@@ -18,7 +18,7 @@ def main() -> None:
     write_outputs(result, args.raw_dir, args.truth_path)
     for name, df in result.tables.items():
         print(f"{name:22s} {len(df):>9,d} rows")
-    print("true pipeline ROI:", {c: v["roi_pipeline"] for c, v in result.truth["channels"].items()})
+    print("true CPA:", {c: round(v["cpa"]) for c, v in result.truth["channels"].items()})
 
 
 if __name__ == "__main__":
