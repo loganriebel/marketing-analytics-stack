@@ -1,112 +1,100 @@
 {
-  "lead_to_won_rate": 0.046381478826913826,
+  "lead_to_won_rate": 0.045798566709862105,
   "channels": {
     "paid_search_brand": {
-      "spend": 7310195.37,
+      "spend": 7388809.18,
       "crm_last_touch": {
-        "deals": 6267.0,
-        "cpa": 1166.458492101484
+        "deals": 5995.0,
+        "cpa": 1232.4952760633862
       },
       "platform_reported": {
-        "conversions": 121120.95000000043,
-        "deals": 5617.768777920708,
-        "cpa": 1301.2631275838494
+        "conversions": 119954.81999999989,
+        "deals": 5493.758825939496,
+        "cpa": 1344.9460404255055
       }
     },
     "paid_search_nonbrand": {
-      "spend": 12750572.42,
+      "spend": 13396798.88,
       "crm_last_touch": {
-        "deals": 5175.0,
-        "cpa": 2463.8787285024155
+        "deals": 5444.0,
+        "cpa": 2460.837413666422
       },
       "platform_reported": {
-        "conversions": 158661.89999999997,
-        "deals": 7358.973555487917,
-        "cpa": 1732.6563716880496
+        "conversions": 170135.36000000007,
+        "deals": 7791.9556346664085,
+        "cpa": 1719.3114935610831
       }
     },
     "meta": {
-      "spend": 4050766.82,
+      "spend": 3740823.15,
       "crm_last_touch": {
-        "deals": 1484.0,
-        "cpa": 2729.6272371967652
+        "deals": 1321.0,
+        "cpa": 2831.81161998486
       },
       "platform_reported": {
-        "conversions": 199379.0,
-        "deals": 9247.492867031251,
-        "cpa": 438.0394641277976
+        "conversions": 189241.0,
+        "deals": 8666.966562741014,
+        "cpa": 431.61850491977987
       }
     },
     "linkedin": {
-      "spend": 4232607.58,
+      "spend": 3845169.28,
       "crm_last_touch": {
-        "deals": 1190.0,
-        "cpa": 3556.813092436975
+        "deals": 1042.0,
+        "cpa": 3690.1816506717846
       },
       "platform_reported": {
-        "conversions": 44962.0,
-        "deals": 2085.404051015699,
-        "cpa": 2029.6342945811878
+        "conversions": 42460.0,
+        "deals": 1944.6071425007449,
+        "cpa": 1977.3501783270997
       }
     },
     "youtube": {
-      "spend": 1530269.18,
+      "spend": 2013928.57,
       "crm_last_touch": {
-        "deals": 100.0,
-        "cpa": 15302.691799999999
+        "deals": 135.0,
+        "cpa": 14917.989407407407
       },
       "platform_reported": {
-        "conversions": 32811.69999999999,
-        "deals": 1521.855168825048,
-        "cpa": 1005.5287857526206
+        "conversions": 54858.94,
+        "deals": 2512.4608232223227,
+        "cpa": 801.5761087239813
       }
     },
     "ctv": {
-      "spend": 3342593.95,
+      "spend": 2991990.71,
       "crm_last_touch": {
         "deals": 0.0,
         "cpa": null
       },
       "platform_reported": {
-        "conversions": 40772.0,
-        "deals": 1891.0656547309304,
-        "cpa": 1767.571602624024
+        "conversions": 38598.0,
+        "deals": 1767.7330778672576,
+        "cpa": 1692.5579701262309
       }
     },
     "display": {
-      "spend": 4540936.24,
+      "spend": 4639512.25,
       "crm_last_touch": {
-        "deals": 971.0,
-        "cpa": 4676.556374871267
+        "deals": 903.0,
+        "cpa": 5137.887320044297
       },
       "platform_reported": {
-        "conversions": 48931.0,
-        "deals": 2269.4921404797205,
-        "cpa": 2000.8600862746969
+        "conversions": 49980.0,
+        "deals": 2289.012364158908,
+        "cpa": 2026.8620312607081
       }
     },
     "affiliates": {
-      "spend": 2220885.41,
+      "spend": 2006346.87,
       "crm_last_touch": {
-        "deals": 1647.0,
-        "cpa": 1348.4428718882818
+        "deals": 1468.0,
+        "cpa": 1366.7213010899184
       },
       "platform_reported": {
-        "conversions": 65985.0,
-        "deals": 3060.481880393909,
-        "cpa": 725.6652699783847
-      }
-    },
-    "webinars": {
-      "spend": 1856102.09,
-      "crm_last_touch": {
-        "deals": 1464.0,
-        "cpa": 1267.8292964480875
-      },
-      "platform_reported": {
-        "conversions": 42528.0,
-        "deals": 1972.511531550991,
-        "cpa": 940.9841515808741
+        "conversions": 60949.0,
+        "deals": 2791.3768423993856,
+        "cpa": 718.766036718784
       }
     }
   }
