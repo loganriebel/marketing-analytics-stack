@@ -45,8 +45,10 @@ ADSTOCK_L_MAX = GEO_L_MAX + LAG_WEEKS - 1
 CLOSE_DAYS_P05, CLOSE_DAYS_P95 = 6.0, 27.0
 
 # Yearly seasonality: two switchover peaks, a summer lull and a soft winter need
-# three Fourier modes. Seasons shift by latitude, so each market gets its own
-# curve, partially pooled toward the shared Midwest shape.
+# three Fourier modes. All markets share one Midwest curve, and the season arrives
+# earlier or later with latitude. That shift enters as latitude x each Fourier term
+# (a first-order shift of the curve), 6 pooled terms. Free per-market curves (60
+# terms) also soak up each market's own brand pushes, which are not tied to latitude.
 FOURIER_MODES = 3
 
 # Close weeks with a visible dip in national won deals (holiday leads closing late).

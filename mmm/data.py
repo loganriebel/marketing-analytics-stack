@@ -28,6 +28,7 @@ class Panel:
     controls_raw: pd.DataFrame  # long, one row per week x region
     webinar_spend: np.ndarray  # (T, G) event cost, used as a control
     roles: dict[str, str] = field(default_factory=dict)  # dim_channel.marketing_role
+    latitude: np.ndarray = field(default_factory=lambda: np.zeros(0))  # (G,) dim_region
 
     @property
     def size(self) -> np.ndarray:
@@ -44,7 +45,7 @@ class Panel:
                                  & self.controls_raw.week_start.isin(weeks)].reset_index(drop=True)
         return Panel(weeks, regs, self.channels, self.spend[t][:, g], self.deals[t][:, g],
                      self.won_revenue[t][:, g], self.accounts[g], ctrl, self.webinar_spend[t][:, g],
-                     self.roles)
+                     self.roles, self.latitude[g] if len(self.latitude) else self.latitude)
 
 
 def connect(path: Path | None = None) -> duckdb.DuckDBPyConnection:
@@ -76,6 +77,7 @@ def load_panel(path: Path | None = None) -> Panel:
         ).df()
         controls = con.sql("select * from fct_controls_weekly order by week_start, region_id").df()
         roles = dict(con.sql("select channel_id, marketing_role from dim_channel").fetchall())
+        latitude = dict(con.sql("select region_id, latitude from dim_region").fetchall())
     finally:
         con.close()
 
@@ -98,6 +100,7 @@ def load_panel(path: Path | None = None) -> Panel:
         controls_raw=controls,
         webinar_spend=_cube(spend, "spend", weeks, regions, [C.WEBINARS])[:, :, 0],
         roles={c: roles[c] for c in C.CHANNELS},
+        latitude=np.array([latitude[r] for r in regions], dtype=float),
     )
 
 

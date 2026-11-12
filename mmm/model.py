@@ -13,8 +13,7 @@ Design (reasons in docs/mmm/README.md):
   brand channels.
 * Controls act on leads, so they get the same lead-to-close kernel. Webinars are an
   events program, not bought media, so their cost enters as a control.
-* Seasonality per market, partially pooled: the Midwest shares one season, and
-  latitude shifts it a few weeks.
+* One shared Midwest season that shifts with each market's latitude.
 * Brand search gets a skeptical prior (its spend follows demand). Brand and non-brand
   search get pooled lift tests from their planned regional pauses.
 """
@@ -119,8 +118,9 @@ def _lag_filter(a: np.ndarray) -> np.ndarray:
     return out
 
 
+LATITUDE_SEASON = [f"lat_{f}{k}" for k in range(1, C.FOURIER_MODES + 1) for f in ("sin", "cos")]
 CONTROL_COLUMNS = ["sdr_coverage", "ae_coverage", "email_sends", "fleet_activity", "promo",
-                   "price_increase", "trend", "webinars", *C.HOLIDAY_CLOSE_WEEKS]
+                   "price_increase", "trend", "webinars", *C.HOLIDAY_CLOSE_WEEKS, *LATITUDE_SEASON]
 STANDARDIZED = ["sdr_coverage", "ae_coverage", "email_sends", "fleet_activity", "trend", "webinars"]
 
 
@@ -146,6 +146,20 @@ class Design:
         return self.X[keep].reset_index(drop=True), self.y[keep].reset_index(drop=True)
 
 
+
+def latitude_season(panel: Panel) -> dict[str, np.ndarray]:
+    """Standardized latitude x each yearly Fourier term, on the same day-of-year
+    axis PyMC-Marketing's YearlyFourier uses. Lets the shared season shift by latitude."""
+    lat = panel.latitude
+    dlat = (lat - lat.mean()) / lat.std() if len(lat) > 1 and lat.std() > 0 else np.zeros(len(panel.regions))
+    doy = panel.weeks.dayofyear.to_numpy() / 365.25
+    out = {}
+    for k in range(1, C.FOURIER_MODES + 1):
+        out[f"lat_sin{k}"] = np.sin(2 * np.pi * k * doy)[:, None] * dlat[None, :]
+        out[f"lat_cos{k}"] = np.cos(2 * np.pi * k * doy)[:, None] * dlat[None, :]
+    return out
+
+
 def controls_cube(panel: Panel) -> dict[str, np.ndarray]:
     """Raw control series as (T, G) arrays, before standardizing."""
     c = panel.controls_raw
@@ -167,6 +181,7 @@ def controls_cube(panel: Panel) -> dict[str, np.ndarray]:
         "trend": np.repeat((np.arange(T) / 52.0)[:, None], G, axis=1),
         "webinars": _lag_filter(panel.webinar_spend / panel.size[None, :]),
     }
+    out.update(latitude_season(panel))
     for name, weeks in C.HOLIDAY_CLOSE_WEEKS.items():
         out[name] = np.repeat(np.isin(woy, weeks).astype(float)[:, None], G, axis=1)
     return out
@@ -234,14 +249,7 @@ def model_config(design: Design, channels: list[str]) -> dict:
         "likelihood": Prior("Normal", sigma=Prior("HalfNormal", sigma=0.5 * ybar, dims="geo"),
                             dims=("date", "geo")),
         "gamma_control": Prior("Normal", mu=0.0, sigma=0.25 * ybar, dims="control"),
-        # Market seasonality = the shared Midwest shape + a small market shift.
-        "gamma_fourier": Prior(
-            "Normal",
-            mu=Prior("Normal", mu=0.0, sigma=0.2 * ybar, dims="fourier_mode"),
-            sigma=Prior("HalfNormal", sigma=0.05 * ybar, dims="fourier_mode"),
-            dims=("geo", "fourier_mode"),
-            centered=False,
-        ),
+        "gamma_fourier": Prior("Normal", mu=0.0, sigma=0.2 * ybar, dims="fourier_mode"),
         "adstock_alpha": Prior("Beta", alpha=2, beta=3, dims="channel"),
         "saturation_slope": Prior("LogNormal", mu=_by_channel(np.log(slope0), channels),
                                   sigma=_by_channel(slope_prior[:, 1], channels), dims="channel"),
