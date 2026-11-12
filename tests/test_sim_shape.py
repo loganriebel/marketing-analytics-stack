@@ -1,5 +1,6 @@
-"""Guards that keep the sim useful for the MMM step: enough spend variation, one
-near-zero channel, and platforms that over-claim."""
+"""Guards that keep the sim true to its scenario: enough spend variation for an MMM,
+the planned search split, one near-zero channel, platforms that over-claim, and TV
+that last touch never sees."""
 
 import numpy as np
 import pandas as pd
@@ -14,49 +15,72 @@ def sim():
     return simulate(C.DEFAULT_SEED)
 
 
-def _national_weekly_spend(t: dict[str, pd.DataFrame]) -> pd.DataFrame:
+def _week(dates: pd.Series) -> pd.Series:
+    d = pd.to_datetime(dates)
+    return (d - pd.to_timedelta(d.dt.day_of_week, unit="D")).dt.strftime("%Y-%m-%d")
+
+
+def _spend_long(t: dict[str, pd.DataFrame]) -> pd.DataFrame:
     g = t["ads_google_weekly"]
+    google_channel = g.campaign_name.map({"FH_Search_Brand": "paid_search_brand",
+                                          "FH_Search_NonBrand": "paid_search_nonbrand",
+                                          "FH_YouTube_Prospecting": "youtube"})
+    meta, li, dsp = t["ads_meta_weekly"], t["ads_linkedin_weekly"], t["ads_display_weekly"]
+    tv, partners, ev = t["tv_weekly"], t["partners_weekly"], t["webinar_events"]
+    region_by_name = dict(zip(t["regions"].region_name, t["regions"].region_code))
     parts = [
-        pd.DataFrame({"week": g.week_start_date, "ch": g.campaign_type.map({"SEARCH": "paid_search", "VIDEO": "youtube"}),
-                      "spend": g.cost_micros / 1e6}),
-        pd.DataFrame({"week": t["ads_meta_weekly"].date_start, "ch": "meta", "spend": t["ads_meta_weekly"].spend}),
-        pd.DataFrame({"week": t["ads_linkedin_weekly"].start_date, "ch": "linkedin", "spend": t["ads_linkedin_weekly"].cost_usd}),
-        pd.DataFrame({"week": t["ads_display_weekly"].week, "ch": "display", "spend": t["ads_display_weekly"].media_cost}),
+        pd.DataFrame({"week": g.week_start_date, "region": g.geo_target_region, "ch": google_channel, "spend": g.cost_micros / 1e6}),
+        pd.DataFrame({"week": meta.date_start, "region": meta.region.map(region_by_name), "ch": "meta", "spend": meta.spend}),
+        pd.DataFrame({"week": li.start_date, "region": li.region_code, "ch": "linkedin", "spend": li.cost_usd}),
+        pd.DataFrame({"week": dsp.week, "region": dsp.region_code, "ch": "display", "spend": dsp.media_cost}),
+        pd.DataFrame({"week": tv.week_start, "region": tv.market, "ch": "tv", "spend": tv.gross_cost}),
+        pd.DataFrame({"week": partners.week_start, "region": partners.region_code, "ch": "affiliates", "spend": partners.partner_fees}),
+        pd.DataFrame({"week": _week(ev.event_date), "region": ev.region_code, "ch": "webinars", "spend": ev.total_cost}),
     ]
-    ev = t["webinar_events"]
-    d = pd.to_datetime(ev.event_date)
-    week = (d - pd.to_timedelta(d.dt.day_of_week, unit="D")).dt.strftime("%Y-%m-%d")
-    parts.append(pd.DataFrame({"week": week, "ch": "webinars", "spend": ev.total_cost}))
-    return pd.concat(parts).pivot_table(index="week", columns="ch", values="spend", aggfunc="sum").fillna(0.0)
+    return pd.concat(parts, ignore_index=True)
 
 
 def test_grid_size(sim):
-    spend = _national_weekly_spend(sim.tables)
-    assert spend.shape == (C.N_WEEKS, len(C.PAID_CHANNELS))
+    national = _spend_long(sim.tables).pivot_table(index="week", columns="ch", values="spend", aggfunc="sum")
+    assert national.shape == (C.N_WEEKS, len(C.PAID_CHANNELS))
     assert len(sim.tables["regions"]) == 20
 
 
 def test_channel_spend_is_not_collinear(sim):
-    corr = _national_weekly_spend(sim.tables).corr().to_numpy()
-    off_diag = np.abs(corr[~np.eye(len(corr), dtype=bool)])
-    assert off_diag.max() < 0.6
+    national = _spend_long(sim.tables).pivot_table(index="week", columns="ch", values="spend", aggfunc="sum").fillna(0.0)
+    corr = national.corr().to_numpy()
+    assert np.abs(corr[~np.eye(len(corr), dtype=bool)]).max() < 0.6
+
+
+def test_nonbrand_is_65_percent_of_search(sim):
+    assert sim.truth["summary"]["nonbrand_share_of_search_spend"] == pytest.approx(0.65, abs=0.005)
 
 
 def test_display_is_the_near_zero_channel(sim):
-    roi = {c: v["roi_pipeline"] for c, v in sim.truth["channels"].items()}
-    assert sim.truth["near_zero_channel"] == "display"
-    others = [v for c, v in roi.items() if c != "display"]
-    assert roi["display"] < 0.1 * min(others)
+    cpa = {c: v["cpa"] for c, v in sim.truth["channels"].items()}
+    assert sim.truth["summary"]["highest_cpa_channel"] == "display"
+    assert cpa["display"] > 5 * max(v for c, v in cpa.items() if c != "display")
+
+
+def test_tv_runs_only_in_tv_regions_and_never_wins_last_touch(sim):
+    tv_regions = set(sim.tables["tv_weekly"].market)
+    assert tv_regions == set(C.TV_REGIONS)
+    leads = sim.tables["crm_leads"]
+    assert not leads.utm_source.str.lower().isin(["tv", "ctv"]).any()
 
 
 def test_platforms_over_claim(sim):
     t = sim.tables
+    g = t["ads_google_weekly"]
     claimed = {
-        "paid_search": t["ads_google_weekly"].query("campaign_type == 'SEARCH'").conversions.sum(),
-        "youtube": t["ads_google_weekly"].query("campaign_type == 'VIDEO'").conversions.sum(),
+        "paid_search_brand": g.query("campaign_name == 'FH_Search_Brand'").conversions.sum(),
+        "paid_search_nonbrand": g.query("campaign_name == 'FH_Search_NonBrand'").conversions.sum(),
+        "youtube": g.query("campaign_type == 'VIDEO'").conversions.sum(),
         "meta": t["ads_meta_weekly"].leads.sum(),
         "linkedin": t["ads_linkedin_weekly"].conversions.sum(),
         "display": (t["ads_display_weekly"].post_click_conversions + t["ads_display_weekly"].post_view_conversions).sum(),
+        "tv": t["tv_weekly"].vendor_attributed_leads.sum(),
+        "affiliates": t["partners_weekly"].referred_signups.sum(),
         "webinars": t["webinar_events"].registrants.sum(),
     }
     for ch, n in claimed.items():
