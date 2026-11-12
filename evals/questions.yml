@@ -34,11 +34,11 @@ questions:
       where year(f.week_start) = 2023 group by 1 order by sum(f.spend) desc limit 1
   - id: q05
     category: media
-    question: How much did we spend on Connected TV in the St. Louis region in 2024?
+    question: How much did we spend on Connected TV in the Columbus region in 2024?
     answer_type: number
     sql: >
       select sum(spend) from fct_channel_weekly
-      where channel_id = 'ctv' and region_name = 'St. Louis' and year(week_start) = 2024
+      where channel_id = 'ctv' and region_name = 'Columbus' and year(week_start) = 2024
   - id: q06
     category: media
     question: How many Meta impressions did we get in the first half of 2025?
