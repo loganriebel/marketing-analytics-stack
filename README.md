@@ -86,7 +86,7 @@ Spend has to move a lot, and not in lockstep, or no model can tell the channels 
 - **Flighting:** CTV and YouTube run in on/off flights, Meta and LinkedIn run in bursts with pauses, non-brand search and display are always on.
 - **Regions:** each channel is spread unevenly across the 20 regions, and most channels have a few weeks where a region goes dark. Those act like natural geo holdouts. CTV runs in only 8 regions, on its own schedule in each.
 - **Webinars** are regional events, so their spend lands in one region and one week at a time.
-- **Non-brand search** is always on and saturated, so on its own it moves with the baseline. Regional budget tests and pauses keep it measurable.
+- **Non-brand search** is always on, so on its own it moves with the baseline. Regional budget tests and pauses keep it measurable.
 - **Affiliate fees** step up or down at quarterly contract renewals.
 - **Budget history:** each January plan moves in a step, and the team made seven changes between plans. Examples: an attribution review in April 2024 cut YouTube and CTV, two reseller contracts ended in November 2024, and Meta got a retest in June 2025.
 - National weekly spend for any two channels correlates at under 0.6.

@@ -80,8 +80,8 @@ CRM_CHANNELS = PAID_CHANNELS + ["email", "organic_search", "direct", "referral"]
 # regional pauses per region over the horizon (natural geo holdouts). tilt_sigma:
 # how unevenly a channel is spread across regions beyond market size.
 SPEND = {
-    # Always-on, saturated search moves with the baseline, so the team runs regional
-    # budget tests (pauses and uneven regional budgets) to keep it measurable.
+    # Always-on search moves with the baseline, so the team runs regional budget
+    # tests (pauses and uneven regional budgets) to keep it measurable.
     "paid_search_nonbrand": {"weekly_budget": 65_000, "yearly_drift": 0.14, "quarter_sigma": 0.18,
                              "weekly_sigma": 0.08, "flight": "always_on", "season_follow": 0.3,
                              "dark_rate": 0.6, "dark_len": (4, 8), "tilt_sigma": 0.30,
