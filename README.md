@@ -91,6 +91,16 @@ Spend has to move a lot, and not in lockstep, or no model can tell the channels 
 - **Budget history:** each January plan moves in a step, and the team made seven changes between plans. Examples: an attribution review in April 2024 cut YouTube and CTV, two reseller contracts ended in November 2024, and Meta got a retest in June 2025.
 - National weekly spend for any two channels correlates at under 0.6.
 
+## Quality control
+
+The daily quality control runs in a separate workflow, not in this repo. It works like this:
+
+1. **Scripts run every day.** They build the pipeline and check the output for errors, anomalies, and missing data.
+2. **An agent reads the results.** When a check fails, an AI agent reviews the output and opens a GitHub issue with a short synopsis of what is wrong and the likely causes.
+3. **A person investigates.** Someone on the team reviews the issue, digs into the cause, and fixes it.
+
+In this repo the same kinds of checks run on demand: the dbt tests in `dbt build`, the validation checks in the [EDA report](docs/eda/EDA.md), and `pytest`.
+
 ## Layout
 
 ```
