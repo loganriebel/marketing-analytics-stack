@@ -31,6 +31,9 @@ from .data import Panel
 REF_WEEKS = 12
 TAIL_WEEKS = 8
 MIN_PAUSE_WEEKS = 3
+MIN_PLACEBO = 10
+COLUMNS = ["geo", "start_week", "paused_weeks", "size", "x", "delta_x", "delta_y", "placebo_mean",
+           "sigma", "n_placebo", "ref"]
 
 
 @dataclass
@@ -100,7 +103,6 @@ def estimate(panel: Panel, n_train: int) -> pd.DataFrame:
         others = np.array([h for h in range(len(panel.regions))
                            if h != g and not paused[span, h].any()])
         lift = _lift_per_week(y, g, others, eff, ref, p.weeks)
-        lo = max(ref[0], 0) if ref[0] < eff[0] else eff[1]
         x = float(brand[ref[0]:ref[1], g].mean())
 
         # Placebo: same window lengths, same region, start weeks with brand running.
@@ -116,16 +118,16 @@ def estimate(panel: Panel, n_train: int) -> pd.DataFrame:
             pothers = np.array([h for h in range(len(panel.regions))
                                 if h != g and not paused[pspan, h].any()])
             placebo.append(_lift_per_week(y, g, pothers, pe, pr, p.weeks))
+        if len(placebo) < MIN_PLACEBO:
+            continue  # no honest noise estimate for this pause
         rows.append({
             "geo": p.region, "start_week": str(panel.weeks[p.start].date()),
             "paused_weeks": p.weeks, "size": float(size[g]),
             "x": x, "delta_x": -x, "delta_y": lift,
             "placebo_mean": float(np.mean(placebo)), "sigma": float(np.std(placebo, ddof=1)),
             "n_placebo": len(placebo), "ref": "pre" if ref[0] < eff[0] else "post",
-            "_unused_lo": lo,
         })
-    df = pd.DataFrame(rows).drop(columns="_unused_lo")
-    return df
+    return pd.DataFrame(rows, columns=COLUMNS)
 
 
 def pooled(df: pd.DataFrame) -> dict:
