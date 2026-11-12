@@ -121,14 +121,55 @@ def _monday_of_iso_week(year: int, week: int) -> date:
     return date.fromisocalendar(year, week, 1)
 
 
+# --- true parameters ----------------------------------------------------------
+
+def _draw_true_params(rng: np.random.Generator) -> dict:
+    """Every true effect, drawn from the config ranges in a fixed order."""
+    def uni(lo_hi):
+        return float(rng.uniform(*lo_hi))
+
+    def log_uni(lo_hi):
+        return float(np.exp(rng.uniform(np.log(lo_hi[0]), np.log(lo_hi[1]))))
+
+    effect = {}
+    for ch in C.PAID_CHANNELS:
+        r = C.EFFECT_RANGES[ch]
+        effect[ch] = {"alpha": round(uni(r["alpha"]), 3), "K": round(log_uni(r["K"]), -1),
+                      "S": round(uni(r["S"]), 3), "cpa": round(log_uni(r["cpa"]), 2)}
+    jit = C.FUNNEL_JITTER
+    funnel = {}
+    for o in C.ORIGINS:
+        f = C.FUNNEL[o]
+        funnel[o] = {k: round(min(f[k] * float(np.exp(rng.normal(0.0, jit["rate_sigma"]))), 0.95), 4)
+                     for k in ("p_mql", "p_sql", "p_opp", "p_won")}
+        funnel[o]["amount_mult"] = round(f["amount_mult"] * float(np.exp(rng.normal(0.0, jit["amount_sigma"]))), 4)
+    return {
+        "effect": effect,
+        "funnel": funnel,
+        "base_growth": round(uni(C.BASE["growth_per_year_range"]), 4),
+        "macro_elasticity": round(uni(C.MACRO["demand_elasticity_range"]), 3),
+        "sdr_elasticity": round(uni(C.SALES["sdr_elasticity_range"]), 3),
+        "ae_elasticity": round(uni(C.SALES["ae_elasticity_range"]), 3),
+        "email_alpha": round(uni(C.EMAIL["alpha_range"]), 3),
+        "email_K": round(log_uni(C.EMAIL["K_range"]), -1),
+        "year_end_win_mult": round(uni(C.PROMO["year_end_win_mult_range"]), 3),
+        "price_win_mult": round(uni(C.PROMO["price_win_mult_range"]), 3),
+    }
+
+
 # --- spend ------------------------------------------------------------------
 
-def _planned_spend(rng, ch: str, cal: dict, size: np.ndarray, region_ok: np.ndarray) -> np.ndarray:
+def _planned_spend(rng, ch: str, cal: dict, size: np.ndarray,
+                   region_ok: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Actual spend (T, R) and the national plan it was bought against (T,)."""
     p = C.SPEND[ch]
     t_total, n_reg = cal["T"], size.size
+    yr = cal["year_idx"]
+    year_noise = np.exp(rng.normal(0.0, C.YEAR_PLAN_SIGMA, yr.max() - yr.min() + 1))[yr - yr.min()]
     q_mult = np.exp(rng.normal(0.0, p["quarter_sigma"], cal["quarter"].max() + 1))[cal["quarter"]]
-    level = p["weekly_budget"] * np.exp(p["growth"] * cal["years"]) * q_mult
-    level = level * cal["season"] ** p["season_follow"] * cal["holiday_cut"]
+    plan = (p["weekly_budget"] * np.exp(p["yearly_drift"] * yr) * cal["event_mult"][ch]
+            * cal["season"] ** p["season_follow"] * cal["holiday_cut"])
+    level = plan * year_noise * q_mult
     tilt = np.exp(rng.normal(0.0, p["tilt_sigma"], n_reg))
     alloc = size * tilt * region_ok
     alloc = alloc / alloc.sum()
@@ -158,13 +199,16 @@ def _planned_spend(rng, ch: str, cal: dict, size: np.ndarray, region_ok: np.ndar
             x[on_w] *= include[flight_id[on_w]]
     x = np.round(x, 2)
     x[x < 25.0] = 0.0
-    return x
+    return x, plan
 
 
 # --- simulation ---------------------------------------------------------------
 
 def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
-    rng = np.random.default_rng(seed)
+    # Two child streams: one draws the hidden true parameters, one draws the data.
+    truth_seq, data_seq = np.random.SeedSequence(seed).spawn(2)
+    tp = _draw_true_params(np.random.default_rng(truth_seq))
+    rng = np.random.default_rng(data_seq)
 
     # --- calendar and regions ---------------------------------------------------
     t_total = C.BURN_IN_WEEKS + C.N_WEEKS
@@ -199,14 +243,20 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
         season[woy == wk] *= m
     lo, hi = C.SEASON["summer_weeks"]
     season[(woy >= lo) & (woy <= hi)] *= C.SEASON["summer_mult"]
-    cal = {"T": t_total, "years": years, "quarter": quarter, "season": season, "holiday_cut": holiday_cut}
+    event_mult = {ch: np.ones(t_total) for ch in C.PLANNED_CHANNELS}
+    for ev_date, _reason, changes in C.BUDGET_EVENTS:
+        for ch, change in changes.items():
+            event_mult[ch][week_d >= np.datetime64(ev_date, "D")] *= 1 + change
+    cal = {"T": t_total, "quarter": quarter, "season": season, "holiday_cut": holiday_cut,
+           "year_idx": np.array([w.year - C.WINDOW_START.year for w in weeks]), "event_mult": event_mult}
 
     # --- planned spend and webinars -------------------------------------------
     spend: dict[str, np.ndarray] = {}
+    plans: dict[str, np.ndarray] = {}
     all_regions = np.ones(n_reg, dtype=bool)
     ctv_regions = np.isin(codes, C.CTV_REGIONS)
     for ch in C.PLANNED_CHANNELS:
-        spend[ch] = _planned_spend(rng, ch, cal, size, ctv_regions if ch == "ctv" else all_regions)
+        spend[ch], plans[ch] = _planned_spend(rng, ch, cal, size, ctv_regions if ch == "ctv" else all_regions)
 
     w_cfg = C.WEBINARS
     ev_rate = w_cfg["events_per_week_national"] * size / n_reg
@@ -228,9 +278,9 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     b = C.BASE
     eta = _ar1(rng, t_total, 1, b["national_shock_sigma"], b["national_shock_rho"])[:, 0]
     eps = rng.normal(0.0, b["region_week_sigma"], (t_total, n_reg))
-    trend = np.exp(b["growth_per_year"] * years)
+    trend = np.exp(tp["base_growth"] * years)
     mu_base = (b["leads_per_week_avg_region"] * size[None, :] * area_lead[None, :]
-               * (trend * season)[:, None] * np.exp(eps + eta[:, None]))
+               * (trend * season)[:, None] * np.exp(eps + tp["macro_elasticity"] * eta[:, None]))
     fleet_index = np.round(C.MACRO["index_level"] * np.exp(eta + rng.normal(0.0, C.MACRO["measurement_sigma"], t_total)), 1)
 
     # --- sales capacity ---------------------------------------------------------
@@ -256,7 +306,7 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
         cov_r = path[:, None] * np.exp(area_off[None, :] + region_eff[None, :] + noise)
         count = np.maximum(1, np.round(cov_r * target[None, :])).astype(np.int64)
         lo_b, hi_b = s_cfg["mult_bounds"]
-        mult = np.clip((count / target[None, :]) ** s_cfg[f"{role}_elasticity"], lo_b, hi_b)
+        mult = np.clip((count / target[None, :]) ** tp[f"{role}_elasticity"], lo_b, hi_b)
         counts_by_role[role] = count
         mult_by_role[role] = mult[month_idx]  # (T, R)
     sdr_mult, ae_mult = mult_by_role["sdr"], mult_by_role["ae"]
@@ -273,21 +323,20 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
                         + rng.normal(0.0, 0.01, t_total), 0.05, 0.9)
     opens = rng.binomial(sends, open_rate[:, None])
     email_clicks = rng.binomial(opens, e_cfg["click_rate_of_opens"])
-    a_email = _adstock(sends.astype(float), e_cfg["alpha"], C.L_MAX)
-    email_shape = size * _hill(a_email / size, e_cfg["K"], e_cfg["S"])
+    a_email = _adstock(sends.astype(float), tp["email_alpha"], C.L_MAX)
+    email_shape = size * _hill(a_email / size, tp["email_K"], e_cfg["S"])
     beta_email = e_cfg["leads_per_week_avg_region"] * C.N_WEEKS * size.sum() / email_shape[win].sum()
     mu_email = beta_email * email_shape
 
     # --- promo and price calendar (applies by lead created week) -------------------
     p_cfg = C.PROMO
     after_price = week_d >= np.datetime64(p_cfg["price_change_date"], "D")
-    win_time = np.where(is_year_end, p_cfg["year_end_win_mult"], 1.0) * np.where(after_price, p_cfg["price_win_mult"], 1.0)
+    win_time = np.where(is_year_end, tp["year_end_win_mult"], 1.0) * np.where(after_price, tp["price_win_mult"], 1.0)
     amount_time = (np.where(is_year_end, 1 - p_cfg["year_end_discount_pct"] / 100, 1.0)
                    * np.where(after_price, 1 + p_cfg["price_change_pct"] / 100, 1.0))
 
     # --- conversion by origin, region and created week ---------------------------
-    n_orig = len(C.ORIGINS)
-    fp = {k: np.array([C.FUNNEL[o][k] for o in C.ORIGINS]) for k in ("p_mql", "p_sql", "p_opp", "p_won", "amount_mult")}
+    fp = {k: np.array([tp["funnel"][o][k] for o in C.ORIGINS]) for k in ("p_mql", "p_sql", "p_opp", "p_won", "amount_mult")}
     p_sql_eff = np.minimum(fp["p_sql"][:, None, None] * sdr_mult[None], 0.95)  # (O, T, R)
     p_won_eff = np.minimum(fp["p_won"][:, None, None] * ae_mult[None] * win_time[None, :, None], 0.95)
     p_opp_lead = fp["p_mql"][:, None, None] * p_sql_eff * fp["p_opp"][:, None, None]
@@ -300,13 +349,13 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
 
     o_index = {o: i for i, o in enumerate(C.ORIGINS)}
 
-    # --- true media effects, calibrated to target CPA --------------------------
+    # --- true media effects, calibrated to the drawn CPA -----------------------
     pad = np.zeros((C.L_MAX, n_reg))
     mu_media: dict[str, np.ndarray] = {}
     channel_truth: dict[str, dict] = {}
 
     def fit_channel(ch: str) -> None:
-        e = C.EFFECT[ch]
+        e = tp["effect"][ch]
         x_full = np.vstack([spend[ch], pad])
         x_burn = x_full.copy()
         x_burn[C.BURN_IN_WEEKS :] = 0.0
@@ -321,7 +370,7 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
         i = o_index[ch]
         deal_x, opp_x, amt_x = extend(p_deal[i]), extend(p_opp_lead[i]), extend(amount_mean[i])
         spend_win = float(spend[ch][win].sum())
-        beta = spend_win / (e["target_cpa"] * float((contrib(1.0) * deal_x).sum()))
+        beta = spend_win / (e["cpa"] * float((contrib(1.0) * deal_x).sum()))
         mu_media[ch] = beta * size * _hill(a_full[:t_total] / size, e["K"], e["S"])
 
         def deals(mult: float) -> float:
@@ -331,7 +380,7 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
         inc_deals = deals(1.0)
         inc_rev = float((leads_1 * deal_x * amt_x).sum())
         inc_pipe = float((leads_1 * opp_x * amt_x).sum())
-        f = C.FUNNEL[ch]
+        f = tp["funnel"][ch]
         channel_truth[ch] = {
             "spend": _r(spend_win, 2),
             "incremental_leads": _r(leads_1.sum(), 2),
@@ -365,8 +414,9 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     demand = mu_base + sum(share * mu_media[src] for src, share in bs["demand_from"].items())
     brand_raw = (demand * np.exp(rng.normal(0.0, bs["noise_sigma"], (t_total, n_reg)))
                  * _dark_mask(rng, t_total, n_reg, bs["dark_rate"], bs["dark_len"]))
-    nonbrand_win = spend["paid_search_nonbrand"][win].sum()
-    scale = bs["share_of_search"] / (1 - bs["share_of_search"]) * nonbrand_win / brand_raw[win].sum()
+    planned_nonbrand_win = plans["paid_search_nonbrand"][win].sum()
+    share = bs["planned_share_of_search"]
+    scale = share / (1 - share) * planned_nonbrand_win / brand_raw[win].sum()
     brand = np.round(brand_raw * scale, 2)
     brand[brand < 25.0] = 0.0
     spend["paid_search_brand"] = brand
@@ -662,6 +712,7 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
             "response_curve": "incremental deals when the channel's in-window spend path is scaled by spend_multiplier, other channels unchanged",
             "lead_model": "leads(r,t) = base(r,t) + email(r,t) + sum_c beta_c * size_r * hill(adstock_c(spend_rc)(t) / size_r)",
             "deal_model": "deal probability per lead = p_mql * p_sql * sdr_mult(r,t) * p_opp * p_won * ae_mult(r,t) * promo(t) * price(t), by lead created week",
+            "parameter_draws": "every true parameter here was drawn from the ranges in sim/config.py by a child stream of the seed; none is typed in",
         },
         "channels": channel_truth,
         "summary": {
@@ -680,19 +731,20 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
             "baseline": {
                 "expected_deals_in_window": _r(base_deals, 2),
                 "leads_per_week_avg_region": b["leads_per_week_avg_region"],
-                "growth_per_year_log": b["growth_per_year"],
+                "growth_per_year_log": tp["base_growth"],
                 "seasonality": {"fourier": C.SEASON["fourier"],
                                 "holiday_weeks": C.SEASON["holiday_weeks"],
                                 "summer_weeks": list(C.SEASON["summer_weeks"]),
                                 "summer_mult": C.SEASON["summer_mult"]},
-                "lead_quality": C.FUNNEL["base"],
+                "lead_quality": tp["funnel"]["base"],
                 "crm_last_touch_recording": C.CRM_ATTRIBUTION["base"],
             },
-            "fleet_activity_index": {"effect": "baseline leads scale with (index / 100) ** 1.0",
+            "fleet_activity_index": {"effect": "baseline leads scale with (index / 100) ** demand_elasticity",
+                                     "demand_elasticity": tp["macro_elasticity"],
                                      "measurement_sigma_log": C.MACRO["measurement_sigma"]},
             "sales_capacity": {
-                "sdr_elasticity_on_p_sql": s_cfg["sdr_elasticity"],
-                "ae_elasticity_on_p_won": s_cfg["ae_elasticity"],
+                "sdr_elasticity_on_p_sql": tp["sdr_elasticity"],
+                "ae_elasticity_on_p_won": tp["ae_elasticity"],
                 "coverage": "headcount / (per_1k_accounts * target_accounts / 1000)",
                 "sdr_per_1k_accounts": s_cfg["sdr_per_1k_accounts"],
                 "ae_per_1k_accounts": s_cfg["ae_per_1k_accounts"],
@@ -702,16 +754,16 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
             "email": {
                 "expected_deals_in_window": _r(email_deals, 2),
                 "deals_per_1k_sends": _r(1000 * email_deals / float(sends[win].sum()), 4),
-                "adstock": {"type": "geometric", "alpha": e_cfg["alpha"], "l_max": C.L_MAX, "normalized": True},
-                "saturation": {"type": "hill", "half_saturation": e_cfg["K"], "slope": e_cfg["S"],
+                "adstock": {"type": "geometric", "alpha": tp["email_alpha"], "l_max": C.L_MAX, "normalized": True},
+                "saturation": {"type": "hill", "half_saturation": tp["email_K"], "slope": e_cfg["S"],
                                "input": "adstocked weekly sends / region size index"},
                 "beta_leads_per_week_per_size_unit": _r(beta_email, 6),
-                "lead_quality": C.FUNNEL["email"],
+                "lead_quality": tp["funnel"]["email"],
             },
             "promo": {
-                "year_end_win_mult": p_cfg["year_end_win_mult"],
+                "year_end_win_mult": tp["year_end_win_mult"],
                 "year_end_amount_mult": 1 - p_cfg["year_end_discount_pct"] / 100,
-                "price_change_win_mult": p_cfg["price_win_mult"],
+                "price_change_win_mult": tp["price_win_mult"],
                 "price_change_amount_mult": 1 + p_cfg["price_change_pct"] / 100,
             },
         },

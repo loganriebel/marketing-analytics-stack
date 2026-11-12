@@ -1,15 +1,14 @@
 """Every knob of the simulated company lives here.
 
 Fernhook Software is fictional. It sells fleet-maintenance and work-order software
-to small and mid-size fleets (5 to 200 vehicles): local delivery, HVAC and plumbing
-service vans, landscaping crews. Sales-assisted motion with a 14-day trial, so a
-lead usually closes in 7 to 30 days. Nothing here describes a real company.
+to small fleets (5 to 50 vehicles): local delivery, HVAC and plumbing service vans,
+landscaping crews. Sales-assisted motion with a 14-day trial, so a lead usually
+closes in 7 to 30 days. Nothing here describes a real company.
 
-The story baked into the numbers: the CRM credits every deal to its last UTM touch,
-so budget reviews kept rewarding search and retargeting while CTV, YouTube and Meta
-got cut. In truth, non-brand search is saturated, brand search mostly buys clicks
-that would have come anyway, display retargeting does almost nothing, and CTV,
-YouTube and Meta are underfunded.
+Three layers live here. The company's history (budgets, headcount, promos) is set
+directly. The measurement layer (last-touch UTMs, platform reporting) follows how
+real tools behave. The true effects are not set at all: each run draws them from
+the ranges below, and the drawn values are written only to sim/truth/truth.json.
 
 Model frame: the dependent variable is closed-won deals by region and week. Paid
 channel spend is the independent variable set. Sales headcount, email volume, the
@@ -74,53 +73,72 @@ ORIGINS = ["base", "email"] + PAID_CHANNELS  # what truly caused a lead
 CRM_CHANNELS = PAID_CHANNELS + ["email", "organic_search", "direct", "referral"]
 
 # --- Spend plan for planned channels ----------------------------------------
-# weekly_budget: national $/week at window start. growth: log budget growth per
-# year; the signs carry the drift (last-touch reviews feed non-brand search,
-# retargeting and affiliates, and starve CTV, YouTube and Meta).
+# weekly_budget: national $/week at window start. yearly_drift: the log change in
+# each January plan; every channel-year also gets its own planning noise, so plans
+# move in steps, not smooth curves. Mid-year decisions are in BUDGET_EVENTS.
 # flight: always_on | bursts | flights | regional_flights. dark_rate: expected
 # regional pauses per region over the horizon (natural geo holdouts). tilt_sigma:
 # how unevenly a channel is spread across regions beyond market size.
 SPEND = {
     # Always-on, saturated search moves with the baseline, so the team runs regional
     # budget tests (pauses and uneven regional budgets) to keep it measurable.
-    "paid_search_nonbrand": {"weekly_budget": 65_000, "growth": 0.20, "quarter_sigma": 0.18,
+    "paid_search_nonbrand": {"weekly_budget": 65_000, "yearly_drift": 0.14, "quarter_sigma": 0.18,
                              "weekly_sigma": 0.08, "flight": "always_on", "season_follow": 0.3,
                              "dark_rate": 0.6, "dark_len": (4, 8), "tilt_sigma": 0.30,
                              "region_sigma": 0.22},
-    "meta": {"weekly_budget": 30_000, "growth": -0.20, "quarter_sigma": 0.15,
+    "meta": {"weekly_budget": 30_000, "yearly_drift": -0.08, "quarter_sigma": 0.15,
              "weekly_sigma": 0.12, "flight": "bursts", "season_follow": 0.0,
              "dark_rate": 0.9, "dark_len": (6, 10), "tilt_sigma": 0.40,
              "region_sigma": 0.18},
-    "linkedin": {"weekly_budget": 26_000, "growth": 0.05, "quarter_sigma": 0.20,
+    "linkedin": {"weekly_budget": 26_000, "yearly_drift": 0.04, "quarter_sigma": 0.20,
                  "weekly_sigma": 0.10, "flight": "bursts", "season_follow": 0.0,
                  "dark_rate": 0.7, "dark_len": (6, 10), "tilt_sigma": 0.45,
                  "region_sigma": 0.15},
-    "youtube": {"weekly_budget": 22_000, "growth": -0.25, "quarter_sigma": 0.20,
+    "youtube": {"weekly_budget": 22_000, "yearly_drift": -0.10, "quarter_sigma": 0.20,
                 "weekly_sigma": 0.10, "flight": "flights", "season_follow": 0.0,
                 "dark_rate": 0.6, "dark_len": (6, 10), "tilt_sigma": 0.35,
                 "region_sigma": 0.15},
-    "ctv": {"weekly_budget": 22_000, "growth": -0.25, "quarter_sigma": 0.15,
+    "ctv": {"weekly_budget": 22_000, "yearly_drift": -0.08, "quarter_sigma": 0.15,
            "weekly_sigma": 0.05, "flight": "regional_flights", "season_follow": 0.0,
            "dark_rate": 0.0, "dark_len": (0, 0), "tilt_sigma": 0.25,
            "region_sigma": 0.08, "on_weeks": (3, 6), "off_weeks": (4, 10)},
-    "display": {"weekly_budget": 22_000, "growth": 0.15, "quarter_sigma": 0.20,
+    "display": {"weekly_budget": 22_000, "yearly_drift": 0.10, "quarter_sigma": 0.20,
                 "weekly_sigma": 0.20, "flight": "always_on", "season_follow": 0.0,
                 "dark_rate": 0.9, "dark_len": (6, 10), "tilt_sigma": 0.35,
                 "region_sigma": 0.20},
     # Partner placement and sponsor fees, set at quarterly contract renewals.
     # Per-deal commissions are cost of sale and stay out of media spend.
-    "affiliates": {"weekly_budget": 12_000, "growth": 0.12, "quarter_sigma": 0.25,
+    "affiliates": {"weekly_budget": 12_000, "yearly_drift": 0.03, "quarter_sigma": 0.25,
                    "weekly_sigma": 0.04, "flight": "always_on", "season_follow": 0.0,
                    "dark_rate": 0.2, "dark_len": (6, 12), "tilt_sigma": 0.50,
                    "region_sigma": 0.05},
 }
 
-# Brand search buys clicks from people already searching "Fernhook", so its spend
-# follows demand: baseline plus the searches CTV, YouTube and Meta create. Its total
-# is set so non-brand is 65% of search spend over the window. Regional pauses are
-# the brand-search holdout tests a cautious team would run.
+YEAR_PLAN_SIGMA = 0.07
+# Decisions the team made between annual plans: (date, reason, {channel: change}).
+# Most follow last-touch readouts; a few do not.
+BUDGET_EVENTS = [
+    (date(2023, 4, 3), "Q1 review: CTV test expands, YouTube trimmed",
+     {"ctv": 0.15, "youtube": -0.22, "paid_search_nonbrand": 0.07}),
+    (date(2023, 10, 2), "Q4 plan: more retargeting for year-end",
+     {"display": 0.18, "meta": -0.12}),
+    (date(2024, 4, 1), "Attribution review: video and CTV show few last-touch leads",
+     {"youtube": -0.31, "ctv": -0.34, "paid_search_nonbrand": 0.12, "affiliates": 0.21}),
+    (date(2024, 8, 5), "Cost cut during the hiring freeze",
+     {"linkedin": -0.19, "meta": -0.17}),
+    (date(2024, 11, 4), "Two reseller contracts end", {"affiliates": -0.24}),
+    (date(2025, 2, 3), "New fiscal year: more for what last touch rewards",
+     {"paid_search_nonbrand": 0.09, "display": 0.13}),
+    (date(2025, 6, 2), "Meta retest after a new creative agency",
+     {"meta": 0.23, "youtube": -0.14}),
+]
+
+# Brand search spend follows search volume for "Fernhook": baseline demand plus the
+# searches other channels create. The plan sets it at about 35% of search, measured
+# against the non-brand plan; actual spend lands wherever demand takes it. Regional
+# pauses are the brand-search holdout tests a cautious team would run.
 BRAND_SEARCH = {
-    "share_of_search": 0.35,
+    "planned_share_of_search": 0.35,
     "demand_from": {"ctv": 0.6, "youtube": 0.5, "meta": 0.3},
     "noise_sigma": 0.10,
     "dark_rate": 0.5,
@@ -146,28 +164,32 @@ WEBINARS = {
 
 HOLIDAY_SPEND_CUT = 0.7  # every planned channel trims spend in the last and first ISO weeks
 
-# --- True media effect -----------------------------------------------------
+# --- True media effect (drawn per run) ---------------------------------------
 # Leads caused by channel c in region r, week t:
 #   beta_c * size_r * hill(adstock_c(spend_rc)(t) / size_r; K_c, S_c)
 # adstock is geometric and normalized (weights sum to 1) over L_MAX weeks.
 # K_c is in $/week of adstocked spend for an average-size region (size 1.0).
-# target_cpa sets beta: in-window spend / expected closed-won deals it causes.
-EFFECT = {
-    "paid_search_brand": {"alpha": 0.10, "K": 600, "S": 1.0, "target_cpa": 5_600},
-    "paid_search_nonbrand": {"alpha": 0.25, "K": 1_800, "S": 1.4, "target_cpa": 1_600},
-    "meta": {"alpha": 0.45, "K": 3_000, "S": 1.2, "target_cpa": 1_360},
-    "linkedin": {"alpha": 0.40, "K": 1_300, "S": 1.2, "target_cpa": 2_720},
-    "youtube": {"alpha": 0.70, "K": 3_000, "S": 1.3, "target_cpa": 1_440},
-    "ctv": {"alpha": 0.75, "K": 6_000, "S": 1.5, "target_cpa": 1_920},
-    "display": {"alpha": 0.30, "K": 1_000, "S": 1.0, "target_cpa": 36_000},
-    "affiliates": {"alpha": 0.50, "K": 900, "S": 1.1, "target_cpa": 1_200},
-    "webinars": {"alpha": 0.20, "K": 6_000, "S": 1.0, "target_cpa": 1_120},
+# Each run draws alpha and S uniformly, K log-uniformly, and a cost per incremental
+# deal log-uniformly, then sets beta so in-window spend divided by the deals it
+# causes equals that draw. Ranges follow published incrementality work: brand
+# search and retargeting tend to show low lift, and one channel is near zero so
+# the MMM has a dud to find.
+EFFECT_RANGES = {
+    "paid_search_brand": {"alpha": (0.05, 0.15), "K": (450, 800), "S": (0.9, 1.1), "cpa": (3_500, 9_000)},
+    "paid_search_nonbrand": {"alpha": (0.20, 0.30), "K": (1_500, 2_200), "S": (1.3, 1.5), "cpa": (1_300, 2_100)},
+    "meta": {"alpha": (0.38, 0.52), "K": (2_500, 3_600), "S": (1.1, 1.3), "cpa": (1_100, 1_900)},
+    "linkedin": {"alpha": (0.33, 0.47), "K": (1_050, 1_600), "S": (1.1, 1.3), "cpa": (2_000, 3_400)},
+    "youtube": {"alpha": (0.62, 0.78), "K": (2_500, 3_600), "S": (1.2, 1.4), "cpa": (1_100, 2_000)},
+    "ctv": {"alpha": (0.68, 0.80), "K": (5_000, 7_200), "S": (1.4, 1.6), "cpa": (1_500, 2_600)},
+    "display": {"alpha": (0.25, 0.35), "K": (800, 1_200), "S": (0.9, 1.1), "cpa": (20_000, 60_000)},
+    "affiliates": {"alpha": (0.42, 0.58), "K": (750, 1_100), "S": (1.0, 1.2), "cpa": (950, 1_600)},
+    "webinars": {"alpha": (0.15, 0.25), "K": (5_000, 7_200), "S": (0.9, 1.1), "cpa": (900, 1_500)},
 }
 
 # --- Organic baseline ------------------------------------------------------
 BASE = {
     "leads_per_week_avg_region": 82.5,  # at window start, size 1.0, NA, season 1.0
-    "growth_per_year": 0.08,            # log growth
+    "growth_per_year_range": (0.05, 0.11),  # log growth, drawn per run
     "region_week_sigma": 0.07,
     "national_shock_sigma": 0.04,       # the part the market-activity index tracks
     "national_shock_rho": 0.6,
@@ -180,13 +202,14 @@ SEASON = {
     "summer_mult": 0.92,
 }
 # Fleet activity index: a public-style weekly index of commercial fleet miles.
-# Baseline demand moves one for one with it in logs; it is published with a
-# little measurement noise.
-MACRO = {"index_level": 100.0, "measurement_sigma": 0.01}
+# Baseline demand moves with it in logs (elasticity drawn per run); it is published
+# with a little measurement noise.
+MACRO = {"index_level": 100.0, "measurement_sigma": 0.01, "demand_elasticity_range": (0.8, 1.2)}
 
 # --- Controls that move conversion -------------------------------------------
 # Sales capacity: more SDRs per account book more calls (MQL to SQL), more AEs
-# close more trials (opportunity to won). Multiplier = coverage ** elasticity.
+# close more trials (opportunity to won). Multiplier = coverage ** elasticity,
+# with both elasticities drawn per run.
 SALES = {
     "sdr_per_1k_accounts": 0.14,
     "ae_per_1k_accounts": 0.19,
@@ -199,8 +222,8 @@ SALES = {
     "area_offset": {"NA": 0.0, "EMEA": -0.10, "APAC": -0.14},
     "region_sigma": 0.06,
     "month_sigma": 0.03,
-    "sdr_elasticity": 0.40,
-    "ae_elasticity": 0.30,
+    "sdr_elasticity_range": (0.30, 0.50),
+    "ae_elasticity_range": (0.22, 0.38),
     "mult_bounds": (0.75, 1.12),
 }
 # Email is owned media: nurture and newsletter sends reactivate known contacts.
@@ -213,26 +236,28 @@ EMAIL = {
     "open_rate_start": 0.31,
     "open_rate_drift_per_year": -0.012,
     "click_rate_of_opens": 0.09,
-    "alpha": 0.30,
-    "K": 6_000,
+    "alpha_range": (0.22, 0.38),
+    "K_range": (4_500, 8_000),
     "S": 1.0,
     "leads_per_week_avg_region": 5.0,
 }
 # Year-end offer: 15% off annual plans for trials started in ISO weeks 46 to 50.
-# List price rises 10% for leads created on or after the change date.
+# List price rises 10% for leads created on or after the change date. The win-rate
+# effects of both are drawn per run.
 PROMO = {
     "year_end_weeks": (46, 50),
     "year_end_discount_pct": 15,
-    "year_end_win_mult": 1.20,
+    "year_end_win_mult_range": (1.12, 1.28),
     "price_change_date": date(2024, 7, 1),
     "price_change_pct": 10,
-    "price_win_mult": 0.94,
+    "price_win_mult_range": (0.90, 0.97),
 }
 
 # --- Funnel ------------------------------------------------------------------
 # lead -> MQL (fits the profile) -> SQL (SDR call booked) -> opportunity (demo and
 # trial) -> closed won. Lead quality depends on the true origin, not the recorded
-# source. amount_mult scales the first-year contract median.
+# source. amount_mult scales the first-year contract median. These are central
+# values; each run jitters every rate and multiplier (FUNNEL_JITTER, log scale).
 FUNNEL = {
     "base": {"p_mql": 0.60, "p_sql": 0.45, "p_opp": 0.70, "p_won": 0.36, "amount_mult": 1.00},
     "email": {"p_mql": 0.65, "p_sql": 0.45, "p_opp": 0.70, "p_won": 0.36, "amount_mult": 1.00},
@@ -246,6 +271,7 @@ FUNNEL = {
     "affiliates": {"p_mql": 0.60, "p_sql": 0.44, "p_opp": 0.70, "p_won": 0.35, "amount_mult": 1.05},
     "webinars": {"p_mql": 0.70, "p_sql": 0.40, "p_opp": 0.65, "p_won": 0.34, "amount_mult": 1.10},
 }
+FUNNEL_JITTER = {"rate_sigma": 0.06, "amount_sigma": 0.04}
 AMOUNT_MEDIAN = 2_400.0  # first-year contract value at list price, USD
 AMOUNT_SIGMA = 0.45
 # Stage lags in days, gamma(shape, scale) floored to whole days. Lead to close
