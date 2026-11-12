@@ -23,9 +23,11 @@ CHANNELS = [
     "ctv",
     "display",
     "affiliates",
-    "webinars",
 ]
 BRAND = "paid_search_brand"
+# Regional live events. Their cost sits in fct_channel_weekly, but they are an
+# events program, not bought media, so they enter as a control.
+WEBINARS = "webinars"
 
 HOLDOUT_WEEKS = 13
 HDI_PROB = 0.90

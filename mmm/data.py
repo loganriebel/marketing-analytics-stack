@@ -21,11 +21,12 @@ class Panel:
     weeks: pd.DatetimeIndex
     regions: list[str]
     channels: list[str]
-    spend: np.ndarray          # (T, G, C) dollars
+    spend: np.ndarray          # (T, G, C) media dollars
     deals: np.ndarray          # (T, G) closed-won deals, all sources
     won_revenue: np.ndarray    # (T, G) closed-won first-year revenue
     accounts: np.ndarray       # (G,) target accounts
     controls_raw: pd.DataFrame  # long, one row per week x region
+    webinar_spend: np.ndarray  # (T, G) event cost, used as a control
 
     @property
     def size(self) -> np.ndarray:
@@ -41,7 +42,7 @@ class Panel:
         ctrl = self.controls_raw[self.controls_raw.region_id.isin(regs)
                                  & self.controls_raw.week_start.isin(weeks)].reset_index(drop=True)
         return Panel(weeks, regs, self.channels, self.spend[t][:, g], self.deals[t][:, g],
-                     self.won_revenue[t][:, g], self.accounts[g], ctrl)
+                     self.won_revenue[t][:, g], self.accounts[g], ctrl, self.webinar_spend[t][:, g])
 
 
 def connect(path: Path = C.WAREHOUSE) -> duckdb.DuckDBPyConnection:
@@ -78,7 +79,7 @@ def load_panel(path: Path = C.WAREHOUSE) -> Panel:
         df["week_start"] = pd.to_datetime(df["week_start"])
     weeks = pd.DatetimeIndex(sorted(funnel.week_start.unique()))
     regions = sorted(funnel.region_id.unique())
-    missing = set(C.CHANNELS) - set(spend.channel_id)
+    missing = {*C.CHANNELS, C.WEBINARS} - set(spend.channel_id)
     if missing:
         raise ValueError(f"channels missing from fct_channel_weekly: {sorted(missing)}")
     accounts = controls.groupby("region_id").target_accounts.first().reindex(regions).to_numpy(float)
@@ -91,6 +92,7 @@ def load_panel(path: Path = C.WAREHOUSE) -> Panel:
         won_revenue=_cube(funnel, "won_revenue", weeks, regions),
         accounts=accounts,
         controls_raw=controls,
+        webinar_spend=_cube(spend, "spend", weeks, regions, [C.WEBINARS])[:, :, 0],
     )
 
 

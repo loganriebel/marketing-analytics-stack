@@ -10,7 +10,8 @@ Design (reasons in docs/mmm/README.md):
   the kernel peaks one to two weeks after spend, like a B2B close.
 * Hill saturation, which can be concave or S-shaped, so the data decide whether the
   next dollar is worth more or less than the average one.
-* Controls act on leads, so they get the same lead-to-close kernel.
+* Controls act on leads, so they get the same lead-to-close kernel. Webinars are an
+  events program, not bought media, so their cost enters as a control.
 * Brand search gets a skeptical prior (its spend follows demand) plus a pooled lift
   test from the regional pauses.
 """
@@ -116,8 +117,8 @@ def _lag_filter(a: np.ndarray) -> np.ndarray:
 
 
 CONTROL_COLUMNS = ["sdr_coverage", "ae_coverage", "email_sends", "fleet_activity", "promo",
-                   "price_increase", "trend", *C.HOLIDAY_CLOSE_WEEKS]
-STANDARDIZED = ["sdr_coverage", "ae_coverage", "email_sends", "fleet_activity", "trend"]
+                   "price_increase", "trend", "webinars", *C.HOLIDAY_CLOSE_WEEKS]
+STANDARDIZED = ["sdr_coverage", "ae_coverage", "email_sends", "fleet_activity", "trend", "webinars"]
 
 
 @dataclass
@@ -160,6 +161,7 @@ def controls_cube(panel: Panel) -> dict[str, np.ndarray]:
         "promo": _lag_filter(cube("is_discount_promo").astype(float)),
         "price_increase": _lag_filter((cube("list_price_index") - 1.0) * 10.0),
         "trend": np.repeat((np.arange(T) / 52.0)[:, None], G, axis=1),
+        "webinars": _lag_filter(panel.webinar_spend / panel.size[None, :]),
     }
     for name, weeks in C.HOLIDAY_CLOSE_WEEKS.items():
         out[name] = np.repeat(np.isin(woy, weeks).astype(float)[:, None], G, axis=1)

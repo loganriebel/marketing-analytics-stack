@@ -60,10 +60,10 @@ def grade_model(channels_out: dict, truth: dict) -> dict:
     cpa_rank = _rank_stats({c: rows[c]["cpa"]["median"] for c in C.CHANNELS}, true_cpa)
     mcpa_rank = _rank_stats({c: rows[c]["marginal_cpa"]["median"] for c in C.CHANNELS}, true_mcpa)
     true_m = _rank_stats(true_mcpa, true_mcpa)
-    s, ts = channels_out["summary"], truth["summary"]
+    s, ts = channels_out["summary"], media_totals(truth)
     total = {
-        "incremental_deals_paid_media": _vs(s["incremental_deals_paid_media"], ts["incremental_deals_paid_media"]),
-        "incremental_cpa_paid_media": _vs(s["incremental_cpa_paid_media"], ts["incremental_cpa_paid_media"]),
+        "incremental_deals_paid_media": _vs(s["incremental_deals_paid_media"], ts["incremental_deals"]),
+        "incremental_cpa_paid_media": _vs(s["incremental_cpa_paid_media"], ts["incremental_cpa"]),
     }
     return {
         "channels": rows,
@@ -80,6 +80,13 @@ def grade_model(channels_out: dict, truth: dict) -> dict:
         "true_best_marginal": true_m["best"], "true_worst_marginal": true_m["worst"],
         "totals": total,
     }
+
+
+def media_totals(truth: dict) -> dict:
+    """True totals over the channels the MMM models (webinars are a control there)."""
+    spend = sum(truth["channels"][c]["spend"] for c in C.CHANNELS)
+    deals = sum(truth["channels"][c]["incremental_deals"] for c in C.CHANNELS)
+    return {"spend": spend, "incremental_deals": deals, "incremental_cpa": spend / deals}
 
 
 def _vs(est: dict, true: float) -> dict:
@@ -133,7 +140,7 @@ def true_plan_gain(optimizer: dict, truth: dict) -> dict:
         "true_deal_change": gain,
         "model_deal_change": pred["mean"], "model_hdi_90": [lo, hi],
         "true_inside_hdi": bool(lo <= gain <= hi),
-        "true_gain_pct_of_true_paid_incremental": 100 * gain / truth["summary"]["incremental_deals_paid_media"],
+        "true_gain_pct_of_true_paid_incremental": 100 * gain / media_totals(truth)["incremental_deals"],
         "by_channel": rows,
     }
 
@@ -191,6 +198,7 @@ def to_markdown(g: dict) -> str:
 
 
 def grade(outputs: Path = C.OUTPUT_DIR, truth_path: Path = TRUTH_PATH) -> dict:
+    """Grade the media channels. Webinars are a control in the MMM, so they are not graded."""
     truth = json.loads(truth_path.read_text(encoding="utf-8"))
     ch = json.loads((outputs / "channels.json").read_text(encoding="utf-8"))
     base = json.loads((outputs / "baselines.json").read_text(encoding="utf-8"))

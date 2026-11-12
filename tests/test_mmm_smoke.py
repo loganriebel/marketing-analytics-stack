@@ -123,6 +123,7 @@ def test_find_pauses_on_a_synthetic_panel():
     spend = np.ones((T, G, len(C.CHANNELS)))
     spend[10:15, 1, C.CHANNELS.index(C.BRAND)] = 0.0
     panel = Panel(pd.date_range("2023-01-02", periods=T, freq="W-MON"), ["A", "B"], list(C.CHANNELS),
-                  spend, np.ones((T, G)), np.ones((T, G)), np.array([1.0, 1.0]), pd.DataFrame())
+                  spend, np.ones((T, G)), np.ones((T, G)), np.array([1.0, 1.0]), pd.DataFrame(),
+                  np.zeros((T, G)))
     pauses = lift_tests.find_pauses(panel)
     assert [(p.region, p.start, p.weeks) for p in pauses] == [("B", 10, 5)]
