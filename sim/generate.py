@@ -204,9 +204,9 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     # --- planned spend and webinars -------------------------------------------
     spend: dict[str, np.ndarray] = {}
     all_regions = np.ones(n_reg, dtype=bool)
-    tv_regions = np.isin(codes, C.TV_REGIONS)
+    ctv_regions = np.isin(codes, C.CTV_REGIONS)
     for ch in C.PLANNED_CHANNELS:
-        spend[ch] = _planned_spend(rng, ch, cal, size, tv_regions if ch == "tv" else all_regions)
+        spend[ch] = _planned_spend(rng, ch, cal, size, ctv_regions if ch == "ctv" else all_regions)
 
     w_cfg = C.WEBINARS
     ev_rate = w_cfg["events_per_week_national"] * size / n_reg
@@ -470,14 +470,9 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
         delivery[ch] = {"impressions": impressions, "clicks": rng.binomial(impressions, ctr)}
     dda_noise = np.exp(rng.normal(0.0, 0.05, (t_total, n_reg)))
     post_click = rng.binomial(reported["display"], 1 - C.DISPLAY_POST_VIEW_SHARE)
-    tv_linear_share = np.clip(C.TV_LINEAR_SHARE + rng.normal(0.0, 0.08, (t_total, n_reg)), 0.3, 0.9)
-    tv_cost_linear = np.round(spend["tv"] * tv_linear_share, 2)
-    tv_cost = {"linear": tv_cost_linear, "ctv": np.round(spend["tv"] - tv_cost_linear, 2)}
-    tv_impr = {k: np.round(tv_cost[k] / C.MEDIA["tv"][f"cpm_{k}"] * 1000
-                           * np.exp(rng.normal(0.0, 0.06, (t_total, n_reg)))).astype(np.int64)
-               for k in ("linear", "ctv")}
-    tv_leads_linear = rng.binomial(reported["tv"], tv_linear_share)
-    tv_leads = {"linear": tv_leads_linear, "ctv": reported["tv"] - tv_leads_linear}
+    ctv_impr = np.round(spend["ctv"] / C.MEDIA["ctv"]["cpm"] * 1000
+                        * np.exp(rng.normal(0.0, 0.06, (t_total, n_reg)))).astype(np.int64)
+    ctv_views = rng.binomial(ctv_impr, C.MEDIA["ctv"]["completion_rate"])
     partner_clicks = rng.poisson(spend["affiliates"] / C.MEDIA["affiliates"]["cpc"])
 
     # --- raw tables ------------------------------------------------------------
@@ -540,19 +535,15 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
         "post_view_conversions": reported["display"][tt, rr] - post_click[tt, rr],
     })
 
-    tv_parts = []
-    for buy in ("linear", "ctv"):
-        tt, rr = rows(tv_cost[buy])
-        tv_parts.append(pd.DataFrame({
-            "week_start": week_str[tt],
-            "market": code_arr[rr],
-            "buy_type": buy,
-            "gross_cost": tv_cost[buy][tt, rr],
-            "impressions": tv_impr[buy][tt, rr],
-            "vendor_attributed_leads": tv_leads[buy][tt, rr],
-        }))
-    tv_df = (pd.concat(tv_parts, ignore_index=True)
-             .sort_values(["week_start", "market", "buy_type"], kind="stable").reset_index(drop=True))
+    tt, rr = rows(spend["ctv"])
+    ctv_df = pd.DataFrame({
+        "week_start": week_str[tt],
+        "geo_region": code_arr[rr],
+        "spend": spend["ctv"][tt, rr],
+        "impressions": ctv_impr[tt, rr],
+        "completed_views": ctv_views[tt, rr],
+        "attributed_leads": reported["ctv"][tt, rr],
+    })
 
     tt, rr = rows(spend["affiliates"])
     partners_df = pd.DataFrame({
@@ -630,7 +621,7 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
         "ads_meta_weekly": meta_df,
         "ads_linkedin_weekly": linkedin_df,
         "ads_display_weekly": display_df,
-        "tv_weekly": tv_df,
+        "ctv_weekly": ctv_df,
         "partners_weekly": partners_df,
         "webinar_events": webinar_df,
         "crm_leads": leads_df,
@@ -728,7 +719,7 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
                       "area_multiplier": {k: v["amount"] for k, v in C.AREA.items()}},
         "funnel_lags_days_gamma_shape_scale": {k: list(v) for k, v in C.LAGS.items()},
         "region_size_index": {c: _r(s, 6) for c, s in zip(codes, size)},
-        "tv_regions": C.TV_REGIONS,
+        "ctv_regions": C.CTV_REGIONS,
     }
     return SimResult(tables=tables, truth=truth)
 
