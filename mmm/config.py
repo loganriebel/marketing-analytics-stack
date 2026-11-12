@@ -47,13 +47,20 @@ CLOSE_DAYS_P05, CLOSE_DAYS_P95 = 6.0, 27.0
 # Close weeks with a visible dip in national won deals (holiday leads closing late).
 HOLIDAY_CLOSE_WEEKS = {"wk52": (52, 53), "wk01": (1,), "wk02": (2,), "wk03": (3,)}
 
+# Hill slope prior (median, log-sd) by dim_channel.marketing_role. Performance
+# channels harvest intent that already exists, so their first dollar is their best:
+# concave. Brand channels can need a threshold of reach before they work: S-shapes
+# allowed. 90% ranges: performance 0.55 to 1.47, brand 0.84 to 2.66.
+SLOPE_PRIOR_BY_ROLE = {"performance": (0.9, 0.3), "brand": (1.5, 0.35)}
+SLOPE_PRIOR_DEFAULT = (1.2, 0.4)
+
 # Spend multipliers for response curves; 1.0 is the actual in-window path.
 RESPONSE_MULTIPLIERS = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0]
 
 # Budget shift guardrails: no channel moves more than half its own spend.
 OPT_BOUNDS = (0.5, 1.5)
 
-SAMPLER = {"chains": 4, "draws": 1000, "tune": 1500, "target_accept": 0.9, "random_seed": 4}
+SAMPLER = {"chains": 4, "draws": 1000, "tune": 1500, "target_accept": 0.95, "random_seed": 4}
 
 GATES = {
     "rhat_max": 1.01,

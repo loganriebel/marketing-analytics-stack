@@ -6,7 +6,7 @@ platform and last-touch views used as baselines), fct_controls_weekly (controls)
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import duckdb
@@ -27,6 +27,7 @@ class Panel:
     accounts: np.ndarray       # (G,) target accounts
     controls_raw: pd.DataFrame  # long, one row per week x region
     webinar_spend: np.ndarray  # (T, G) event cost, used as a control
+    roles: dict[str, str] = field(default_factory=dict)  # dim_channel.marketing_role
 
     @property
     def size(self) -> np.ndarray:
@@ -42,7 +43,8 @@ class Panel:
         ctrl = self.controls_raw[self.controls_raw.region_id.isin(regs)
                                  & self.controls_raw.week_start.isin(weeks)].reset_index(drop=True)
         return Panel(weeks, regs, self.channels, self.spend[t][:, g], self.deals[t][:, g],
-                     self.won_revenue[t][:, g], self.accounts[g], ctrl, self.webinar_spend[t][:, g])
+                     self.won_revenue[t][:, g], self.accounts[g], ctrl, self.webinar_spend[t][:, g],
+                     self.roles)
 
 
 def connect(path: Path | None = None) -> duckdb.DuckDBPyConnection:
@@ -73,6 +75,7 @@ def load_panel(path: Path | None = None) -> Panel:
             "sum(won_revenue)::double as won_revenue from fct_funnel group by 1, 2"
         ).df()
         controls = con.sql("select * from fct_controls_weekly order by week_start, region_id").df()
+        roles = dict(con.sql("select channel_id, marketing_role from dim_channel").fetchall())
     finally:
         con.close()
 
@@ -94,6 +97,7 @@ def load_panel(path: Path | None = None) -> Panel:
         accounts=accounts,
         controls_raw=controls,
         webinar_spend=_cube(spend, "spend", weeks, regions, [C.WEBINARS])[:, :, 0],
+        roles={c: roles[c] for c in C.CHANNELS},
     )
 
 

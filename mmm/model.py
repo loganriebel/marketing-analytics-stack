@@ -8,8 +8,9 @@ Design (reasons in docs/mmm/README.md):
 * Adstock = geometric carryover on the lead side, convolved with a fixed
   lead-to-close kernel from the README's sales-cycle facts. One alpha per channel;
   the kernel peaks one to two weeks after spend, like a B2B close.
-* Hill saturation, which can be concave or S-shaped, so the data decide whether the
-  next dollar is worth more or less than the average one.
+* Hill saturation, which can be concave or S-shaped. The slope prior follows the
+  channel's marketing role: concave for performance channels, S-shapes allowed for
+  brand channels.
 * Controls act on leads, so they get the same lead-to-close kernel. Webinars are an
   events program, not bought media, so their cost enters as a control.
 * Brand search gets a skeptical prior (its spend follows demand) plus a pooled lift
@@ -130,6 +131,7 @@ class Design:
     regions: list[str]
     size: np.ndarray
     control_stats: dict = field(default_factory=dict)
+    roles: dict = field(default_factory=dict)
 
     def train(self) -> tuple[pd.DataFrame, pd.Series]:
         if self.n_train >= len(self.weeks):
@@ -189,7 +191,7 @@ def build_design(panel: Panel, holdout_weeks: int = C.HOLDOUT_WEEKS) -> Design:
         frame[name] = ctrl[name].ravel()
     X = pd.DataFrame(frame)
     y = pd.Series((panel.deals / size[None, :]).ravel(), name="deals_per_size")
-    return Design(X, y, n_train, panel.weeks, list(panel.regions), size, stats)
+    return Design(X, y, n_train, panel.weeks, list(panel.regions), size, stats, dict(panel.roles))
 
 
 # --- priors and model ---------------------------------------------------------------
@@ -217,12 +219,13 @@ def model_config(design: Design, channels: list[str]) -> dict:
     spend = design.train()[0][channels].to_numpy(float).sum(axis=0)
     share = spend / spend.sum()
     on_level = np.array([np.median(xs[xs[:, k] > 0, k]) for k in range(len(channels))])
-    slope0 = 1.2
-    hill0 = np.array([np.sum(xs[:, k] ** slope0 / (xs[:, k] ** slope0 + on_level[k] ** slope0))
+    slope_prior = np.array([C.SLOPE_PRIOR_BY_ROLE.get(design.roles.get(c), C.SLOPE_PRIOR_DEFAULT)
+                            for c in channels])
+    slope0 = slope_prior[:, 0]
+    hill0 = np.array([np.sum(xs[:, k] ** slope0[k] / (xs[:, k] ** slope0[k] + on_level[k] ** slope0[k]))
                       for k in range(len(channels))])
     b = share * MEDIA_SHARE_PRIOR * ys.sum() / hill0
     b[channels.index(C.BRAND)] *= BRAND_PRIOR_FACTOR
-    beta_sigma = b / 0.674  # HalfNormal median equals b
 
     return {
         "intercept": Prior("Normal", mu=0.6 * ybar, sigma=0.5 * ybar, dims="geo"),
@@ -231,9 +234,10 @@ def model_config(design: Design, channels: list[str]) -> dict:
         "gamma_control": Prior("Normal", mu=0.0, sigma=0.25 * ybar, dims="control"),
         "gamma_fourier": Prior("Normal", mu=0.0, sigma=0.2 * ybar, dims="fourier_mode"),
         "adstock_alpha": Prior("Beta", alpha=2, beta=3, dims="channel"),
-        "saturation_slope": Prior("LogNormal", mu=np.log(slope0), sigma=0.4, dims="channel"),
+        "saturation_slope": Prior("LogNormal", mu=_by_channel(np.log(slope0), channels),
+                                  sigma=_by_channel(slope_prior[:, 1], channels), dims="channel"),
         "saturation_kappa": Prior("LogNormal", mu=_by_channel(np.log(on_level), channels), sigma=0.7, dims="channel"),
-        "saturation_beta": Prior("HalfNormal", sigma=_by_channel(beta_sigma, channels), dims="channel"),
+        "saturation_beta": Prior("HalfNormal", sigma=_by_channel(b / 0.674, channels), dims="channel"),
     }
 
 
