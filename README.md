@@ -1,6 +1,6 @@
 # marketing-analytics-stack
 
-The public version of the stack I run at work: dashboards, Claude on golden tables, MMM for budget asks. All data is synthetic.
+An example of the stack I run at work: dashboards, Claude on golden tables, MMM for budget asks. All data is synthetic.
 
 **Status:** step 2 of 6. The fake company, its raw data, the dbt golden tables, an [EDA and data validation report](docs/eda/EDA.md), the governed metrics layer, and the Claude eval are built and tested. Tableau and the MMM come next.
 
@@ -24,7 +24,7 @@ Fernhook grew on paid search, and its CRM credits every deal to the last UTM tou
 - **Nobody agrees on the numbers.** Every ad platform claims credit for the same deals, so their totals add up to far more than the CRM has. Last touch never credits Connected TV at all.
 - **Finance has stopped trusting marketing.** When the CFO asks what a channel returns, the team can show last-touch numbers or platform numbers, and neither holds up.
 
-**The goal:** use an MMM to give finance one honest number, the overall marketing cost per acquisition (CPA), plus the true CPA of each channel. Then lower it by moving budget between channels at the same total spend.
+**The goal:** Use an MMM to give finance one honest number, the overall marketing cost per acquisition (CPA), plus the true CPA of each channel. Then lower it by moving budget between channels at the same total spend.
 
 **The questions the MMM has to answer:**
 
