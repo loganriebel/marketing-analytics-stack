@@ -2,7 +2,7 @@
 
 The public version of the stack I run at work: dashboards, Claude on golden tables, MMM for budget asks. All data is synthetic.
 
-**Status:** step 1 of 6. The fake company, its raw data, the dbt golden tables, and an [EDA and data validation report](docs/eda/EDA.md) are built and tested. Metrics layer, Claude evals, Tableau, and MMM come next.
+**Status:** step 2 of 6. The fake company, its raw data, the dbt golden tables, an [EDA and data validation report](docs/eda/EDA.md), the governed metrics layer, and the Claude eval are built and tested. Tableau and the MMM come next.
 
 ## The company
 
@@ -32,6 +32,21 @@ Fernhook grew on paid search, and its CRM credits every deal to the last UTM tou
 2. What is Fernhook's real marketing cost per deal, overall and by channel?
 3. Where should the next dollar go, and what would a budget shift do at the same total?
 4. How much of the 2025 drop came from marketing, and how much from the hiring freeze, pricing, and the market?
+
+## Claude on governed metrics
+
+Ad-hoc questions are where trust breaks. Each analyst, or each AI prompt, defines "paid media" or "a 2025 deal" a little differently, and the numbers drift. So every metric is defined once in a MetricFlow semantic layer on top of the golden tables (35 metrics, from spend and leads to CPL, CPA, and ROAS), and Claude reaches the data through a small MCP server that only answers with those definitions.
+
+To test it, headless Claude answered 50 ad-hoc questions twice: once through the governed MCP server, and once with read-only SQL on the raw source tables. 42 questions have an answer computed in plain SQL; 8 should be refused (churn, NPS, true incremental CTV cost, a channel Fernhook doesn't buy).
+
+| Arm | Answerable correct | Correct refusals | Wrong refusals | Overall | Cost |
+|---|---|---|---|---|---|
+| Claude + governed metrics (MCP) | 42/42 (100%) | 8/8 | 0 | 50/50 | $3.23 |
+| Claude + raw tables (SQL) | 22/42 (52%) | 8/8 | 3 | 30/50 | $4.98 |
+
+Model `claude-sonnet-5-5`, one pass per arm, same instructions, built-in tools off. Per-question results: [evals/RESULTS.md](evals/RESULTS.md).
+
+Why the raw arm missed: it had to invent definitions. It left partner fees and webinars out of "paid media", grouped search and YouTube as "Google", counted deals by calendar close date instead of the house week rule, and could not answer share-of-spend questions without channel roles. Every one of those is a definition the semantic layer settles once.
 
 ## The model setup
 
@@ -106,7 +121,9 @@ In this repo the same kinds of checks run on demand: the dbt tests in `dbt build
 ```
 sim/             seeded simulator (python -m sim) and the answer key in sim/truth/
 data/raw/        CSV exports, one per source system (generated, not committed)
-warehouse/       dbt project on DuckDB: staging, intermediate, marts
+warehouse/       dbt project on DuckDB: staging, intermediate, marts, semantic layer
+servers/         MCP servers: governed metrics, and raw SQL for the eval baseline
+evals/           50-question eval set, runner, scorer, results
 eda/             EDA and validation report (python -m eda), reads the warehouse only
 docs/eda/        the generated report and charts
 tests/           pytest: determinism, no truth leak, scenario guards
@@ -129,7 +146,9 @@ py -3.11 -m venv .venv
 .venv\Scripts\python -m sim
 .venv\Scripts\dbt build --project-dir warehouse --profiles-dir warehouse
 .venv\Scripts\python -m eda
+.venv\Scripts\python -m evals.run --arm both
+.venv\Scripts\python -m evals.score
 .venv\Scripts\python -m pytest -q
 ```
 
-The same seed always writes byte-identical files.
+The same seed always writes byte-identical files. The eval needs the Claude CLI signed in (`claude auth login`); it saves each answer as it lands and resumes if cut off.
