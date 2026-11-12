@@ -13,7 +13,7 @@ models:
           - not_null
           - accepted_values:
               arguments:
-                values: [search, paid_social, video, tv, display, partners, events, owned, organic]
+                values: [search, paid_social, video, ctv, display, partners, events, owned, organic]
       - name: marketing_role
         description: How the team budgets the channel. Performance chases demand that exists; brand creates it.
         data_tests:
@@ -24,10 +24,10 @@ models:
       - name: is_paid
         data_tests: [not_null]
       - name: reports_impressions
-        description: True when the source reports impressions. TV does; partners and webinars do not.
+        description: True when the source reports impressions. CTV does; partners and webinars do not.
         data_tests: [not_null]
       - name: reports_clicks
-        description: True when the source reports clicks. TV and webinars do not.
+        description: True when the source reports clicks. CTV and webinars do not.
         data_tests: [not_null]
 
   - name: fct_channel_weekly

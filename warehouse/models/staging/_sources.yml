@@ -21,8 +21,8 @@ sources:
         description: LinkedIn Ads weekly report by region code.
       - name: ads_display_weekly
         description: Programmatic display retargeting (DSP) weekly report, with post-click and post-view conversions.
-      - name: tv_weekly
-        description: TV agency weekly delivery by market and buy type (linear or CTV), with vendor-attributed leads.
+      - name: ctv_weekly
+        description: Connected TV platform weekly delivery by region, with the leads it attributes by household match.
       - name: partners_weekly
         description: Partner platform weekly placement and sponsor fees, clicks, and referred signups it claims.
       - name: webinar_events

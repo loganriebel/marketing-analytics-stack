@@ -15,17 +15,16 @@ with ads as (
     from {{ ref('stg_ads_display') }}
 ),
 
-tv as (
+ctv as (
     select
         week_start,
         region_id,
         channel_id,
-        sum(spend) as spend,
-        sum(impressions) as impressions,
+        spend,
+        impressions,
         cast(null as bigint) as clicks,
-        sum(platform_conversions) as platform_conversions
-    from {{ ref('stg_tv') }}
-    group by 1, 2, 3
+        platform_conversions
+    from {{ ref('stg_ctv') }}
 ),
 
 partners as (
@@ -56,7 +55,7 @@ webinars as (
 
 select * from ads
 union all
-select * from tv
+select * from ctv
 union all
 select * from partners
 union all

@@ -4,7 +4,7 @@ paid_search_nonbrand,Paid Search Non-Brand,search,performance,google_ads,true,tr
 meta,Meta,paid_social,brand,meta_ads,true,true,true,3
 linkedin,LinkedIn,paid_social,performance,linkedin_ads,true,true,true,4
 youtube,YouTube,video,brand,google_ads,true,true,true,5
-tv,TV,tv,brand,tv_agency,true,true,false,6
+ctv,Connected TV,ctv,brand,ctv_platform,true,true,false,6
 display,Display Retargeting,display,performance,dsp,true,true,true,7
 affiliates,Affiliates and Partners,partners,performance,partner_platform,true,false,true,8
 webinars,Webinars,events,events,webinar_tool,true,false,false,9

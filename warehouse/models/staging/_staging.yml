@@ -178,12 +178,12 @@ models:
                 min_value: 1
                 max_value: 1000000
 
-  - name: stg_tv
-    description: TV delivery by market, week and buy type.
+  - name: stg_ctv
+    description: Connected TV delivery by region and week.
     data_tests:
       - unique_combination_of_columns:
           arguments:
-            combination_of_columns: [week_start, region_id, buy_type]
+            combination_of_columns: [week_start, region_id]
     columns:
       - name: region_id
         data_tests:
@@ -192,11 +192,11 @@ models:
               arguments:
                 to: ref('stg_regions')
                 field: region_id
-      - name: buy_type
+      - name: completed_views
         data_tests:
-          - accepted_values:
+          - accepted_range:
               arguments:
-                values: [linear, ctv]
+                min_value: 0
       - name: spend
         data_tests:
           - not_null
