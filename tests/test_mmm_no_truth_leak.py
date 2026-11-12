@@ -43,7 +43,7 @@ def test_no_model_module_reads_staging_rows():
     # reads the raw CSVs (from whatever folder the process runs in)
     for p in _model_modules():
         text = p.read_text(encoding="utf-8")
-        assert not re.search(r"(from|join)\s+(stg_|int_)", text, re.I), p.name
+        assert not re.search(r"\b(from|join)\s+(stg_|int_)", text, re.I), p.name
 
 
 def test_grader_is_the_only_reader_and_writes_outside_outputs():
