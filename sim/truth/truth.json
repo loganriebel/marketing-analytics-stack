@@ -28,20 +28,29 @@
     "response_curve": "incremental deals when the channel's in-window spend path is scaled by spend_multiplier, other channels unchanged",
     "lead_model": "leads(r,t) = base(r,t) + email(r,t) + sum_c beta_c * size_r * hill(adstock_c(spend_rc)(t) / size_r)",
     "deal_model": "deal probability per lead = p_mql * p_sql * sdr_mult(r,t) * p_opp * p_won * ae_mult(r,t) * promo(t) * price(t), by lead created week",
-    "parameter_draws": "every true parameter here was drawn from the ranges in sim/config.py by a child stream of the seed; none is typed in"
+    "parameter_draws": "every true parameter here was drawn from the ranges in sim/config.py by a child stream of the seed; none is typed in",
+    "brand_searches": "searches(r,t) = baseline(r,t) + sum over meta, youtube, ctv of gamma_c * size_r * (1 - exp(-adstock_c(spend_rc)(t) / (reach_spend_c * size_r))), adstock geometric and normalized; baseline is the organic lead rate base(r,t). Brand-search spend = searches * cost per search * weekly cost noise, so it moves with every term",
+    "brand_searches_created": "in-window brand searches the channel's spend creates, in the units of baseline searches (organic leads per week)",
+    "incremental_deals_via_brand_search": "meta, youtube and ctv: expected deals brand search causes because of the extra brand searches, and so extra brand-search spend, that the channel's in-window spend creates. Counterfactual: remove the channel's in-window spend, recompute brand searches and brand-search spend, and take the difference in deals brand search causes. Counts deals that close after the window; brand-search spend after the last window week is not simulated",
+    "incremental_deals_total": "incremental_deals (direct) + incremental_deals_via_brand_search",
+    "cpa_total": "in-window spend divided by incremental_deals_total",
+    "marginal_cpa_total": "extra spend per extra total deal when the channel's whole in-window spend path is scaled by 1% (central difference, 0.99 to 1.01), with brand-search spend responding",
+    "response_curve_total": "incremental_deals_total when the channel's in-window spend path is scaled by spend_multiplier; brand-search spend responds, other channels unchanged",
+    "brand_search_incremental_deals": "paid_search_brand incremental_deals is given its actual spend path, which already includes the searches the upper funnel created",
+    "upper_funnel_share_of_brand_search_deals": "sum of incremental_deals_via_brand_search over meta, youtube and ctv, divided by paid_search_brand incremental_deals"
   },
   "channels": {
     "paid_search_brand": {
-      "spend": 7388808.66,
-      "incremental_leads": 16645.16,
+      "spend": 7388809.18,
+      "incremental_leads": 16556.92,
       "incremental_deals": 1283.73,
-      "incremental_revenue": 3595821.39,
-      "incremental_pipeline": 9547692.07,
+      "incremental_revenue": 3593043.59,
+      "incremental_pipeline": 9547788.61,
       "cpa": 5755.72,
-      "marginal_cpa": 35909.55,
-      "roi_revenue": 0.4867,
+      "marginal_cpa": 35584.04,
+      "roi_revenue": 0.4863,
       "roi_pipeline": 1.2922,
-      "cost_per_incremental_lead": 443.9,
+      "cost_per_incremental_lead": 446.27,
       "adstock": {
         "type": "geometric",
         "alpha": 0.088,
@@ -54,7 +63,7 @@
         "slope": 1.086,
         "input": "adstocked weekly spend / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 6.414498,
+      "beta_leads_per_week_per_size_unit": 6.234321,
       "lead_quality": {
         "p_mql": 0.6126,
         "p_sql": 0.4948,
@@ -92,39 +101,39 @@
         ],
         "spend": [
           0.0,
-          1847202.17,
-          3694404.33,
-          5541606.5,
-          7388808.66,
-          9236010.82,
-          11083212.99,
-          14777617.32,
-          22166425.98
+          1847202.29,
+          3694404.59,
+          5541606.88,
+          7388809.18,
+          9236011.47,
+          11083213.77,
+          14777618.36,
+          22166427.54
         ],
         "incremental_deals": [
           0.0,
-          852.695,
-          1103.088,
-          1218.13,
+          847.867,
+          1101.018,
+          1217.446,
           1283.733,
-          1326.011,
-          1355.494,
-          1393.89,
-          1434.161
+          1326.345,
+          1355.973,
+          1394.389,
+          1434.319
         ]
       }
     },
     "paid_search_nonbrand": {
-      "spend": 13143642.4,
-      "incremental_leads": 134503.8,
-      "incremental_deals": 6359.17,
-      "incremental_revenue": 18481307.13,
-      "incremental_pipeline": 61299765.55,
+      "spend": 13396798.88,
+      "incremental_leads": 136709.07,
+      "incremental_deals": 6481.65,
+      "incremental_revenue": 18845556.89,
+      "incremental_pipeline": 62711865.96,
       "cpa": 2066.88,
-      "marginal_cpa": 5077.46,
-      "roi_revenue": 1.4061,
-      "roi_pipeline": 4.6638,
-      "cost_per_incremental_lead": 97.72,
+      "marginal_cpa": 5073.5,
+      "roi_revenue": 1.4067,
+      "roi_pipeline": 4.6811,
+      "cost_per_incremental_lead": 97.99,
       "adstock": {
         "type": "geometric",
         "alpha": 0.277,
@@ -137,7 +146,7 @@
         "slope": 1.426,
         "input": "adstocked weekly spend / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 63.897318,
+      "beta_leads_per_week_per_size_unit": 63.629534,
       "lead_quality": {
         "p_mql": 0.5922,
         "p_sql": 0.4064,
@@ -172,39 +181,39 @@
         ],
         "spend": [
           0.0,
-          3285910.6,
-          6571821.2,
-          9857731.8,
-          13143642.4,
-          16429553.0,
-          19715463.6,
-          26287284.8,
-          39430927.2
+          3349199.72,
+          6698399.44,
+          10047599.16,
+          13396798.88,
+          16745998.6,
+          20095198.32,
+          26793597.76,
+          40190396.64
         ],
         "incremental_deals": [
           0.0,
-          2474.609,
-          4378.569,
-          5572.514,
-          6359.171,
-          6906.294,
-          7304.245,
-          7837.297,
-          8400.991
+          2519.374,
+          4461.809,
+          5679.338,
+          6481.653,
+          7039.822,
+          7445.888,
+          7989.793,
+          8564.194
         ]
       }
     },
     "meta": {
-      "spend": 3900302.5,
-      "incremental_leads": 118658.72,
-      "incremental_deals": 2707.49,
-      "incremental_revenue": 6457421.48,
-      "incremental_pipeline": 24493509.16,
+      "spend": 3740823.15,
+      "incremental_leads": 112359.05,
+      "incremental_deals": 2596.78,
+      "incremental_revenue": 6175012.46,
+      "incremental_pipeline": 23385418.42,
       "cpa": 1440.56,
-      "marginal_cpa": 1710.98,
-      "roi_revenue": 1.6556,
-      "roi_pipeline": 6.2799,
-      "cost_per_incremental_lead": 32.87,
+      "marginal_cpa": 1724.62,
+      "roi_revenue": 1.6507,
+      "roi_pipeline": 6.2514,
+      "cost_per_incremental_lead": 33.29,
       "adstock": {
         "type": "geometric",
         "alpha": 0.409,
@@ -217,7 +226,7 @@
         "slope": 1.212,
         "input": "adstocked weekly spend / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 145.837707,
+      "beta_leads_per_week_per_size_unit": 149.786668,
       "lead_quality": {
         "p_mql": 0.4462,
         "p_sql": 0.3377,
@@ -253,39 +262,87 @@
         ],
         "spend": [
           0.0,
-          975075.62,
-          1950151.25,
-          2925226.87,
-          3900302.5,
-          4875378.12,
-          5850453.75,
-          7800605.0,
-          11700907.5
+          935205.79,
+          1870411.57,
+          2805617.36,
+          3740823.15,
+          4676028.94,
+          5611234.72,
+          7481646.3,
+          11222469.45
         ],
         "incremental_deals": [
           0.0,
-          685.446,
-          1425.003,
-          2102.509,
-          2707.49,
-          3244.756,
-          3722.253,
-          4528.952,
-          5715.442
+          676.362,
+          1382.047,
+          2022.98,
+          2596.784,
+          3110.062,
+          3570.4,
+          4359.198,
+          5549.697
+        ]
+      },
+      "brand_searches_created": 25851.84,
+      "incremental_deals_via_brand_search": 18.51,
+      "incremental_deals_total": 2615.3,
+      "cpa_total": 1430.36,
+      "marginal_cpa_total": 1715.41,
+      "brand_search_creation": {
+        "type": "reach",
+        "alpha": 0.162,
+        "l_max": 12,
+        "reach_spend": 1840.0,
+        "lift_over_baseline_searches": 0.0966,
+        "gamma": 19.262717
+      },
+      "response_curve_total": {
+        "spend_multiplier": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0,
+          1.25,
+          1.5,
+          2.0,
+          3.0
+        ],
+        "spend": [
+          0.0,
+          935205.79,
+          1870411.57,
+          2805617.36,
+          3740823.15,
+          4676028.94,
+          5611234.72,
+          7481646.3,
+          11222469.45
+        ],
+        "incremental_deals": [
+          0.0,
+          682.836,
+          1393.44,
+          2038.292,
+          2615.299,
+          3131.245,
+          3593.834,
+          4386.199,
+          5581.401
         ]
       }
     },
     "linkedin": {
-      "spend": 3849024.3,
-      "incremental_leads": 27222.62,
-      "incremental_deals": 1441.4,
-      "incremental_revenue": 4857879.34,
-      "incremental_pipeline": 16564120.35,
+      "spend": 3845169.28,
+      "incremental_leads": 27169.09,
+      "incremental_deals": 1439.96,
+      "incremental_revenue": 4877200.96,
+      "incremental_pipeline": 16692122.31,
       "cpa": 2670.33,
-      "marginal_cpa": 4002.53,
-      "roi_revenue": 1.2621,
-      "roi_pipeline": 4.3035,
-      "cost_per_incremental_lead": 141.39,
+      "marginal_cpa": 3953.99,
+      "roi_revenue": 1.2684,
+      "roi_pipeline": 4.3411,
+      "cost_per_incremental_lead": 141.53,
       "adstock": {
         "type": "geometric",
         "alpha": 0.448,
@@ -298,7 +355,7 @@
         "slope": 1.286,
         "input": "adstocked weekly spend / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 20.496568,
+      "beta_leads_per_week_per_size_unit": 20.407507,
       "lead_quality": {
         "p_mql": 0.6694,
         "p_sql": 0.4227,
@@ -333,39 +390,39 @@
         ],
         "spend": [
           0.0,
-          962256.08,
-          1924512.15,
-          2886768.23,
-          3849024.3,
-          4811280.38,
-          5773536.45,
-          7698048.6,
-          11547072.9
+          961292.32,
+          1922584.64,
+          2883876.96,
+          3845169.28,
+          4806461.6,
+          5767753.92,
+          7690338.56,
+          11535507.84
         ],
         "incremental_deals": [
           0.0,
-          423.748,
-          838.181,
-          1173.124,
-          1441.404,
-          1658.635,
-          1837.059,
-          2111.058,
-          2460.9
+          419.544,
+          832.706,
+          1169.141,
+          1439.96,
+          1659.88,
+          1840.769,
+          2118.632,
+          2472.549
         ]
       }
     },
     "youtube": {
-      "spend": 2402779.64,
-      "incremental_leads": 34021.41,
-      "incremental_deals": 1584.99,
-      "incremental_revenue": 4453448.05,
-      "incremental_pipeline": 14925473.37,
+      "spend": 2013928.57,
+      "incremental_leads": 28508.04,
+      "incremental_deals": 1328.48,
+      "incremental_revenue": 3768307.92,
+      "incremental_pipeline": 12724344.68,
       "cpa": 1515.96,
-      "marginal_cpa": 1541.42,
-      "roi_revenue": 1.8535,
-      "roi_pipeline": 6.2118,
-      "cost_per_incremental_lead": 70.63,
+      "marginal_cpa": 1446.08,
+      "roi_revenue": 1.8711,
+      "roi_pipeline": 6.3182,
+      "cost_per_incremental_lead": 70.64,
       "adstock": {
         "type": "geometric",
         "alpha": 0.639,
@@ -378,7 +435,7 @@
         "slope": 1.4,
         "input": "adstocked weekly spend / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 98.771519,
+      "beta_leads_per_week_per_size_unit": 97.732889,
       "lead_quality": {
         "p_mql": 0.561,
         "p_sql": 0.4096,
@@ -414,39 +471,87 @@
         ],
         "spend": [
           0.0,
-          600694.91,
-          1201389.82,
-          1802084.73,
-          2402779.64,
-          3003474.55,
-          3604169.46,
-          4805559.28,
-          7208338.92
+          503482.14,
+          1006964.29,
+          1510446.43,
+          2013928.57,
+          2517410.71,
+          3020892.85,
+          4027857.14,
+          6041785.71
         ],
         "incremental_deals": [
           0.0,
-          326.566,
-          756.406,
-          1182.257,
-          1584.989,
-          1961.779,
-          2314.053,
-          2954.671,
-          4038.183
+          253.469,
+          606.927,
+          972.589,
+          1328.484,
+          1667.917,
+          1989.487,
+          2581.908,
+          3600.294
+        ]
+      },
+      "brand_searches_created": 14504.86,
+      "incremental_deals_via_brand_search": 9.96,
+      "incremental_deals_total": 1338.44,
+      "cpa_total": 1504.68,
+      "marginal_cpa_total": 1440.01,
+      "brand_search_creation": {
+        "type": "reach",
+        "alpha": 0.326,
+        "l_max": 12,
+        "reach_spend": 1030.0,
+        "lift_over_baseline_searches": 0.0542,
+        "gamma": 13.244581
+      },
+      "response_curve_total": {
+        "spend_multiplier": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0,
+          1.25,
+          1.5,
+          2.0,
+          3.0
+        ],
+        "spend": [
+          0.0,
+          503482.14,
+          1006964.29,
+          1510446.43,
+          2013928.57,
+          2517410.71,
+          3020892.85,
+          4027857.14,
+          6041785.71
+        ],
+        "incremental_deals": [
+          0.0,
+          257.231,
+          613.291,
+          980.94,
+          1338.444,
+          1679.233,
+          2001.975,
+          2596.35,
+          3617.646
         ]
       }
     },
     "ctv": {
-      "spend": 3062909.45,
-      "incremental_leads": 25224.34,
-      "incremental_deals": 1188.32,
-      "incremental_revenue": 3330211.51,
-      "incremental_pipeline": 11205936.8,
+      "spend": 2991990.71,
+      "incremental_leads": 24670.78,
+      "incremental_deals": 1160.8,
+      "incremental_revenue": 3251038.89,
+      "incremental_pipeline": 10977795.43,
       "cpa": 2577.52,
-      "marginal_cpa": 3204.01,
-      "roi_revenue": 1.0873,
-      "roi_pipeline": 3.6586,
-      "cost_per_incremental_lead": 121.43,
+      "marginal_cpa": 3141.11,
+      "roi_revenue": 1.0866,
+      "roi_pipeline": 3.6691,
+      "cost_per_incremental_lead": 121.28,
       "adstock": {
         "type": "geometric",
         "alpha": 0.78,
@@ -459,7 +564,7 @@
         "slope": 1.478,
         "input": "adstocked weekly spend / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 96.319476,
+      "beta_leads_per_week_per_size_unit": 93.49824,
       "lead_quality": {
         "p_mql": 0.5578,
         "p_sql": 0.3933,
@@ -494,39 +599,87 @@
         ],
         "spend": [
           0.0,
-          765727.36,
-          1531454.72,
-          2297182.09,
-          3062909.45,
-          3828636.81,
-          4594364.17,
-          6125818.9,
-          9188728.35
+          747997.68,
+          1495995.35,
+          2243993.03,
+          2991990.71,
+          3739988.39,
+          4487986.06,
+          5983981.42,
+          8975972.13
         ],
         "incremental_deals": [
           0.0,
-          284.1,
-          627.017,
-          929.562,
-          1188.316,
-          1410.009,
-          1601.57,
-          1915.849,
-          2364.103
+          267.297,
+          602.364,
+          902.859,
+          1160.802,
+          1381.349,
+          1571.07,
+          1879.867,
+          2313.858
+        ]
+      },
+      "brand_searches_created": 13354.11,
+      "incremental_deals_via_brand_search": 7.65,
+      "incremental_deals_total": 1168.45,
+      "cpa_total": 2560.65,
+      "marginal_cpa_total": 3129.59,
+      "brand_search_creation": {
+        "type": "reach",
+        "alpha": 0.489,
+        "l_max": 12,
+        "reach_spend": 5000.0,
+        "lift_over_baseline_searches": 0.0499,
+        "gamma": 40.479708
+      },
+      "response_curve_total": {
+        "spend_multiplier": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0,
+          1.25,
+          1.5,
+          2.0,
+          3.0
+        ],
+        "spend": [
+          0.0,
+          747997.68,
+          1495995.35,
+          2243993.03,
+          2991990.71,
+          3739988.39,
+          4487986.06,
+          5983981.42,
+          8975972.13
+        ],
+        "incremental_deals": [
+          0.0,
+          270.536,
+          607.614,
+          909.494,
+          1168.45,
+          1389.769,
+          1580.098,
+          1889.79,
+          2324.881
         ]
       }
     },
     "display": {
-      "spend": 4127700.24,
-      "incremental_leads": 7020.79,
-      "incremental_deals": 109.62,
-      "incremental_revenue": 256407.76,
-      "incremental_pipeline": 1009127.87,
+      "spend": 4639512.25,
+      "incremental_leads": 7829.89,
+      "incremental_deals": 123.21,
+      "incremental_revenue": 287694.51,
+      "incremental_pipeline": 1130699.51,
       "cpa": 37653.8,
-      "marginal_cpa": 97883.22,
-      "roi_revenue": 0.0621,
-      "roi_pipeline": 0.2445,
-      "cost_per_incremental_lead": 587.93,
+      "marginal_cpa": 103464.36,
+      "roi_revenue": 0.062,
+      "roi_pipeline": 0.2437,
+      "cost_per_incremental_lead": 592.54,
       "adstock": {
         "type": "geometric",
         "alpha": 0.286,
@@ -539,7 +692,7 @@
         "slope": 0.924,
         "input": "adstocked weekly spend / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 3.946676,
+      "beta_leads_per_week_per_size_unit": 4.257057,
       "lead_quality": {
         "p_mql": 0.3688,
         "p_sql": 0.3041,
@@ -573,39 +726,39 @@
         ],
         "spend": [
           0.0,
-          1031925.06,
-          2063850.12,
-          3095775.18,
-          4127700.24,
-          5159625.3,
-          6191550.36,
-          8255400.48,
-          12383100.72
+          1159878.06,
+          2319756.12,
+          3479634.19,
+          4639512.25,
+          5799390.31,
+          6959268.38,
+          9279024.5,
+          13918536.75
         ],
         "incremental_deals": [
           0.0,
-          53.447,
-          80.142,
-          97.36,
-          109.622,
-          118.89,
-          126.183,
-          136.999,
-          150.475
+          62.029,
+          91.489,
+          110.112,
+          123.215,
+          133.034,
+          140.712,
+          152.021,
+          165.982
         ]
       }
     },
     "affiliates": {
-      "spend": 1828357.3,
-      "incremental_leads": 27622.72,
-      "incremental_deals": 1576.58,
-      "incremental_revenue": 4911556.13,
-      "incremental_pipeline": 15395206.41,
+      "spend": 2006346.87,
+      "incremental_leads": 30233.92,
+      "incremental_deals": 1730.06,
+      "incremental_revenue": 5372273.02,
+      "incremental_pipeline": 16806993.98,
       "cpa": 1159.7,
-      "marginal_cpa": 1799.36,
-      "roi_revenue": 2.6863,
-      "roi_pipeline": 8.4202,
-      "cost_per_incremental_lead": 66.19,
+      "marginal_cpa": 1874.84,
+      "roi_revenue": 2.6776,
+      "roi_pipeline": 8.3769,
+      "cost_per_incremental_lead": 66.36,
       "adstock": {
         "type": "geometric",
         "alpha": 0.574,
@@ -618,7 +771,7 @@
         "slope": 1.122,
         "input": "adstocked weekly spend / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 23.043879,
+      "beta_leads_per_week_per_size_unit": 24.652834,
       "lead_quality": {
         "p_mql": 0.592,
         "p_sql": 0.4554,
@@ -652,39 +805,39 @@
         ],
         "spend": [
           0.0,
-          457089.33,
-          914178.65,
-          1371267.98,
-          1828357.3,
-          2285446.62,
-          2742535.95,
-          3656714.6,
-          5485071.9
+          501586.72,
+          1003173.43,
+          1504760.15,
+          2006346.87,
+          2507933.59,
+          3009520.3,
+          4012693.74,
+          6019040.61
         ],
         "incremental_deals": [
           0.0,
-          512.993,
-          948.296,
-          1295.532,
-          1576.578,
-          1808.261,
-          2002.469,
-          2309.853,
-          2724.581
+          587.226,
+          1062.221,
+          1433.064,
+          1730.057,
+          1973.568,
+          2177.149,
+          2498.971,
+          2933.624
         ]
       }
     },
     "webinars": {
-      "spend": 2163024.19,
-      "incremental_leads": 34326.62,
-      "incremental_deals": 1799.3,
-      "incremental_revenue": 5440864.0,
-      "incremental_pipeline": 17494101.05,
+      "spend": 2117998.45,
+      "incremental_leads": 33131.2,
+      "incremental_deals": 1761.84,
+      "incremental_revenue": 5306987.19,
+      "incremental_pipeline": 16966256.17,
       "cpa": 1202.15,
-      "marginal_cpa": 2093.27,
-      "roi_revenue": 2.5154,
-      "roi_pipeline": 8.0878,
-      "cost_per_incremental_lead": 63.01,
+      "marginal_cpa": 2094.95,
+      "roi_revenue": 2.5057,
+      "roi_pipeline": 8.0105,
+      "cost_per_incremental_lead": 63.93,
       "adstock": {
         "type": "geometric",
         "alpha": 0.19,
@@ -697,7 +850,7 @@
         "slope": 0.985,
         "input": "adstocked weekly spend / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 167.319321,
+      "beta_leads_per_week_per_size_unit": 162.802131,
       "lead_quality": {
         "p_mql": 0.7003,
         "p_sql": 0.3622,
@@ -727,42 +880,44 @@
         ],
         "spend": [
           0.0,
-          540756.05,
-          1081512.09,
-          1622268.14,
-          2163024.19,
-          2703780.24,
-          3244536.29,
-          4326048.38,
-          6489072.57
+          529499.61,
+          1058999.23,
+          1588498.84,
+          2117998.45,
+          2647498.06,
+          3176997.68,
+          4235996.9,
+          6353995.35
         ],
         "incremental_deals": [
           0.0,
-          706.288,
-          1166.424,
-          1515.994,
-          1799.296,
-          2037.825,
-          2243.887,
-          2587.204,
-          3102.199
+          689.831,
+          1141.656,
+          1484.456,
+          1761.842,
+          1995.071,
+          2196.312,
+          2531.061,
+          3031.799
         ]
       }
     }
   },
   "summary": {
-    "paid_spend": 41866548.68,
-    "expected_deals_all_sources": 32374.35,
-    "incremental_deals_paid_media": 18050.6,
-    "blended_cpa_paid_media": 1293.2,
-    "incremental_cpa_paid_media": 2319.4,
-    "paid_media_share_of_deals": 0.5576,
-    "nonbrand_share_of_search_spend": 0.6401,
-    "highest_cpa_channel": "display"
+    "paid_spend": 42141377.34,
+    "expected_deals_all_sources": 32304.32,
+    "incremental_deals_paid_media": 17906.51,
+    "blended_cpa_paid_media": 1304.51,
+    "incremental_cpa_paid_media": 2353.41,
+    "paid_media_share_of_deals": 0.5543,
+    "nonbrand_share_of_search_spend": 0.6445,
+    "highest_cpa_channel": "display",
+    "upper_funnel_share_of_brand_searches": 0.1672,
+    "upper_funnel_share_of_brand_search_deals": 0.0281
   },
   "controls": {
     "baseline": {
-      "expected_deals_in_window": 13303.24,
+      "expected_deals_in_window": 13373.37,
       "leads_per_week_avg_region": 82.5,
       "growth_per_year_log": 0.0521,
       "seasonality": {
@@ -860,8 +1015,8 @@
       ]
     },
     "email": {
-      "expected_deals_in_window": 1020.5,
-      "deals_per_1k_sends": 0.0627,
+      "expected_deals_in_window": 1024.45,
+      "deals_per_1k_sends": 0.0639,
       "adstock": {
         "type": "geometric",
         "alpha": 0.371,
@@ -874,7 +1029,7 @@
         "slope": 1.0,
         "input": "adstocked weekly sends / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 11.00541,
+      "beta_leads_per_week_per_size_unit": 11.088681,
       "lead_quality": {
         "p_mql": 0.6229,
         "p_sql": 0.4574,

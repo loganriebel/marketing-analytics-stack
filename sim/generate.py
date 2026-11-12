@@ -110,30 +110,6 @@ def _brand_flighting(rng, f: dict, cal: dict, lat: np.ndarray, region_ok: np.nda
     return m
 
 
-def _geo_tests(rng, t_total: int, n_reg: int, cfg: dict) -> np.ndarray:
-    """Planned regional tests (T, R): each wave sets a few markets to a test level for a
-    few weeks while the rest keep the plan. Markets rotate so each takes a turn."""
-    mult = np.ones((t_total, n_reg))
-    queue: list[int] = []
-    wave = C.GEO_TEST_WAVE_WEEKS
-    lo, hi = cfg["len"]
-    for w0 in range(0, t_total, wave):
-        n = int(rng.integers(lo, hi + 1))
-        start = w0 + int(rng.integers(1, wave - n))
-        used: set[int] = set()
-        for level, k in cfg["arms"]:
-            for _ in range(k):
-                while True:
-                    if not queue:
-                        queue = [int(v) for v in rng.permutation(n_reg)]
-                    j = queue.pop()
-                    if j not in used:
-                        break
-                used.add(j)
-                mult[start : start + n, j] = level
-    return mult
-
-
 def _categorical(rng, probs: np.ndarray, rows: np.ndarray) -> np.ndarray:
     """Draw one category per element; probs is (n_groups, n_cats), rows picks the group."""
     cum = np.cumsum(probs, axis=1)
@@ -186,7 +162,7 @@ def _draw_true_params(rng: np.random.Generator, n_reg: int) -> dict:
     offset_sigma = uni(s["market_offset_sigma_weeks"])
     season["market_offset_sigma_weeks"] = round(offset_sigma, 3)
     season["market_offset_weeks"] = [round(float(v), 2) for v in rng.normal(0.0, offset_sigma, n_reg)]
-    return {
+    params = {
         "season": season,
         "effect": effect,
         "funnel": funnel,
@@ -199,6 +175,11 @@ def _draw_true_params(rng: np.random.Generator, n_reg: int) -> dict:
         "year_end_win_mult": round(uni(C.PROMO["year_end_win_mult_range"]), 3),
         "price_win_mult": round(uni(C.PROMO["price_win_mult_range"]), 3),
     }
+    params["brand_searches"] = {
+        ch: {"alpha": round(uni(r["alpha"]), 3), "reach_spend": round(log_uni(r["reach_spend"]), -1),
+             "lift": round(uni(r["lift"]), 4)}
+        for ch, r in C.BRAND_SEARCH["created_by"].items()}
+    return params
 
 
 # --- spend ------------------------------------------------------------------
@@ -222,10 +203,9 @@ def _planned_spend(rng, ch: str, cal: dict, size: np.ndarray, region_ok: np.ndar
         shape = _brand_flighting(rng, p["push"], cal, lat, region_ok)
     else:
         n_q = cal["quarter"].max() + 1
-        resplit = np.exp(rng.normal(0.0, p["quarter_region_sigma"], (n_q, n_reg)))[cal["quarter"]]
-        shape = cal["season"] ** p["season_follow"] * resplit
-        if "tests" in p:
-            shape = shape * _geo_tests(rng, t_total, n_reg, p["tests"])
+        resplit = np.exp(rng.normal(0.0, p["quarter_region_sigma"], (n_q, n_reg)))
+        resplit = resplit / (resplit * alloc).sum(axis=1, keepdims=True)  # moves budget between markets, not the total
+        shape = cal["season"] ** p["season_follow"] * resplit[cal["quarter"]]
     # The budget sets the average week, so the shape only moves spend around the year.
     shape = shape / (shape[cal["win"]] * alloc).sum(axis=1).mean()
     x = np.round(national[:, None] * alloc[None, :] * shape * noise, 2)
@@ -388,6 +368,8 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     pad = np.zeros((C.L_MAX, n_reg))
     mu_media: dict[str, np.ndarray] = {}
     channel_truth: dict[str, dict] = {}
+    betas: dict[str, float] = {}
+    direct_deals: dict = {}
 
     def fit_channel(ch: str) -> None:
         e = tp["effect"][ch]
@@ -407,9 +389,12 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
         spend_win = float(spend[ch][win].sum())
         beta = spend_win / (e["cpa"] * float((contrib(1.0) * deal_x).sum()))
         mu_media[ch] = beta * size * _hill(a_full[:t_total] / size, e["K"], e["S"])
+        betas[ch] = beta
 
         def deals(mult: float) -> float:
             return float((beta * contrib(mult) * deal_x).sum())
+
+        direct_deals[ch] = deals
 
         leads_1 = beta * contrib(1.0)
         inc_deals = deals(1.0)
@@ -445,17 +430,75 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     for ch in C.PLANNED_CHANNELS + ["webinars"]:
         fit_channel(ch)
 
+    # --- brand searches: baseline demand plus what the upper funnel creates ------
     bs = C.BRAND_SEARCH
-    demand = mu_base + sum(share * mu_media[src] for src, share in bs["demand_from"].items())
-    brand_raw = (demand * np.exp(rng.normal(0.0, bs["noise_sigma"], (t_total, n_reg)))
-                 * _geo_tests(rng, t_total, n_reg, bs["tests"]))
+    search_drivers = list(bs["created_by"])
+    cost_noise = np.exp(rng.normal(0.0, bs["noise_sigma"], (t_total, n_reg)))
+
+    def reach(ch: str, x: np.ndarray) -> np.ndarray:
+        h = tp["brand_searches"][ch]
+        a = _adstock(x, h["alpha"], C.L_MAX)
+        return size * (1.0 - np.exp(-a / (h["reach_spend"] * size)))
+
+    gamma = {ch: tp["brand_searches"][ch]["lift"] * float(mu_base[win].sum()) / float(reach(ch, spend[ch])[win].sum())
+             for ch in search_drivers}
+
+    def brand_searches(paths: dict[str, np.ndarray]) -> np.ndarray:
+        return mu_base + sum(gamma[ch] * reach(ch, paths[ch]) for ch in search_drivers)
+
+    searches = brand_searches(spend)
     planned_nonbrand_win = plans["paid_search_nonbrand"][win].sum()
     share = bs["planned_share_of_search"]
-    scale = share / (1 - share) * planned_nonbrand_win / brand_raw[win].sum()
-    brand = np.round(brand_raw * scale, 2)
-    brand[brand < 25.0] = 0.0
-    spend["paid_search_brand"] = brand
+    cost_per_search = share / (1 - share) * planned_nonbrand_win / float((searches * cost_noise)[win].sum())
+
+    def brand_spend(s: np.ndarray) -> np.ndarray:
+        x = np.round(s * cost_noise * cost_per_search, 2)
+        x[x < 25.0] = 0.0
+        return x
+
+    spend["paid_search_brand"] = brand_spend(searches)
     fit_channel("paid_search_brand")
+
+    e_b = tp["effect"]["paid_search_brand"]
+    brand_deal_x = extend(p_deal[o_index["paid_search_brand"]])
+
+    def brand_search_deals(x: np.ndarray) -> float:
+        a = _adstock(np.vstack([x, pad]), e_b["alpha"], C.L_MAX)
+        return float((betas["paid_search_brand"] * size * _hill(a / size, e_b["K"], e_b["S"]) * brand_deal_x).sum())
+
+    def via_brand_search(ch: str, mult: float) -> float:
+        """Brand-search deals from the brand searches this channel's in-window spend creates,
+        with that spend scaled by mult, against the same path with it removed."""
+        def path(m: float) -> np.ndarray:
+            x = spend[ch].copy()
+            x[win] *= m
+            return brand_spend(brand_searches({**spend, ch: x}))
+        return brand_search_deals(path(mult)) - brand_search_deals(path(0.0))
+
+    created_win = {ch: float((gamma[ch] * reach(ch, spend[ch]))[win].sum()) for ch in search_drivers}
+    for ch in search_drivers:
+        t_ch = channel_truth[ch]
+        spend_win = t_ch["spend"]
+
+        def total(m: float, ch: str = ch) -> float:
+            return direct_deals[ch](m) + via_brand_search(ch, m)
+
+        via = via_brand_search(ch, 1.0)
+        tot = direct_deals[ch](1.0) + via
+        t_ch["brand_searches_created"] = _r(created_win[ch], 2)
+        t_ch["incremental_deals_via_brand_search"] = _r(via, 2)
+        t_ch["incremental_deals_total"] = _r(tot, 2)
+        t_ch["cpa_total"] = _r(spend_win / tot, 2)
+        t_ch["marginal_cpa_total"] = _r(0.02 * spend_win / (total(1.01) - total(0.99)), 2)
+        h = tp["brand_searches"][ch]
+        t_ch["brand_search_creation"] = {
+            "type": "reach", "alpha": h["alpha"], "l_max": C.L_MAX, "reach_spend": h["reach_spend"],
+            "lift_over_baseline_searches": h["lift"], "gamma": _r(gamma[ch], 6)}
+        t_ch["response_curve_total"] = {
+            "spend_multiplier": RESPONSE_MULTIPLIERS,
+            "spend": [_r(spend_win * m, 2) for m in RESPONSE_MULTIPLIERS],
+            "incremental_deals": [_r(total(m), 3) for m in RESPONSE_MULTIPLIERS],
+        }
     channel_truth = {ch: channel_truth[ch] for ch in C.PAID_CHANNELS}
 
     # --- leads ---------------------------------------------------------------
@@ -755,6 +798,15 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
             "lead_model": "leads(r,t) = base(r,t) + email(r,t) + sum_c beta_c * size_r * hill(adstock_c(spend_rc)(t) / size_r)",
             "deal_model": "deal probability per lead = p_mql * p_sql * sdr_mult(r,t) * p_opp * p_won * ae_mult(r,t) * promo(t) * price(t), by lead created week",
             "parameter_draws": "every true parameter here was drawn from the ranges in sim/config.py by a child stream of the seed; none is typed in",
+            "brand_searches": "searches(r,t) = baseline(r,t) + sum over meta, youtube, ctv of gamma_c * size_r * (1 - exp(-adstock_c(spend_rc)(t) / (reach_spend_c * size_r))), adstock geometric and normalized; baseline is the organic lead rate base(r,t). Brand-search spend = searches * cost per search * weekly cost noise, so it moves with every term",
+            "brand_searches_created": "in-window brand searches the channel's spend creates, in the units of baseline searches (organic leads per week)",
+            "incremental_deals_via_brand_search": "meta, youtube and ctv: expected deals brand search causes because of the extra brand searches, and so extra brand-search spend, that the channel's in-window spend creates. Counterfactual: remove the channel's in-window spend, recompute brand searches and brand-search spend, and take the difference in deals brand search causes. Counts deals that close after the window; brand-search spend after the last window week is not simulated",
+            "incremental_deals_total": "incremental_deals (direct) + incremental_deals_via_brand_search",
+            "cpa_total": "in-window spend divided by incremental_deals_total",
+            "marginal_cpa_total": "extra spend per extra total deal when the channel's whole in-window spend path is scaled by 1% (central difference, 0.99 to 1.01), with brand-search spend responding",
+            "response_curve_total": "incremental_deals_total when the channel's in-window spend path is scaled by spend_multiplier; brand-search spend responds, other channels unchanged",
+            "brand_search_incremental_deals": "paid_search_brand incremental_deals is given its actual spend path, which already includes the searches the upper funnel created",
+            "upper_funnel_share_of_brand_search_deals": "sum of incremental_deals_via_brand_search over meta, youtube and ctv, divided by paid_search_brand incremental_deals",
         },
         "channels": channel_truth,
         "summary": {
@@ -768,6 +820,10 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
                                                  / (channel_truth["paid_search_nonbrand"]["spend"]
                                                     + channel_truth["paid_search_brand"]["spend"])),
             "highest_cpa_channel": max(channel_truth, key=lambda c: channel_truth[c]["cpa"]),
+            "upper_funnel_share_of_brand_searches": _r(sum(created_win.values()) / float(searches[win].sum())),
+            "upper_funnel_share_of_brand_search_deals": _r(
+                sum(channel_truth[c]["incremental_deals_via_brand_search"] for c in search_drivers)
+                / channel_truth["paid_search_brand"]["incremental_deals"]),
         },
         "controls": {
             "baseline": {
