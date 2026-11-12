@@ -103,11 +103,6 @@ def load(con) -> dict[str, pd.DataFrame]:
     d["outcome"] = _q(con, """
         select week_start, sum(leads) as leads, sum(won_deals) as deals, sum(won_revenue)::double as revenue
         from fct_funnel group by 1 order by 1""")
-    d["area_leads"] = _q(con, """
-        select f.week_start, f.sales_area, sum(f.leads) as leads
-        from fct_funnel f join dim_channel c using (channel_id)
-        where c.marketing_role = 'unpaid' group by 1, 2 order by 1, 2""")
-    d["area_latitude"] = _q(con, "select sales_area, avg(latitude) as latitude from dim_region group by 1")
     d["by_channel"] = _q(con, """
         select channel_id, year(week_start) as yr, sum(spend)::double as spend,
                sum(platform_conversions) as claims, sum(sourced_leads) as crm_leads
@@ -120,7 +115,7 @@ def load(con) -> dict[str, pd.DataFrame]:
     d["plan_changes"] = _q(con, """
         select change_date, channel_id, budget_change_pct, reason
         from stg_media_plan_changes order by change_date, channel_id""")
-    for k in ("spend", "region_spend", "outcome", "controls", "area_leads"):
+    for k in ("spend", "region_spend", "outcome", "controls"):
         d[k]["week_start"] = pd.to_datetime(d[k]["week_start"])
     d["plan_changes"]["change_date"] = pd.to_datetime(d["plan_changes"]["change_date"])
     return d
@@ -223,25 +218,6 @@ def seasonal_index(d) -> pd.DataFrame:
     last = o.week_start.max()
     o = o[o.week_start < last - pd.Timedelta(weeks=3)]  # drop censored final weeks
     return o.groupby("woy")[["deals_idx", "leads_idx"]].mean()
-
-
-def busy_season_timing(d) -> pd.DataFrame:
-    """When the fall busy season lands in each sales area, from unpaid-source leads (organic
-    search, direct, referral), which carry less of the media calendar than paid sources."""
-    a = d["area_leads"].copy()
-    a["yr"] = a.week_start.dt.isocalendar().year.astype(int)
-    a["woy"] = a.week_start.dt.isocalendar().week.astype(int)
-    a = a[(a.woy <= 52) & (a.week_start < a.week_start.max() - pd.Timedelta(weeks=3))]
-    a["idx"] = 100 * a.leads / a.groupby(["sales_area", "yr"]).leads.transform("mean")
-    prof = a.groupby(["sales_area", "woy"]).idx.mean().unstack(0).rolling(3, center=True).mean()
-    lat = d["area_latitude"].set_index("sales_area").latitude
-    rows = []
-    for area in lat.sort_values(ascending=False).index:
-        above = (prof[area].loc[36:48] - 100).clip(lower=0)
-        rows.append({"Sales area": area, "Average latitude": f"{lat[area]:.1f}",
-                     "Middle of the fall busy season (ISO week)": f"{(above.index * above).sum() / above.sum():.1f}",
-                     "Fall peak week": int(prof[area].loc[36:48].idxmax())})
-    return pd.DataFrame(rows)
 
 
 def chart_seasonality(si: pd.DataFrame) -> str:
@@ -486,11 +462,6 @@ def build(con) -> str:
                    + (f"Not seen: {', '.join(misses)}. The MMM should learn seasonality from the data rather than "
                       "impose the planning calendar." if misses else "The data matches the planning calendar."))
     promo_lift = si.loc[46:50, "deals_idx"].mean() / si.loc[46:50, "leads_idx"].mean()
-    timing = busy_season_timing(d)
-    mid = timing["Middle of the fall busy season (ISO week)"].astype(float)
-    gap = mid.iloc[-1] - mid.iloc[0]
-    timing_note = (f"The fall season lands about {abs(gap):.1f} weeks {'earlier' if gap > 0 else 'later'} in the "
-                   f"{timing['Sales area'].iloc[0]} than in the {timing['Sales area'].iloc[-1]}.")
 
     by_year = d["by_channel"].copy()
     role = dict(zip(d["channels"].channel_id, d["channels"].marketing_role))
@@ -540,12 +511,6 @@ def build(con) -> str:
           _table(pd.DataFrame(season_rows)), "",
           f"{season_note} During the year-end promo (weeks 46 to 50), deals run {promo_lift - 1:+.0%} relative to leads, "
           "which is what a discount on annual plans should do.", "",
-          "The seasons do not arrive on the same week everywhere. Below is when the fall busy season lands in each sales "
-          "area, north to south, measured on leads from unpaid sources (organic search, direct, referral), which carry "
-          "less of the media calendar than paid sources. The middle week weights each week by how far its 3-week average "
-          "sits above 100.", "",
-          _table(timing), "",
-          timing_note, "",
           "## 4. How the media was flighted", "",
           f"![Flighting calendar]({img['flight']})", "",
           f"![Spend by channel]({img['spend']})", "",
