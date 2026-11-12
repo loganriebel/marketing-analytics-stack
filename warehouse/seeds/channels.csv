@@ -1,6 +1,6 @@
 channel_id,channel_name,channel_group,marketing_role,source_system,is_paid,reports_impressions,reports_clicks,sort_order,buying_model
-paid_search_brand,Paid Search Brand,search,performance,google_ads,true,true,true,1,"Bids on searches for Fernhook. Spend follows how many people search the brand. Twice a year a few markets pause it for a few weeks as a planned brand test."
-paid_search_nonbrand,Paid Search Non-Brand,search,performance,google_ads,true,true,true,2,"Always on. Budgets lean into busy seasons. Twice a year the team runs planned regional tests: a few markets pause and a few get extra budget."
+paid_search_brand,Paid Search Brand,search,performance,google_ads,true,true,true,1,"Bids on every search for Fernhook, always on in every market. Spend follows how many people search the brand, and Meta, YouTube and CTV ads drive some of those searches."
+paid_search_nonbrand,Paid Search Non-Brand,search,performance,google_ads,true,true,true,2,"Always on in every market. Budgets lean into busy seasons and are re-split across markets every quarter."
 meta,Meta,paid_social,brand,meta_ads,true,true,true,3,"Always-on prospecting that pushes before and into the spring and fall busy seasons and eases off in slow weeks. Each market's timing differs."
 linkedin,LinkedIn,paid_social,performance,linkedin_ads,true,true,true,4,"Lead-gen forms, always on. Market budgets are re-split every quarter."
 youtube,YouTube,video,brand,google_ads,true,true,true,5,"National flights that run several weeks ahead of each busy season, with a low level in between. Each flight targets about three in four markets."
