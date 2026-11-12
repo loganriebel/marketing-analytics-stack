@@ -75,3 +75,12 @@ def test_eda_reads_only_the_warehouse():
         text = p.read_text(encoding="utf-8")
         assert "truth" not in text.lower(), p.name
         assert not re.search(r"^\s*(from|import)\s+sim\b", text, re.M), f"{p.name} imports the simulator"
+
+
+def test_servers_and_evals_never_touch_the_answer_key():
+    files = list((REPO / "servers").glob("*.py")) + list((REPO / "evals").glob("*.py"))
+    assert files
+    for p in files:
+        text = p.read_text(encoding="utf-8")
+        assert "sim/truth" not in text and "truth.json" not in text, p.name
+        assert not re.search(r"^\s*(from|import)\s+sim\b", text, re.M), f"{p.name} imports the simulator"
