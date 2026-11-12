@@ -20,7 +20,7 @@ import arviz as az  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
-from . import baselines, lift_tests  # noqa: E402
+from . import baselines, lift_tests, validation  # noqa: E402
 from . import config as C  # noqa: E402
 from .data import Panel, affiliate_spend_check, load_panel  # noqa: E402
 from .estimands import Engine, MediaPosterior, hdi  # noqa: E402
@@ -94,7 +94,10 @@ def diagnostics(mmm, idata, design, panel: Panel) -> dict:
             "national_week_coverage_90": _interval_coverage(hnat, hnat_obs),
             "region_total_mape": float(np.mean(np.abs(hd.sum(axis=1).mean(axis=0) - hobs.sum(axis=0))
                                                / hobs.sum(axis=0))),
+            "region_week": validation.error_stats(hobs, hd.mean(axis=0)),
+            "national_week": validation.error_stats(hnat_obs, hmean),
         }
+    out["fit_stats"] = validation.training_stats(idata, mmm, design, panel)
     return out
 
 
@@ -191,7 +194,35 @@ def run(holdout_weeks: int = C.HOLDOUT_WEEKS, name: str | None = None, regions=N
     log = (lambda *a: None) if quiet else (lambda *a: print(*a, flush=True))
     sampler = {**C.SAMPLER, **(sampler or {})}
     name = name or ("holdout" if holdout_weeks else "full")
+    prep = _prepare(holdout_weeks, regions, n_weeks)
+    panel, design, mmm, lift_rows = prep["panel"], prep["design"], prep["mmm"], prep["lift_rows"]
+    X, y = design.train()
+    log(f"[{name}] {len(panel.regions)} regions x {design.n_train} train weeks; "
+        f"lift tests from {len(lift_rows)} pauses; sampling {sampler}")
 
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        idata = mmm.fit(X, y, nuts_sampler="nutpie", progressbar=False,
+                        chains=sampler["chains"], draws=sampler["draws"], tune=sampler["tune"],
+                        target_accept=sampler["target_accept"], random_seed=sampler["random_seed"])
+    log(f"[{name}] sampled in {time.time() - t0:.0f}s")
+    fit_dir.mkdir(parents=True, exist_ok=True)
+    idata.to_netcdf(fit_dir / f"{name}.nc")
+    run_meta = {
+        "fit": name,
+        "window": [str(panel.weeks[0].date()), str(panel.weeks[-1].date())],
+        "train_weeks": design.n_train, "holdout_weeks": holdout_weeks,
+        "regions": len(panel.regions), "subset": {"regions": regions, "n_weeks": n_weeks},
+        "sampler": sampler, "estimand_draws": estimand_draws,
+        "sampling_seconds": round(time.time() - t0),
+        "hdi_prob": C.HDI_PROB,
+        "estimands_cover": "full window spend path with this fit's posterior",
+    }
+    return _evaluate(prep, idata, run_meta, out_dir, fit_dir, write, estimand_draws, log)
+
+
+def _prepare(holdout_weeks: int, regions=None, n_weeks=None) -> dict:
+    """Data, lift tests and the built model (with its lift likelihood), before sampling."""
     panel = load_panel()
     if regions or n_weeks:
         panel = panel.subset(regions, n_weeks)
@@ -207,17 +238,16 @@ def run(holdout_weeks: int = C.HOLDOUT_WEEKS, name: str | None = None, regions=N
     mmm = make_mmm(design)
     mmm.build_model(X, y)
     lift_entered = add_brand_lift(mmm, lift) if lift else None
-    log(f"[{name}] {len(panel.regions)} regions x {design.n_train} train weeks; "
-        f"lift tests from {len(lift_rows)} pauses; sampling {sampler}")
+    return {"panel": panel, "affiliate": affiliate, "design": design, "mmm": mmm,
+            "lift_rows": lift_rows, "lift_entered": lift_entered}
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        idata = mmm.fit(X, y, nuts_sampler="nutpie", progressbar=False,
-                        chains=sampler["chains"], draws=sampler["draws"], tune=sampler["tune"],
-                        target_accept=sampler["target_accept"], random_seed=sampler["random_seed"])
-    log(f"[{name}] sampled in {time.time() - t0:.0f}s")
 
-    if "brand_pause_lift" not in mmm.model.named_vars and lift:
+def _evaluate(prep, idata, run_meta, out_dir, fit_dir, write, estimand_draws, log) -> dict:
+    """Diagnostics, gates, fit statistics and (if every gate passes) the outputs."""
+    t0 = time.time()
+    panel, design, mmm = prep["panel"], prep["design"], prep["mmm"]
+    name = run_meta["fit"]
+    if "brand_pause_lift" not in mmm.model.named_vars and prep["lift_entered"]:
         raise RuntimeError("lift test likelihood missing from the fitted model")
 
     with warnings.catch_warnings():
@@ -227,28 +257,21 @@ def run(holdout_weeks: int = C.HOLDOUT_WEEKS, name: str | None = None, regions=N
     log(f"[{name}] gates: {gates['checks']}")
 
     fit_dir.mkdir(parents=True, exist_ok=True)
-    idata.to_netcdf(fit_dir / f"{name}.nc")
     scales = {"channel_scale": mmm.scalers._channel.sel(channel=panel.channels).values.tolist(),
               "target_scale": float(mmm.scalers._target.values)}
     write_json(fit_dir / f"{name}_scales.json", scales)
 
-    run_meta = {
-        "fit": name,
-        "window": [str(panel.weeks[0].date()), str(panel.weeks[-1].date())],
-        "train_weeks": design.n_train, "holdout_weeks": holdout_weeks,
-        "regions": len(panel.regions), "sampler": sampler,
-        "estimand_draws": estimand_draws, "seconds": round(time.time() - t0),
-        "hdi_prob": C.HDI_PROB,
-        "estimands_cover": "full window spend path with this fit's posterior",
-    }
-    result = {"meta": run_meta, "diagnostics": diag, "gates": gates, "affiliate_check": affiliate,
-              "lift_tests": {"pauses": lift_rows.to_dict(orient="records"), "pooled": lift_entered},
+    lift = {"pauses": prep["lift_rows"].to_dict(orient="records"), "pooled": prep["lift_entered"]}
+    result = {"meta": run_meta, "diagnostics": diag, "gates": gates,
+              "affiliate_check": prep["affiliate"], "lift_tests": lift,
               "idata": idata, "mmm": mmm, "design": design, "panel": panel}
 
     if write:
         write_json(out_dir / f"diagnostics_{name}.json",
                    {"meta": run_meta, "diagnostics": diag, "gates": gates,
-                    "affiliate_check": affiliate, "lift_tests": result["lift_tests"]})
+                    "affiliate_check": prep["affiliate"], "lift_tests": lift})
+        validation.parameter_table(idata, FREE_VARS).to_csv(
+            out_dir / f"parameters_{name}.csv", index=False, float_format="%.6g")
     if not gates["all_pass"]:
         log(f"[{name}] a health gate failed: no estimands written")
         return result
@@ -263,18 +286,24 @@ def run(holdout_weeks: int = C.HOLDOUT_WEEKS, name: str | None = None, regions=N
     return result
 
 
-def outputs_from_saved(name: str, out_dir: Path = C.OUTPUT_DIR, fit_dir: Path = C.FIT_DIR,
-                       estimand_draws: int = 2000) -> dict:
-    """Rebuild outputs from a saved fit whose gates passed, without sampling again."""
-    diag = json.loads((out_dir / f"diagnostics_{name}.json").read_text(encoding="utf-8"))
-    if not diag["gates"]["all_pass"]:
-        raise RuntimeError(f"fit {name} failed a health gate: {diag['gates']['checks']}")
+def rescore_saved(name: str, holdout_weeks: int, out_dir: Path = C.OUTPUT_DIR,
+                  fit_dir: Path = C.FIT_DIR, estimand_draws: int = 2000, quiet: bool = False) -> dict:
+    """Re-run diagnostics, gates, fit statistics and outputs on a saved posterior.
+
+    The model is rebuilt from the same marts and the saved draws are attached, so
+    nothing is sampled again.
+    """
+    log = (lambda *a: None) if quiet else (lambda *a: print(*a, flush=True))
+    old = out_dir / f"diagnostics_{name}.json"
+    run_meta = json.loads(old.read_text(encoding="utf-8"))["meta"] if old.exists() else {
+        "fit": name, "holdout_weeks": holdout_weeks}
+    run_meta = {**run_meta, "estimand_draws": estimand_draws}
+    subset = run_meta.get("subset") or {}
+    prep = _prepare(run_meta.get("holdout_weeks", holdout_weeks), subset.get("regions"),
+                    subset.get("n_weeks"))
     idata = az.from_netcdf(fit_dir / f"{name}.nc")
-    scales = json.loads((fit_dir / f"{name}_scales.json").read_text(encoding="utf-8"))
-    panel = load_panel()
-    post = MediaPosterior.from_idata(idata, scales["channel_scale"], scales["target_scale"],
-                                     panel.channels, max_draws=estimand_draws)
-    return write_outputs(Engine(post, panel), panel, diag["meta"], out_dir)
+    prep["mmm"].idata = idata
+    return _evaluate(prep, idata, run_meta, out_dir, fit_dir, True, estimand_draws, log)
 
 
 def main(argv=None) -> int:
@@ -285,13 +314,14 @@ def main(argv=None) -> int:
     ap.add_argument("--tune", type=int, default=C.SAMPLER["tune"])
     ap.add_argument("--chains", type=int, default=C.SAMPLER["chains"])
     ap.add_argument("--report-only", action="store_true",
-                    help="rebuild outputs from the saved fit instead of sampling")
+                    help="re-score the saved fit (diagnostics, stats, outputs) without sampling")
     args = ap.parse_args(argv)
+    name = args.name or ("holdout" if args.holdout else "full")
     if args.report_only:
-        outputs_from_saved(args.name or ("holdout" if args.holdout else "full"))
-        return 0
-    res = run(holdout_weeks=args.holdout, name=args.name,
-              sampler={"draws": args.draws, "tune": args.tune, "chains": args.chains})
+        res = rescore_saved(name, args.holdout)
+    else:
+        res = run(holdout_weeks=args.holdout, name=name,
+                  sampler={"draws": args.draws, "tune": args.tune, "chains": args.chains})
     print(json.dumps(_jsonable({"diagnostics": res["diagnostics"], "gates": res["gates"]}), indent=2))
     return 0 if res["gates"]["all_pass"] else 1
 

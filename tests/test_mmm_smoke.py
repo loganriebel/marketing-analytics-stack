@@ -14,7 +14,7 @@ pytest.importorskip("pymc_marketing")
 pytest.importorskip("nutpie")
 
 from mmm import config as C  # noqa: E402
-from mmm import fit, lift_tests  # noqa: E402
+from mmm import fit, lift_tests, validation  # noqa: E402
 from mmm.data import Panel  # noqa: E402
 from mmm.estimands import Engine, MediaPosterior, hdi  # noqa: E402
 
@@ -27,7 +27,7 @@ def smoke(tmp_path_factory):
     tmp = tmp_path_factory.mktemp("mmm")
     res = fit.run(holdout_weeks=8, name="smoke", regions=["EU_NOR", "US_CA"], n_weeks=80,
                   sampler={"chains": 2, "draws": 100, "tune": 150}, out_dir=tmp / "out",
-                  fit_dir=tmp / "fits", write=False, quiet=True)
+                  fit_dir=tmp / "fits", write=True, quiet=True)
     scales = json.loads((tmp / "fits" / "smoke_scales.json").read_text())
     post = MediaPosterior.from_idata(res["idata"], scales["channel_scale"], scales["target_scale"],
                                      C.CHANNELS)
@@ -49,6 +49,40 @@ def test_fit_runs_with_lift_test_and_reports_gates(smoke):
         assert key in d
     assert set(smoke["gates"]["checks"]) >= {"rhat", "ess_bulk", "divergences", "ppc_coverage",
                                              "holdout_mape"}
+
+
+def test_fit_stats_are_reported(smoke):
+    fs = smoke["diagnostics"]["fit_stats"]
+    for scope in ("region_week", "national_week"):
+        for k in ("mse", "rmse", "mae", "mape", "r2"):
+            assert np.isfinite(fs[scope][k]), (scope, k)
+        assert np.isclose(fs[scope]["rmse"] ** 2, fs[scope]["mse"])
+    assert np.isfinite(fs["loo"]["elpd_loo"]) and fs["loo"]["n_obs"] == 2 * smoke["design"].n_train
+    assert 0 < fs["residuals_national"]["durbin_watson"] < 4
+    assert set(fs["residual_corr_with_spend"]) == set(C.CHANNELS)
+    for k in ("rmse", "mae", "r2"):
+        assert k in smoke["diagnostics"]["holdout"]["national_week"]
+    params = (smoke["tmp"] / "out" / "parameters_smoke.csv").read_text()
+    assert "saturation_beta[paid_search_brand]" in params and "p_above_zero" in params
+
+
+def test_rescore_saved_fit_matches_the_original(smoke):
+    again = fit.rescore_saved("smoke", 8, out_dir=smoke["tmp"] / "out", fit_dir=smoke["tmp"] / "fits",
+                              quiet=True)
+    a, b = smoke["diagnostics"], again["diagnostics"]
+    assert a["rhat_max"] == b["rhat_max"]
+    assert np.isclose(a["fit_stats"]["region_week"]["rmse"], b["fit_stats"]["region_week"]["rmse"])
+    assert np.isclose(a["fit_stats"]["loo"]["elpd_loo"], b["fit_stats"]["loo"]["elpd_loo"])
+
+
+def test_error_stats_and_residual_checks():
+    e = validation.error_stats(np.array([1.0, 2.0, 3.0, 4.0]), np.array([1.0, 2.0, 3.0, 6.0]))
+    assert np.isclose(e["mse"], 1.0) and np.isclose(e["mae"], 0.5) and np.isclose(e["bias"], 0.5)
+    white = np.random.default_rng(0).normal(size=2000)
+    r = validation.residual_checks(white)
+    assert abs(r["lag1_autocorrelation"]) < 0.06 and abs(r["durbin_watson"] - 2) < 0.15
+    trend = np.cumsum(white)
+    assert validation.residual_checks(trend)["ljung_box_p"] < 1e-6
 
 
 def test_engine_matches_pymc_marketing_contributions(smoke):
