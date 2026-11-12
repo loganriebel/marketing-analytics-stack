@@ -65,3 +65,13 @@ def test_models_only_read_through_sources_and_refs(manifest):
         assert not FILE_READERS.search(code), f"{node.unique_id} reads files directly"
         for dep in getattr(node.depends_on, "nodes", []):  # seeds carry macro deps only
             assert "truth" not in dep.lower(), node.unique_id
+
+
+def test_eda_reads_only_the_warehouse():
+    eda_dir = REPO / "eda"
+    files = list(eda_dir.glob("*.py"))
+    assert files, "eda package missing"
+    for p in files:
+        text = p.read_text(encoding="utf-8")
+        assert "truth" not in text.lower(), p.name
+        assert not re.search(r"^\s*(from|import)\s+sim\b", text, re.M), f"{p.name} imports the simulator"
