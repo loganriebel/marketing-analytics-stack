@@ -238,7 +238,7 @@ def _prepare(holdout_weeks: int, regions=None, n_weeks=None) -> dict:
     if regions or n_weeks:
         panel = panel.subset(regions, n_weeks)
     affiliate = affiliate_spend_check()
-    if not (affiliate["mart_equals_fees"] and affiliate["staging_reads_partner_fees"]):
+    if not affiliate["placement_fees_only"]:
         raise RuntimeError(f"affiliate spend is not placement fees only: {affiliate}")
 
     design = build_design(panel, holdout_weeks)

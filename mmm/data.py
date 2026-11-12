@@ -45,7 +45,8 @@ class Panel:
                      self.won_revenue[t][:, g], self.accounts[g], ctrl, self.webinar_spend[t][:, g])
 
 
-def connect(path: Path = C.WAREHOUSE) -> duckdb.DuckDBPyConnection:
+def connect(path: Path | None = None) -> duckdb.DuckDBPyConnection:
+    path = Path(path or C.WAREHOUSE)
     if not path.exists():
         raise FileNotFoundError(f"{path} not found: run python -m sim and dbt build first")
     return duckdb.connect(str(path), read_only=True)
@@ -60,7 +61,7 @@ def _cube(df: pd.DataFrame, value: str, weeks, regions, channels=None) -> np.nda
     return s.to_numpy(float).reshape(len(weeks), len(regions), len(channels))
 
 
-def load_panel(path: Path = C.WAREHOUSE) -> Panel:
+def load_panel(path: Path | None = None) -> Panel:
     con = connect(path)
     try:
         spend = con.sql(
@@ -96,18 +97,24 @@ def load_panel(path: Path = C.WAREHOUSE) -> Panel:
     )
 
 
-def affiliate_spend_check(path: Path = C.WAREHOUSE) -> dict:
-    """Confirm affiliate spend in the mart is placement fees only.
+def affiliate_spend_check(path: Path | None = None) -> dict:
+    """Confirm affiliate spend in the mart is placement fees only, from marts and metadata.
 
-    The mart's affiliate spend must equal the partner platform's fee column summed
-    through staging, and must not move with affiliate-sourced closed deals the way a
-    per-deal commission would.
+    Staging models are dbt views over the raw CSVs, so this reads only their SQL text
+    (lineage), never their rows. Three checks:
+    * lineage: staging takes partner_fees as spend and never a commission column, and
+      the intermediate media model takes affiliates from that staging view;
+    * dim_channel says commissions are booked as cost of sale;
+    * a per-deal commission would move week to week with affiliate-sourced wins, so
+      weekly changes in spend must not track weekly changes in those wins.
     """
     con = connect(path)
     try:
-        mart = con.sql("select sum(spend)::double from fct_channel_weekly where channel_id = 'affiliates'").fetchall()[0][0]
-        fees = con.sql("select sum(spend)::double from stg_partners").fetchall()[0][0]
-        lineage = con.sql("select sql from duckdb_views() where view_name = 'stg_partners'").fetchall()
+        views = dict(con.sql(
+            "select view_name, sql from duckdb_views() "
+            "where view_name in ('stg_partners', 'int_paid_media_weekly')").fetchall())
+        buying = con.sql(
+            "select buying_model from dim_channel where channel_id = 'affiliates'").fetchall()[0][0]
         weekly = con.sql("""
             select s.week_start, s.spend, coalesce(f.won, 0) as won
             from (select week_start, sum(spend)::double spend from fct_channel_weekly
@@ -117,14 +124,16 @@ def affiliate_spend_check(path: Path = C.WAREHOUSE) -> dict:
         """).df()
     finally:
         con.close()
-    lineage_sql = (lineage[0][0] if lineage else "").lower()
+    stg = views.get("stg_partners", "").lower()
+    inter = views.get("int_paid_media_weekly", "").lower()
     weekly = weekly.sort_values("week_start")
-    # A per-deal commission would move week to week with affiliate-sourced wins.
     diff_corr = float(np.corrcoef(weekly.spend.diff()[1:], weekly.won.diff()[1:])[0, 1])
+    lineage = "partner_fees" in stg and "as spend" in stg and "commission" not in stg and "stg_partners" in inter
+    booked_as_cost_of_sale = "commissions are booked as cost of sale" in buying.lower()
     return {
-        "mart_affiliate_spend": round(mart, 2),
-        "partner_fee_spend": round(fees, 2),
-        "mart_equals_fees": abs(mart - fees) < 0.01,
-        "staging_reads_partner_fees": "partner_fees" in lineage_sql and "commission" not in lineage_sql,
+        "mart_affiliate_spend": round(float(weekly.spend.sum()), 2),
+        "lineage_spend_is_partner_fees": lineage,
+        "dim_channel_commissions_cost_of_sale": booked_as_cost_of_sale,
         "weekly_change_corr_spend_vs_affiliate_won_deals": round(diff_corr, 3),
+        "placement_fees_only": bool(lineage and booked_as_cost_of_sale and abs(diff_corr) < 0.3),
     }
