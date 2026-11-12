@@ -67,18 +67,6 @@ def _woy(weeks) -> np.ndarray:
     return pd.to_datetime(pd.Series(list(weeks))).dt.isocalendar().week.to_numpy().astype(int)
 
 
-def _zero_runs(on: np.ndarray) -> list[tuple[int, int]]:
-    """(start, length) of each run of zero-spend weeks."""
-    runs, start = [], None
-    for i, v in enumerate(list(on) + [True]):
-        if not v and start is None:
-            start = i
-        elif v and start is not None:
-            runs.append((start, i - start))
-            start = None
-    return runs
-
-
 def test_grid_size(sim):
     assert _national(sim.tables).shape == (C.N_WEEKS, len(C.PAID_CHANNELS))
     regions = sim.tables["regions"]
@@ -131,7 +119,9 @@ def test_brand_spend_is_not_just_the_calendar(sim):
 def _oracle_bias(result, market_season: bool) -> dict[str, float]:
     """Fit leads on each channel's true adstock-and-saturation curve with OLS, plus a
     market-year level, holiday weeks and (optionally) market-level Fourier seasonality.
-    Returns the relative error of each recovered effect."""
+    Brand search enters at its true effect: it never pauses and its spend follows
+    demand, so nothing in the data separates it (that is its own trap).
+    Returns the relative error of each other channel's recovered effect."""
     t, tr = result.tables, result.truth
     codes = list(t["regions"].region_code)
     size = np.array([tr["region_size_index"][c] for c in codes])
@@ -140,11 +130,14 @@ def _oracle_bias(result, market_season: bool) -> dict[str, float]:
     y = (leads.assign(week=_week(leads.created_date)).query("week in @weeks")
          .groupby(["week", "region_code"]).size().unstack().reindex(index=weeks, columns=codes).fillna(0.0).to_numpy())
     n_t, n_r = y.shape
-    feats = []
+    curves = {}
     for ch in C.PAID_CHANNELS:
         e = tr["channels"][ch]
         a = _adstock(_grid(t, ch).to_numpy(), e["adstock"]["alpha"], C.L_MAX)
-        feats.append(size * _hill(a / size, e["saturation"]["half_saturation"], e["saturation"]["slope"]))
+        curves[ch] = size * _hill(a / size, e["saturation"]["half_saturation"], e["saturation"]["slope"])
+    fitted = [ch for ch in C.PAID_CHANNELS if ch != "paid_search_brand"]
+    y = y - tr["channels"]["paid_search_brand"]["beta_leads_per_week_per_size_unit"] * curves["paid_search_brand"]
+    feats = [curves[ch] for ch in fitted]
     woy = _woy(weeks).astype(float)
     yr = pd.to_datetime(pd.Series(weeks)).dt.year.to_numpy()
     ctrl = [(yr == v).astype(float) for v in np.unique(yr)] + [(woy == w).astype(float) for w in (47, 51, 52, 1)]
@@ -161,7 +154,7 @@ def _oracle_bias(result, market_season: bool) -> dict[str, float]:
     w = np.repeat(1 / np.sqrt(size), n_t)  # lead counts are Poisson, so variance grows with size
     coef, *_ = np.linalg.lstsq(x[keep] * w[keep, None], y.T.ravel()[keep] * w[keep], rcond=None)
     return {ch: coef[i] / tr["channels"][ch]["beta_leads_per_week_per_size_unit"] - 1
-            for i, ch in enumerate(C.PAID_CHANNELS)}
+            for i, ch in enumerate(fitted)}
 
 
 def test_market_seasonality_separates_brand_pushes_from_demand(sim):
@@ -176,25 +169,29 @@ def test_market_seasonality_separates_brand_pushes_from_demand(sim):
 
 
 def test_performance_channels_never_go_dark(sim):
-    for ch in ("linkedin", "display", "affiliates"):
+    # Paid search, LinkedIn, display and affiliates run every week in every market.
+    for ch in ("paid_search_brand", "paid_search_nonbrand", "linkedin", "display", "affiliates"):
         assert (_grid(sim.tables, ch).to_numpy() > 0).all(), ch
 
 
-@pytest.mark.parametrize("ch, cfg", [("paid_search_brand", C.BRAND_SEARCH["tests"]),
-                                     ("paid_search_nonbrand", C.SPEND["paid_search_nonbrand"]["tests"])])
-def test_search_pauses_only_in_planned_tests(sim, ch, cfg):
-    # Every zero week belongs to a planned test block of the planned length, and no
-    # more markets start a pause together than a wave plans.
-    x = _grid(sim.tables, ch).to_numpy()
-    lo, hi = cfg["len"]
-    paused_per_wave = sum(k for level, k in cfg["arms"] if level == 0.0)
-    runs = [(s, n) for j in range(x.shape[1]) for s, n in _zero_runs(x[:, j] > 0)]
-    assert len(runs) >= 2 * (C.N_WEEKS // 52) * paused_per_wave - paused_per_wave  # about two waves a year
-    edge = {0, C.N_WEEKS}
-    for s, n in runs:
-        assert lo <= n <= hi or s in edge or s + n in edge, (s, n)
-    starts = pd.Series([s for s, _ in runs]).value_counts()
-    assert starts.max() <= paused_per_wave
+def test_upper_funnel_creates_brand_searches(sim, other_seeds):
+    # Meta, YouTube and CTV create brand searches, so brand-search spend rises with them
+    # and each channel gets deals through brand search on top of its direct deals.
+    for seed, result in {C.DEFAULT_SEED: sim, **other_seeds}.items():
+        tr = result.truth
+        assert 0.08 < tr["summary"]["upper_funnel_share_of_brand_searches"] < 0.3, seed
+        for ch in BRAND_PUSH:
+            v = tr["channels"][ch]
+            via, direct = v["incremental_deals_via_brand_search"], v["incremental_deals"]
+            assert via > 0, (seed, ch)
+            assert v["incremental_deals_total"] == pytest.approx(direct + via, abs=0.02)
+            assert v["cpa_total"] < v["cpa"]
+            total_curve = v["response_curve_total"]["incremental_deals"]
+            direct_curve = v["response_curve"]["incremental_deals"]
+            assert total_curve[0] == 0 and all(b > a for a, b in zip(total_curve, total_curve[1:]))
+            assert all(t >= d for t, d in zip(total_curve, direct_curve))
+            at_one = v["response_curve_total"]["spend_multiplier"].index(1.0)
+            assert total_curve[at_one] == pytest.approx(v["incremental_deals_total"], abs=0.01)
 
 
 def test_readme_story_holds_on_several_seeds(sim, other_seeds):

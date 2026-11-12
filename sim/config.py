@@ -95,42 +95,40 @@ CRM_CHANNELS = PAID_CHANNELS + ["email", "organic_search", "direct", "referral"]
 # push.geo: "market" buys each market on its own timing; "national" buys one flight
 # for the country and leaves a share of markets out of each flight.
 SPEND = {
-    # Always-on search leans into busy seasons, so the team runs planned regional
-    # budget tests (pauses and heavy-ups) to keep it measurable.
-    "paid_search_nonbrand": {"weekly_budget": 65_000, "yearly_drift": 0.14, "quarter_sigma": 0.18,
+    # Non-brand search is always on in every market and leans into busy seasons.
+    "paid_search_nonbrand": {"weekly_budget": 65_000, "yearly_drift": 0.14, "quarter_sigma": 0.10,
                              "weekly_sigma": 0.08, "flight": "always_on", "season_follow": 0.3,
-                             "tilt_sigma": 0.30, "region_sigma": 0.22, "quarter_region_sigma": 0.10,
-                             "tests": {"arms": [(0.0, 2), (1.7, 2)], "len": (6, 8)}},
+                             "tilt_sigma": 0.30, "region_sigma": 0.22, "quarter_region_sigma": 0.20},
     # Meta prospecting is always on and pushes into each busy season. Each market's
     # buy has its own timing and size, and each season's push gets its own budget.
     "meta": {"weekly_budget": 30_000, "yearly_drift": -0.08, "quarter_sigma": 0.15,
              "weekly_sigma": 0.10, "flight": "seasonal_push", "tilt_sigma": 0.40, "region_sigma": 0.15,
-             "push": {"geo": "market", "lead": 4, "len": (4, 7), "mult": 1.35, "mult_sigma": 0.20,
+             "push": {"geo": "market", "lead": 3, "len": (4, 7), "mult": 1.35, "mult_sigma": 0.20,
                       "season_sigma": 0.40, "timing_sigma": 1.5, "market_timing_sigma": 1.5,
                       "market_mult_sigma": 0.25, "sustain": 1.0, "slow": 0.85}},
-    "linkedin": {"weekly_budget": 26_000, "yearly_drift": 0.04, "quarter_sigma": 0.20,
+    "linkedin": {"weekly_budget": 26_000, "yearly_drift": 0.04, "quarter_sigma": 0.12,
                  "weekly_sigma": 0.10, "flight": "always_on", "season_follow": 0.0,
                  "tilt_sigma": 0.45, "region_sigma": 0.18, "quarter_region_sigma": 0.30},
     # YouTube flights are bought nationally and run ahead of the season, to build
     # awareness before fleets start shopping.
     "youtube": {"weekly_budget": 22_000, "yearly_drift": -0.10, "quarter_sigma": 0.20,
                 "weekly_sigma": 0.10, "flight": "seasonal_push", "tilt_sigma": 0.35, "region_sigma": 0.15,
-                "push": {"geo": "national", "lead": 8, "len": (5, 8), "mult": 3.0, "mult_sigma": 0.20,
+                "push": {"geo": "national", "lead": 10, "len": (5, 8), "mult": 3.0, "mult_sigma": 0.20,
                          "timing_sigma": 1.5, "market_share": 0.75, "sustain": 0.35, "slow": 0.30}},
     # CTV is a market test: each test market runs its own flight ahead of each busy
     # season, on its own timing, and goes dark between flights.
     "ctv": {"weekly_budget": 22_000, "yearly_drift": -0.08, "quarter_sigma": 0.15,
             "weekly_sigma": 0.05, "flight": "seasonal_push", "tilt_sigma": 0.25, "region_sigma": 0.08,
-            "push": {"geo": "market", "lead": 8, "len": (6, 9), "mult": 1.0, "mult_sigma": 0.20,
-                     "season_sigma": 0.35, "timing_sigma": 2.0, "market_timing_sigma": 5.0,
+            "push": {"geo": "market", "lead": 6, "len": (6, 9), "mult": 1.0, "mult_sigma": 0.20,
+                     "season_sigma": 0.15, "timing_sigma": 2.0, "market_timing_sigma": 3.5,
                      "market_mult_sigma": 0.25, "sustain": 0.0, "slow": 0.0}},
-    "display": {"weekly_budget": 22_000, "yearly_drift": 0.10, "quarter_sigma": 0.20,
+    "display": {"weekly_budget": 22_000, "yearly_drift": 0.10, "quarter_sigma": 0.12,
                 "weekly_sigma": 0.20, "flight": "always_on", "season_follow": 0.0,
                 "tilt_sigma": 0.35, "region_sigma": 0.20, "quarter_region_sigma": 0.20},
     # Partner placement and sponsor fees with local resellers and fleet consultants,
     # set when each market's contracts renew every quarter. Per-deal commissions are
     # cost of sale and stay out of media spend.
-    "affiliates": {"weekly_budget": 12_000, "yearly_drift": 0.03, "quarter_sigma": 0.15,
+    "affiliates": {"weekly_budget": 12_000, "yearly_drift": 0.03, "quarter_sigma": 0.10,
                    "weekly_sigma": 0.04, "flight": "always_on", "season_follow": 0.0,
                    "tilt_sigma": 0.50, "region_sigma": 0.05, "quarter_region_sigma": 0.35},
 }
@@ -148,7 +146,7 @@ PLANNING = {
     "slow_weeks": [(3, 9), (29, 37)],
 }
 
-YEAR_PLAN_SIGMA = 0.07
+YEAR_PLAN_SIGMA = 0.05
 # Decisions the team made between annual plans: (date, reason, {channel: change}).
 # Most follow last-touch readouts; a few do not.
 BUDGET_EVENTS = [
@@ -167,21 +165,29 @@ BUDGET_EVENTS = [
      {"meta": 0.23, "youtube": -0.14}),
 ]
 
-# Brand search spend follows search volume for "Fernhook": baseline demand plus the
-# searches other channels create. The plan sets it at about 35% of search, measured
-# against the non-brand plan; actual spend lands wherever demand takes it. Twice a
-# year the team runs a planned brand test: a few markets pause brand search for a
-# few weeks while the rest keep bidding.
+# Brand search is always on in every market and bids on every search for "Fernhook",
+# so its spend follows brand searches (noise_sigma is the weekly cost-per-search
+# wobble). The plan sets it at about 35% of search, measured against the non-brand
+# plan; actual spend lands wherever searches take it.
+#
+# Brand searches come from baseline demand plus the searches Meta, YouTube and CTV
+# create. A channel's searches follow its reach in the market, with a short carryover
+# and diminishing returns:
+#   searches_c(r, t) = gamma_c * size_r * (1 - exp(-adstock(spend_c, alpha)(r, t) / (reach_spend * size_r)))
+# Each run draws alpha, reach_spend (log-uniform, $/week for an average-size market)
+# and lift: the channel's in-window searches as a share of in-window baseline
+# searches. gamma_c is then set to hit that lift. Baseline searches move with baseline
+# demand. Because spend follows searches, cutting one of these channels cuts brand
+# searches and brand-search spend with it.
 BRAND_SEARCH = {
     "planned_share_of_search": 0.35,
-    "demand_from": {"ctv": 0.6, "youtube": 0.5, "meta": 0.3},
     "noise_sigma": 0.10,
-    "tests": {"arms": [(0.0, 3)], "len": (4, 6)},
+    "created_by": {
+        "meta": {"alpha": (0.10, 0.30), "reach_spend": (1_500, 3_000), "lift": (0.05, 0.10)},
+        "youtube": {"alpha": (0.20, 0.40), "reach_spend": (1_000, 2_500), "lift": (0.04, 0.09)},
+        "ctv": {"alpha": (0.30, 0.50), "reach_spend": (3_000, 6_000), "lift": (0.02, 0.05)},
+    },
 }
-# Planned regional tests run in two waves a year. Each wave starts on its own week
-# within its half-year, and markets rotate so each one takes a turn. A test's arms are
-# (spend multiple, markets): 0.0 pauses those markets, 1.7 gives them extra budget.
-GEO_TEST_WAVE_WEEKS = 26
 
 # Webinars are regional field events, not an ad platform.
 WEBINARS = {

@@ -403,9 +403,10 @@ def watch_notes(d, prof) -> dict[str, str]:
     corr_nb = float(np.corrcoef(nat["paid_search_nonbrand"], leads)[0, 1])
     return {
         "paid_search_brand": f"its weekly spend tracks total leads closely (correlation {corr_brand:.2f}). Spend that follows demand "
-                             "can look like it causes demand. The regional pauses are the cleanest evidence of what it adds.",
+                             "can look like it causes demand, and Meta, YouTube and CTV create some of the searches it pays for. It never "
+                             "pauses, so no test separates what it adds from the demand it follows.",
         "paid_search_nonbrand": f"always on and seasonal (correlation with total leads {corr_nb:.2f}), so most of its signal comes "
-                                "from the regional budget tests and pauses, not from week-to-week swings.",
+                                "from quarterly market re-splits and plan changes, not from week-to-week swings.",
         "meta": "pushes land on the busy seasons, so spend rises when demand does. Each market's push comes on its own "
                 "week and at its own size, and that is the contrast to learn from; the June 2025 retest adds a late step up.",
         "linkedin": "always on with no pauses, so its signal comes from quarterly market re-splits and plan changes.",
