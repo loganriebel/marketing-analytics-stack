@@ -1,0 +1,20 @@
+# Written by python -m geotest.design from the pre-registered design
+# (geotest/outputs/design.json). Do not edit by hand.
+name: 2026 market test
+approved: '2026-01-26'
+budget: hold_2025_exit
+test:
+  id: MT2026Q1
+  start: '2026-02-02'
+  end: '2026-04-20'
+  arms:
+  - id: youtube_up
+    markets: [CAK, CID, CMH, DAY, DLH, DSM, MKE, MSP, PIA, RST]
+    moves:
+      youtube: {add_per_week_per_size: 4500.0}
+  - id: cuts_dark
+    markets: [CLE, CVG, DAY, DSM, FSD, MSP, PIA, RFD, RST, TOL]
+    moves:
+      linkedin: {multiplier: 0.0}
+      display: {multiplier: 0.0}
+      affiliates: {multiplier: 0.0}
