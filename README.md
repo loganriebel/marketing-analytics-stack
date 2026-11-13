@@ -52,10 +52,10 @@ To test it, headless Claude answered 50 ad-hoc questions twice: once through the
 
 | Arm | Answerable correct | Correct refusals | Wrong refusals | Overall | Cost |
 |---|---|---|---|---|---|
-| Claude + governed metrics (MCP) | 42/42 (100%) | 8/8 | 0 | 50/50 | $3.24 |
-| Claude + raw tables (SQL) | 23/42 (55%) | 8/8 | 2 | 31/50 | $3.78 |
+| Claude + governed metrics (MCP) | 42/42 (100%) | 8/8 | 0 | 50/50 | $3.27 |
+| Claude + raw tables (SQL) | 23/42 (55%) | 8/8 | 3 | 31/50 | $3.64 |
 
-Model `claude-sonnet-5-5`, one pass per arm, same instructions, built-in tools off, run on the current seven-state world. Per-question results: [evals/RESULTS.md](evals/RESULTS.md). The first run, on the earlier 20-region world, scored 50/50 and 30/50; its answers are kept in `evals/results/archive_global_world/`.
+Model `claude-sonnet-5-5`, one pass per arm, same instructions, built-in tools off, run on the rebuilt world where budgets drift from brand to search. Per-question results: [evals/RESULTS.md](evals/RESULTS.md). Earlier runs are kept: the balanced-mix seven-state world (50/50 and 31/50) in `evals/results/archive_balanced_mix_world/`, and the first 20-region world (50/50 and 30/50) in `evals/results/archive_global_world/`.
 
 Why the raw arm missed: it had to invent definitions. It left partner fees and webinars out of "paid media", grouped search and YouTube as "Google", counted deals by calendar close date instead of the house week rule, read "CPA" as cost per lead, and could not answer share-of-spend questions without channel roles. Every one of those is a definition the semantic layer settles once.
 
