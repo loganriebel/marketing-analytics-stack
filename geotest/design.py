@@ -196,7 +196,7 @@ def design() -> dict:
         "test_id": TEST_ID,
         "approved": str(APPROVED),
         "data_cut": {"warehouse": "data/warehouse.duckdb", "first_week": str(m.weeks[0].date()),
-                     "last_week": str(m.weeks[-1].date())},
+                     "last_week": str(m.weeks[-1].date()), "by_year": _by_year(m)},
         "dates": {"test_start": str(TEST_START), "test_last_week": str(test_end),
                   "test_end": str(test_end + timedelta(days=6)), "window_start": str(TEST_START),
                   "window_end": str(window_end), "readout_snapshot": str(window_end + timedelta(days=7)),
@@ -242,6 +242,18 @@ def design() -> dict:
         },
         "durations": durations,
     }
+    return out
+
+
+def _by_year(m: Markets) -> dict:
+    """Won deals and paid spend (all 9 paid channels) per year, weeks by their Monday."""
+    out = {}
+    for y in sorted(set(m.weeks.year)):
+        t = m.weeks.year == y
+        deals = float(m.deals[t].sum())
+        spend = float(sum(x[t].sum() for x in m.spend.values()))
+        out[str(y)] = {"weeks": int(t.sum()), "won_deals": deals, "paid_spend": spend,
+                       "cost_per_deal": spend / deals}
     return out
 
 

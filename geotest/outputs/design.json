@@ -4,7 +4,27 @@
   "data_cut": {
     "warehouse": "data/warehouse.duckdb",
     "first_week": "2023-01-02",
-    "last_week": "2025-12-22"
+    "last_week": "2025-12-22",
+    "by_year": {
+      "2023": {
+        "weeks": 52,
+        "won_deals": 10930.0,
+        "paid_spend": 13871985.75,
+        "cost_per_deal": 1269.1661253430925
+      },
+      "2024": {
+        "weeks": 53,
+        "won_deals": 11197.0,
+        "paid_spend": 13923580.65,
+        "cost_per_deal": 1243.509926766098
+      },
+      "2025": {
+        "weeks": 51,
+        "won_deals": 9999.0,
+        "paid_spend": 14345810.940000001,
+        "cost_per_deal": 1434.7245664566458
+      }
+    }
   },
   "dates": {
     "test_start": "2026-02-02",
