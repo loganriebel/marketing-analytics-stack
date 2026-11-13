@@ -116,12 +116,8 @@ def _arms(cells: np.ndarray) -> np.ndarray:
 
 
 def _doses(m: Markets, arms: np.ndarray, cuts: list[str], proxy: int, keep: float) -> np.ndarray:
-    """Planned dollars each market's move adds (grow) or removes (cut), up to scale:
-    grow is a flat amount per unit of size; cut removes (1 - keep) of last year's
-    same-week spend."""
-    grow = m.size * arms[0]
-    cut = sum(m.spend[c][proxy:proxy + TEST_WEEKS].sum(0) for c in cuts) * (1 - keep) * arms[1]
-    return np.stack([grow, cut])
+    cut_spend = sum(m.spend[c][proxy:proxy + TEST_WEEKS].sum(0) for c in cuts)
+    return E.planned_doses(m.size, arms, cut_spend, keep)
 
 
 def _rms(x: np.ndarray) -> np.ndarray:

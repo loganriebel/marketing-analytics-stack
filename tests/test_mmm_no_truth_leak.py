@@ -55,5 +55,6 @@ def test_grader_is_the_only_reader_and_writes_outside_outputs():
 
 def test_committed_outputs_hold_no_truth():
     out = MMM / "outputs"
-    for p in out.glob("*") if out.exists() else []:
-        assert "truth" not in p.read_text(encoding="utf-8").lower(), p.name
+    for p in out.rglob("*") if out.exists() else []:
+        if p.is_file():
+            assert "truth" not in p.read_text(encoding="utf-8").lower(), p.name

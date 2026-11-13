@@ -2,6 +2,15 @@
 
     .venv-mmm\\Scripts\\python -m mmm                 # holdout fit (last 13 weeks held out)
     .venv-mmm\\Scripts\\python -m mmm --holdout 0     # full-window fit
+
+The refit after the 2026 market test reads a later data cut (MMM_WAREHOUSE), adds the
+test's arms as lift tests, and scores its estimands on the first window so the grade
+compares like with like:
+
+    set MMM_WAREHOUSE=data\\cut_2026-05-31\\data\\warehouse.duckdb
+    set MMM_OUTPUT_DIR=mmm\\outputs\\refit
+    .venv-mmm\\Scripts\\python -m mmm --name refit --market-tests geotest\\outputs\\readout.json ^
+        --estimands-through 2025-12-22
 """
 
 from __future__ import annotations
@@ -31,7 +40,7 @@ from . import baselines, brand_demand, lift_tests, validation  # noqa: E402
 from . import config as C  # noqa: E402
 from .data import Panel, affiliate_spend_check, load_panel  # noqa: E402
 from .estimands import Engine, MediaPosterior, hdi  # noqa: E402
-from .model import LIFT_NAME, add_pause_lifts, build_design, make_mmm  # noqa: E402
+from .model import LIFT_NAME, MARKET_LIFT_NAME, add_market_lifts, add_pause_lifts, build_design, make_mmm  # noqa: E402
 from .mediation import Mediation  # noqa: E402
 from .optimize import optimize_mix  # noqa: E402
 
@@ -150,7 +159,7 @@ def write_json(path: Path, obj) -> None:
 
 
 def write_outputs(engine: Engine, panel: Panel, run_meta: dict, out_dir: Path,
-                  mediation: Mediation | None = None) -> dict:
+                  mediation: Mediation | None = None, baselines_through=None) -> dict:
     channels = list(panel.channels)
     est, curves, total_curves, weekly = {}, [], [], []
     total_inc = np.zeros(engine.post.n_draws)
@@ -209,7 +218,7 @@ def write_outputs(engine: Engine, panel: Panel, run_meta: dict, out_dir: Path,
     contrib = pd.concat(weekly, ignore_index=True)
     contrib.to_csv(out_dir / "contributions_weekly.csv", index=False, float_format="%.4f")
     write_json(out_dir / "optimizer.json", {"meta": run_meta, **opt})
-    write_json(out_dir / "baselines.json", baselines.compute())
+    write_json(out_dir / "baselines.json", baselines.compute(baselines_through))
     return {"summary": summary, "optimizer": opt}
 
 
@@ -221,16 +230,17 @@ def _summ(x):
 def run(holdout_weeks: int = C.HOLDOUT_WEEKS, name: str | None = None, regions=None,
         n_weeks=None, sampler: dict | None = None, out_dir: Path = C.OUTPUT_DIR,
         fit_dir: Path = C.FIT_DIR, write: bool = True, estimand_draws: int = 2000,
-        quiet: bool = False) -> dict:
+        quiet: bool = False, market_tests: Path | None = None, estimands_through: str | None = None) -> dict:
     t0 = time.time()
     log = (lambda *a: None) if quiet else (lambda *a: print(*a, flush=True))
     sampler = {**C.SAMPLER, **(sampler or {})}
     name = name or ("holdout" if holdout_weeks else "full")
-    prep = _prepare(holdout_weeks, regions, n_weeks)
+    prep = _prepare(holdout_weeks, regions, n_weeks, market_tests)
     panel, design, mmm, lift_rows = prep["panel"], prep["design"], prep["mmm"], prep["lift_rows"]
     X, y = design.train()
     log(f"[{name}] {len(panel.regions)} regions x {design.n_train} train weeks; "
-        f"lift tests from {len(lift_rows)} pauses; sampling {sampler}")
+        f"lift tests from {len(lift_rows)} pauses and {len(prep['market_entered'] or [])} market-test arms; "
+        f"sampling {sampler}")
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -251,10 +261,17 @@ def run(holdout_weeks: int = C.HOLDOUT_WEEKS, name: str | None = None, regions=N
         "hdi_prob": C.HDI_PROB,
         "estimands_cover": "full window spend path with this fit's posterior",
     }
+    if market_tests:
+        run_meta["market_tests"] = Path(market_tests).as_posix()
+    if estimands_through:
+        n = int((panel.weeks <= pd.Timestamp(estimands_through)).sum())
+        run_meta["estimands_through"] = str(estimands_through)
+        run_meta["estimands_cover"] = (f"the first {n} weeks' spend path ({panel.weeks[0].date()} to "
+                                       f"{panel.weeks[n - 1].date()}) with this fit's posterior")
     return _evaluate(prep, idata, run_meta, out_dir, fit_dir, write, estimand_draws, log)
 
 
-def _prepare(holdout_weeks: int, regions=None, n_weeks=None) -> dict:
+def _prepare(holdout_weeks: int, regions=None, n_weeks=None, market_tests=None) -> dict:
     """Data, lift tests and the built model (with its lift likelihood), before sampling."""
     panel = load_panel()
     if regions or n_weeks:
@@ -270,8 +287,12 @@ def _prepare(holdout_weeks: int, regions=None, n_weeks=None) -> dict:
     mmm = make_mmm(design)
     mmm.build_model(X, y)
     lift_entered = add_pause_lifts(mmm, tests) if tests else None
+    market_entered = None
+    if market_tests:
+        rows = json.loads(Path(market_tests).read_text(encoding="utf-8"))["mmm_lift_tests"]["rows"]
+        market_entered = add_market_lifts(mmm, rows)
     return {"panel": panel, "affiliate": affiliate, "design": design, "mmm": mmm,
-            "lift_rows": lift_rows, "lift_entered": lift_entered}
+            "lift_rows": lift_rows, "lift_entered": lift_entered, "market_entered": market_entered}
 
 
 def _evaluate(prep, idata, run_meta, out_dir, fit_dir, write, estimand_draws, log) -> dict:
@@ -281,6 +302,8 @@ def _evaluate(prep, idata, run_meta, out_dir, fit_dir, write, estimand_draws, lo
     name = run_meta["fit"]
     if LIFT_NAME not in mmm.model.named_vars and prep["lift_entered"]:
         raise RuntimeError("lift test likelihood missing from the fitted model")
+    if MARKET_LIFT_NAME not in mmm.model.named_vars and prep["market_entered"]:
+        raise RuntimeError("market test likelihood missing from the fitted model")
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -294,6 +317,8 @@ def _evaluate(prep, idata, run_meta, out_dir, fit_dir, write, estimand_draws, lo
     write_json(fit_dir / f"{name}_scales.json", scales)
 
     lift = {"pauses": prep["lift_rows"].to_dict(orient="records"), "pooled": prep["lift_entered"]}
+    if prep["market_entered"]:
+        lift["market_test"] = prep["market_entered"]
     result = {"meta": run_meta, "diagnostics": diag, "gates": gates,
               "affiliate_check": prep["affiliate"], "lift_tests": lift,
               "idata": idata, "mmm": mmm, "design": design, "panel": panel}
@@ -310,7 +335,9 @@ def _evaluate(prep, idata, run_meta, out_dir, fit_dir, write, estimand_draws, lo
 
     post = MediaPosterior.from_idata(idata, scales["channel_scale"], scales["target_scale"],
                                      panel.channels, max_draws=estimand_draws)
-    engine = Engine(post, panel)
+    through = run_meta.get("estimands_through")
+    scored = panel.subset(n_weeks=int((panel.weeks <= pd.Timestamp(through)).sum())) if through else panel
+    engine = Engine(post, scored)
     result["engine"] = engine
 
     # Stage 1: what drives brand-search spend. Its numbers are reported only if its
@@ -327,7 +354,8 @@ def _evaluate(prep, idata, run_meta, out_dir, fit_dir, write, estimand_draws, lo
                    {"meta": run_meta, "diagnostics": diag, "gates": gates,
                     "affiliate_check": prep["affiliate"], "lift_tests": lift,
                     "brand_demand": demand.diagnostics})
-        result.update(write_outputs(engine, panel, run_meta, out_dir, mediation))
+        result.update(write_outputs(engine, scored, run_meta, out_dir, mediation,
+                                    baselines_through=scored.weeks[-1].date() if through else None))
         log(f"[{name}] outputs written to {out_dir} in {time.time() - t0:.0f}s")
     return result
 
@@ -346,7 +374,7 @@ def rescore_saved(name: str, holdout_weeks: int, out_dir: Path = C.OUTPUT_DIR,
     run_meta = {**run_meta, "estimand_draws": estimand_draws}
     subset = run_meta.get("subset") or {}
     prep = _prepare(run_meta.get("holdout_weeks", holdout_weeks), subset.get("regions"),
-                    subset.get("n_weeks"))
+                    subset.get("n_weeks"), run_meta.get("market_tests"))
     idata = az.from_netcdf(fit_dir / f"{name}.nc")
     prep["mmm"].idata = idata
     return _evaluate(prep, idata, run_meta, out_dir, fit_dir, True, estimand_draws, log)
@@ -361,13 +389,17 @@ def main(argv=None) -> int:
     ap.add_argument("--chains", type=int, default=C.SAMPLER["chains"])
     ap.add_argument("--report-only", action="store_true",
                     help="re-score the saved fit (diagnostics, stats, outputs) without sampling")
+    ap.add_argument("--market-tests", type=Path,
+                    help="a market test readout (geotest/outputs/readout.json) whose arms enter as lift tests")
+    ap.add_argument("--estimands-through", help="score estimands on the weeks up to this date only")
     args = ap.parse_args(argv)
     name = args.name or ("holdout" if args.holdout else "full")
     if args.report_only:
         res = rescore_saved(name, args.holdout)
     else:
         res = run(holdout_weeks=args.holdout, name=name,
-                  sampler={"draws": args.draws, "tune": args.tune, "chains": args.chains})
+                  sampler={"draws": args.draws, "tune": args.tune, "chains": args.chains},
+                  market_tests=args.market_tests, estimands_through=args.estimands_through)
     print(json.dumps(_jsonable({"diagnostics": res["diagnostics"], "gates": res["gates"]}), indent=2))
     return 0 if res["gates"]["all_pass"] else 1
 

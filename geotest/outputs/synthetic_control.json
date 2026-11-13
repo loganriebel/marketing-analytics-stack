@@ -1,0 +1,60 @@
+{
+  "method": "CausalPy SyntheticControl with WeightedSumFitter, per arm: the arm's mean weekly won deals against the other 10 markets, fit on the pre-test weeks",
+  "causalpy_version": "0.9.0",
+  "sampler": {
+    "chains": 4,
+    "draws": 1000,
+    "tune": 1000,
+    "random_seed": 20260531,
+    "nuts_sampler": "nutpie"
+  },
+  "pre_weeks": 52,
+  "window_weeks": 16,
+  "note": "Each arm's donors include markets of the other arm, so this check does not take out the other arm's effect the way the registered 2x2 estimator does.",
+  "arms": {
+    "grow": {
+      "lift_mean": 125.93989781744696,
+      "lift_hdi_90": [
+        74.43864113241217,
+        180.05664907979912
+      ],
+      "pre_r2": 0.2302828609976345,
+      "donor_weights": {
+        "CHI": 0.027555219016359548,
+        "CLE": 0.10863052739825896,
+        "DAY": 0.1418901869404784,
+        "DLH": 0.13646882311295783,
+        "DSM": 0.05712608828353682,
+        "FAR": 0.15609905173970556,
+        "GRB": 0.0978932214922321,
+        "MSP": 0.045972835146999805,
+        "PIA": 0.09111672040595759,
+        "TOL": 0.13724732646351384
+      },
+      "weight_on_other_arm": 0.5390664611544358,
+      "markets": 10
+    },
+    "cut": {
+      "lift_mean": -7.395290076308786,
+      "lift_hdi_90": [
+        -76.85941258722126,
+        56.30763188482389
+      ],
+      "pre_r2": 0.02057548349460958,
+      "donor_weights": {
+        "CAK": 0.06725290864306802,
+        "CHI": 0.08314100779961896,
+        "CMH": 0.14710056950513628,
+        "DAY": 0.09854144230926197,
+        "DLH": 0.1153550409612736,
+        "DSM": 0.05164349634489311,
+        "FSD": 0.14487665496308627,
+        "GRB": 0.06348177064897285,
+        "MSN": 0.1293721174280826,
+        "RFD": 0.09923499139660641
+      },
+      "weight_on_other_arm": 0.5878372419359796,
+      "markets": 10
+    }
+  }
+}

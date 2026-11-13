@@ -12,18 +12,20 @@ from . import config as C
 from .data import connect
 
 
-def compute() -> dict:
+def compute(through=None) -> dict:
+    """`through`: last week start to count (a date), so a later data cut can score the same window."""
     con = connect()
+    where = f"where week_start <= date '{through}'" if through is not None else ""
     try:
         spend = dict(con.sql(
-            "select channel_id, sum(spend)::double from fct_channel_weekly group by 1").fetchall())
+            f"select channel_id, sum(spend)::double from fct_channel_weekly {where} group by 1").fetchall())
         platform = dict(con.sql(
-            "select channel_id, sum(platform_conversions)::double from fct_channel_weekly group by 1"
+            f"select channel_id, sum(platform_conversions)::double from fct_channel_weekly {where} group by 1"
         ).fetchall())
         crm = dict(con.sql(
-            "select channel_id, sum(won_deals)::double from fct_funnel group by 1").fetchall())
+            f"select channel_id, sum(won_deals)::double from fct_funnel {where} group by 1").fetchall())
         won, leads = con.sql(
-            "select sum(won_deals)::double, sum(leads)::double from fct_funnel").fetchall()[0]
+            f"select sum(won_deals)::double, sum(leads)::double from fct_funnel {where}").fetchall()[0]
     finally:
         con.close()
     lead_to_won = won / leads

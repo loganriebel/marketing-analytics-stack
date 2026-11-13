@@ -1,0 +1,271 @@
+{
+  "meta": {
+    "fit": "refit",
+    "window": [
+      "2023-01-02",
+      "2026-05-25"
+    ],
+    "train_weeks": 165,
+    "holdout_weeks": 13,
+    "regions": 20,
+    "subset": {
+      "regions": null,
+      "n_weeks": null
+    },
+    "sampler": {
+      "chains": 4,
+      "draws": 2000,
+      "tune": 1500,
+      "target_accept": 0.95,
+      "random_seed": 4
+    },
+    "estimand_draws": 2000,
+    "sampling_seconds": 612,
+    "hdi_prob": 0.9,
+    "estimands_cover": "the first 156 weeks' spend path (2023-01-02 to 2025-12-22) with this fit's posterior",
+    "market_tests": "geotest/outputs/readout.json",
+    "estimands_through": "2025-12-22"
+  },
+  "diagnostics": {
+    "rhat_max": 1.0042455853703816,
+    "rhat_worst": "saturation_beta[paid_search_nonbrand]",
+    "ess_bulk_min": 1639.8791540040538,
+    "ess_bulk_worst": "saturation_beta[paid_search_brand]",
+    "ess_tail_min": 769.5067719529152,
+    "divergences": 7,
+    "divergence_rate": 0.000875,
+    "n_samples": 8000,
+    "ppc": {
+      "region_week_coverage_90": 0.9163636363636364,
+      "national_week_coverage_90": 0.9333333333333333,
+      "national_weekly_r2": 0.7660679738083875,
+      "national_weekly_mape": 0.056947539442392635,
+      "total_deals_observed": 32741.0,
+      "total_deals_predicted": 32733.16204882246
+    },
+    "holdout": {
+      "weeks": 13,
+      "national_weekly_mape": 0.053919603049898845,
+      "national_total_error_pct": -2.6161505898830026,
+      "region_week_coverage_90": 0.8807692307692307,
+      "national_week_coverage_90": 0.8461538461538461,
+      "region_total_mape": 0.09345622551890367,
+      "region_week": {
+        "n": 260,
+        "mse": 12.142711247122525,
+        "rmse": 3.484639328126015,
+        "mae": 2.503132124868316,
+        "mape": 0.3131477285620137,
+        "r2": 0.8360947264587972,
+        "mean_observed": 10.688461538461539,
+        "bias": -0.2796262495878672
+      },
+      "national_week": {
+        "n": 13,
+        "mse": 222.6394400398887,
+        "rmse": 14.92110719886057,
+        "mae": 11.623369328071323,
+        "mape": 0.053919603049898845,
+        "r2": 0.21099510638439023,
+        "mean_observed": 213.76923076923077,
+        "bias": -5.592524991757566
+      }
+    },
+    "fit_stats": {
+      "region_week": {
+        "n": 3300,
+        "mse": 10.152522644772954,
+        "rmse": 3.1863023467293488,
+        "mae": 2.3882774098165855,
+        "mape": 0.40688540518907884,
+        "r2": 0.8665666942642711,
+        "mean_observed": 9.921515151515152,
+        "bias": -0.0024377098290967324
+      },
+      "national_week": {
+        "n": 165,
+        "mse": 197.07726428475277,
+        "rmse": 14.038421003971663,
+        "mae": 11.084783594435997,
+        "mape": 0.0570844967217311,
+        "r2": 0.7653985095249171,
+        "mean_observed": 198.43030303030304,
+        "bias": -0.048754196581931246
+      },
+      "loo": {
+        "elpd_loo": 2622.125802668703,
+        "se": 48.64810325192765,
+        "p_loo": 77.86185970001634,
+        "pareto_k_over_0_7": 0.0,
+        "pareto_k_max": 0.5292714168698855,
+        "n_obs": 3300,
+        "scale": "log density on the model's scaled target axis; compare fits on the same data only"
+      },
+      "residuals_national": {
+        "lag1_autocorrelation": -0.07068849146255421,
+        "durbin_watson": 2.104883645650471,
+        "ljung_box_q": 4.9176009314824745,
+        "ljung_box_lags": 4,
+        "ljung_box_p": 0.2958571261881829
+      },
+      "residuals_by_region": {
+        "lag1_autocorrelation_median": 0.025853146761836525,
+        "durbin_watson_median": 1.9317892519290996,
+        "ljung_box_p_below_0_05": 1,
+        "regions": 20
+      },
+      "residual_corr_with_spend": {
+        "paid_search_brand": 0.003408740502359402,
+        "paid_search_nonbrand": -0.02239889326646359,
+        "meta": 0.012170857722922245,
+        "linkedin": 0.012705930453746392,
+        "youtube": -0.020376097447503138,
+        "ctv": 0.00349897954443802,
+        "display": -0.01210414144139716,
+        "affiliates": 0.0063075117790630485
+      }
+    }
+  },
+  "gates": {
+    "thresholds": {
+      "rhat_max": 1.01,
+      "ess_bulk_min": 400,
+      "ess_tail_min": 400,
+      "divergence_rate_max": 0.001,
+      "ppc_coverage_range": [
+        0.85,
+        0.97
+      ],
+      "holdout_national_mape_max": 0.1,
+      "holdout_coverage_range": [
+        0.8,
+        0.98
+      ]
+    },
+    "checks": {
+      "rhat": true,
+      "ess_bulk": true,
+      "ess_tail": true,
+      "divergences": true,
+      "ppc_coverage": true,
+      "holdout_mape": true,
+      "holdout_coverage": true
+    },
+    "all_pass": true
+  },
+  "affiliate_check": {
+    "mart_affiliate_spend": 2190423.9,
+    "lineage_spend_is_partner_fees": true,
+    "dim_channel_commissions_cost_of_sale": true,
+    "weekly_change_corr_spend_vs_affiliate_won_deals": -0.168,
+    "placement_fees_only": true
+  },
+  "lift_tests": {
+    "pauses": [],
+    "pooled": null,
+    "market_test": [
+      {
+        "arm": "grow",
+        "channel": "youtube",
+        "x": 1078.4491145833335,
+        "delta_x": 2500.0,
+        "delta_y": 1.4301254555349057,
+        "sigma": 0.5204637171652821,
+        "size_units": 8.421052631578947,
+        "test_weeks": 12,
+        "window_share": 0.9003832077714956,
+        "lift_in_window": 130.12152709088232,
+        "delta_y_entered": 1.4301254555349057
+      },
+      {
+        "arm": "cut",
+        "channel": "paid_search_nonbrand",
+        "x": 7495.317307692308,
+        "delta_x": -4572.143557692308,
+        "delta_y": -0.32086926455935155,
+        "sigma": 0.46546137252604647,
+        "size_units": 9.789473684210526,
+        "test_weeks": 12,
+        "window_share": 0.9934751461053319,
+        "lift_in_window": -37.4477488073173,
+        "delta_y_entered": -0.32086926455935155
+      }
+    ]
+  },
+  "brand_demand": {
+    "rhat_max": 1.0023365703285232,
+    "ess_bulk_min": 8245.256996011189,
+    "divergences": 0,
+    "divergence_rate": 0.0,
+    "train_r2_region_week": 0.6657573340734737,
+    "holdout_r2_region_week": 0.17030631008996944,
+    "holdout_national_weekly_mape": 0.0381184360126564,
+    "share_of_brand_spend_from_upper_funnel": {
+      "mean": 0.0607270251836707,
+      "median": 0.06076596627996197,
+      "hdi_90": [
+        0.05254847321638861,
+        0.068164666655325
+      ]
+    },
+    "theta": {
+      "meta": {
+        "mean": 0.10292532768541758,
+        "median": 0.10300248416263094,
+        "hdi_90": [
+          0.06933632952304292,
+          0.13501511681716752
+        ]
+      },
+      "youtube": {
+        "mean": 0.1049061251754341,
+        "median": 0.10453994568370246,
+        "hdi_90": [
+          0.07896198696971678,
+          0.1329109711776486
+        ]
+      },
+      "ctv": {
+        "mean": 0.48167398693202357,
+        "median": 0.48165124698975126,
+        "hdi_90": [
+          0.4479692700475022,
+          0.5144561553190141
+        ]
+      }
+    },
+    "search_carryover_alpha": {
+      "meta": {
+        "mean": 0.22508307838523148,
+        "median": 0.2169598171224261,
+        "hdi_90": [
+          0.04920636714964448,
+          0.39259404831988
+        ]
+      },
+      "youtube": {
+        "mean": 0.3558172157768346,
+        "median": 0.3577479061699465,
+        "hdi_90": [
+          0.13267177139537878,
+          0.5734304680173021
+        ]
+      },
+      "ctv": {
+        "mean": 0.5707736298228219,
+        "median": 0.5720191753855541,
+        "hdi_90": [
+          0.5187274897089832,
+          0.621232036396532
+        ]
+      }
+    },
+    "paused_region_weeks_excluded": 0,
+    "gates": {
+      "rhat": true,
+      "ess_bulk": true,
+      "divergences": true
+    },
+    "all_pass": true
+  }
+}

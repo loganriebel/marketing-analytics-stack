@@ -291,3 +291,28 @@ def add_pause_lifts(mmm: MMM, tests: list[dict]) -> list[dict]:
 
 
 LIFT_NAME = "pause_lift_tests"
+MARKET_LIFT_NAME = "market_lift_tests"
+
+
+def market_lift_rows(rows: list[dict], geo: str) -> tuple[pd.DataFrame, list[dict]]:
+    """The market test's arms (geotest/outputs/readout.json, mmm_lift_tests.rows) as
+    add_lift_test_measurements rows. Each arm moved one channel; the readout already
+    put its lift in the MMM's units, a steady weekly effect per size unit at spend x.
+
+    PyMC-Marketing compares absolute lifts, so a lift whose sign is the opposite of
+    its spend change enters as no change: the closest a monotone curve can reach.
+    Channel parameters are shared by every market, so one geo label serves all rows.
+    """
+    out, entered = [], []
+    for t in rows:
+        dy = t["delta_y"] if np.sign(t["delta_y"]) == np.sign(t["delta_x"]) else float(np.sign(t["delta_x"])) * 1e-9
+        out.append({"geo": geo, "channel": t["channel"], "x": t["x"], "delta_x": t["delta_x"], "delta_y": dy,
+                    "sigma": t["sigma"]})
+        entered.append({**t, "delta_y_entered": dy})
+    return pd.DataFrame(out), entered
+
+
+def add_market_lifts(mmm: MMM, rows: list[dict]) -> list[dict]:
+    df, entered = market_lift_rows(rows, mmm.model.coords["geo"][0])
+    mmm.add_lift_test_measurements(df, dist=pmd.Normal, name=MARKET_LIFT_NAME)
+    return entered
