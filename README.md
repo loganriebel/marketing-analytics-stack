@@ -51,12 +51,12 @@ To test it, headless Claude answered 50 ad-hoc questions twice: once through the
 
 | Arm | Answerable correct | Correct refusals | Wrong refusals | Overall | Cost |
 |---|---|---|---|---|---|
-| Claude + governed metrics (MCP) | 42/42 (100%) | 8/8 | 0 | 50/50 | $3.23 |
-| Claude + raw tables (SQL) | 22/42 (52%) | 8/8 | 3 | 30/50 | $4.98 |
+| Claude + governed metrics (MCP) | 42/42 (100%) | 8/8 | 0 | 50/50 | $3.24 |
+| Claude + raw tables (SQL) | 23/42 (55%) | 8/8 | 2 | 31/50 | $3.78 |
 
-Model `claude-sonnet-5-5`, one pass per arm, same instructions, built-in tools off. Per-question results: [evals/RESULTS.md](evals/RESULTS.md).
+Model `claude-sonnet-5-5`, one pass per arm, same instructions, built-in tools off, run on the current seven-state world. Per-question results: [evals/RESULTS.md](evals/RESULTS.md). The first run, on the earlier 20-region world, scored 50/50 and 30/50; its answers are kept in `evals/results/archive_global_world/`.
 
-Why the raw arm missed: it had to invent definitions. It left partner fees and webinars out of "paid media", grouped search and YouTube as "Google", counted deals by calendar close date instead of the house week rule, and could not answer share-of-spend questions without channel roles. Every one of those is a definition the semantic layer settles once.
+Why the raw arm missed: it had to invent definitions. It left partner fees and webinars out of "paid media", grouped search and YouTube as "Google", counted deals by calendar close date instead of the house week rule, read "CPA" as cost per lead, and could not answer share-of-spend questions without channel roles. Every one of those is a definition the semantic layer settles once.
 
 ## The model setup
 
