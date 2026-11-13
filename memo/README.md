@@ -2,18 +2,18 @@
 
 An agent turns the MMM's outputs and the pre-registered market test into a one-page proposal for the CFO, and a script fails the run if the memo holds any number the facts pack does not.
 
-**The memo ([proposal_memo.md](outputs/proposal_memo.md)):** "Approve a spring market test now for $97K net, and decide the rollout in late May." It runs as a story: the problem, what we found, the ask, what it's worth, how we'll know. One number in the headline, point estimates only in the body, every range in an appendix, and one chart. All 32 numbers match the facts pack.
+**The memo ([proposal_memo.md](outputs/proposal_memo.md)):** "Approve the spring market test now; it needs no new money." It runs as a story: spend climbed and most of it went to non-brand search (performance went from 60% to 80% of the mix), deals fell 12% in 2025, and nobody can say whether the extra search money still works. One line of headline, point estimates only in the body, every range in an appendix, and one chart. All 32 numbers match the facts pack, on the first draft.
 
 ![Cost per extra deal from the next dollar, by channel, with the model's 90% range](outputs/proposal_chart.png)
 
-**What changed from the first memo.** The first draft (step 5) asked for a free 8-week test of the cuts in 4 markets. That test could only see a drop about 6.6 times what the model expected, so it could not do its job. This memo asks for the test in [`geotest/PREREGISTRATION.md`](../geotest/PREREGISTRATION.md): YouTube pushed far above plan in 10 markets and the cut channels dark in a crossing 10, sized by placebo tests on 2023 to 2025 data. It costs $97K net and gives the YouTube side an 81% chance of seeing the lift the model expects.
+**What changed from the first memo.** The first draft (step 5) asked for a free 8-week test of the cuts in 4 markets, and that test could only see a drop about 6.6 times what the model expected. This memo asks for the test in [`geotest/PREREGISTRATION.md`](../geotest/PREREGISTRATION.md): YouTube pushed well above plan in 10 markets, and non-brand search pulled back to its 2023 pace in a crossing 10, sized by placebo tests on 2023 to 2025 data. Pulling search back saves more than the YouTube push costs, so the test spends $342K less than plan. The YouTube side has an 81% chance of seeing the lift the model expects; the search side is a guardrail (45%).
 
 | Variant | Memo claims, extra deals a year (90% range) | True | Covered |
 |---|---:|---:|---|
-| Same-budget reallocation | 166 (10 to 334) | 194 | yes |
-| YouTube +50% (new money) | 128 (75 to 172) | 221 | no |
+| Same-budget reallocation | 218 (121 to 311) | 348 | no |
+| YouTube +50% (new money) | 186 (125 to 242) | 263 | no |
 
-The table is the grader's check of the plan the memo describes ([MMM grade](../mmm/grading/grade_holdout.md)), not something the memo or the test design saw. The memo now asks for the test, not the reallocation, so the reallocation's number sits in its appendix and the YouTube +50% variant is no longer stated.
+The table is the grader's check of the plan the memo describes ([MMM grade](../mmm/grading/grade_holdout.md)), not something the memo or the test design saw. Both claims are too low: the plan works better than the model thinks. The memo asks for the test, not the reallocation, so the reallocation's range sits in its appendix and the YouTube +50% variant is not stated.
 
 ## Three parts and a chart
 
@@ -27,19 +27,19 @@ geotest/outputs/design.json                        |   \                        
                                                                       grounding.json (fails below 100%)
 ```
 
-1. **Facts pack** (`memo/facts.py`, plain Python): reads `mmm/outputs/` and the test design (`geotest/outputs/design.json`), and writes [`facts.json`](outputs/facts.json): 127 facts, each with an id, value, unit, kind and source file. Same inputs, same bytes.
-2. **Chart** (`memo/chart.py`): cost per extra deal by channel with the 90% range, drawn from `facts.json` only. The channel the test grows is blue, the channels it cuts are orange (a palette validated for color-blind readers), and the rest are gray.
+1. **Facts pack** (`memo/facts.py`, plain Python): reads `mmm/outputs/` and the test design (`geotest/outputs/design.json`), and writes [`facts.json`](outputs/facts.json): 133 facts, each with an id, value, unit, kind and source file. Same inputs, same bytes.
+2. **Chart** (`memo/chart.py`): cost per extra deal by channel with the 90% range, drawn from `facts.json` only. The channel the test grows is blue, the channel it pulls back is orange (a palette validated for color-blind readers), and the rest are gray.
 3. **Writer** (`memo/writer.py`): headless `claude -p`, default model `claude-sonnet-5-5`. Every built-in tool is off, no MCP servers load, and it runs from an empty folder, so the facts pack in the prompt is all it sees.
 4. **Grounding check** (`memo/grounding.py`): pulls every number from the memo and matches it to a fact under the rules below. It writes [`grounding.json`](outputs/grounding.json) and exits 1 below 100%.
 
-**Executive form, checked by script** (`writer.style_problems`): a `#` headline with at most 3 numbers; sections The problem, What we found, The ask, What it's worth, How we'll know, Appendix: the ranges; the one chart line at the end of What we found; no range and no "90% range" wording above the appendix; 230 to 400 words and at most 16 numbers above it; no dashes. If grounding or style fails, the writer gets the failures and rewrites, up to `--retries` times. This run needed 4 drafts: the first 3 ran 435 to 440 words. [`writer.json`](outputs/writer.json) logs every attempt, about $0.23 each.
+**Executive form, checked by script** (`writer.style_problems`): a `#` headline with at most 3 numbers; sections The problem, What we found, The ask, What it's worth, How we'll know, Appendix: the ranges; the one chart line at the end of What we found; no range and no "90% range" wording above the appendix; 230 to 400 words and at most 16 numbers above it; no dashes. If grounding or style fails, the writer gets the failures and rewrites, up to `--retries` times. This run passed on the first draft. [`writer.json`](outputs/writer.json) logs every attempt, about $0.36 each.
 
 ## Run it
 
 From the repo root, after the MMM has written `mmm/outputs/` and `python -m geotest.design` has written the design (no warehouse needed):
 
 ```bash
-.venv\Scripts\python -m memo --retries 3
+.venv\Scripts\python -m memo --retries 4
 .venv\Scripts\python -m memo.grounding
 .venv-mmm\Scripts\python -m mmm.grade
 .venv\Scripts\python -m pytest tests/test_memo.py -q
@@ -60,7 +60,7 @@ From the repo root, after the MMM has written `mmm/outputs/` and `python -m geot
 
 | Group | What | From |
 |---|---|---|
-| The problem | 2024 and 2025 won deals, paid spend and blended cost per deal, and their changes, from the December 2025 data cut | `geotest/outputs/design.json` |
+| The problem | 2024 and 2025 won deals, paid spend and blended cost per deal and their changes; performance's share of the mix in 2023 to 2025; non-brand search spend in 2023 and 2025. All from the December 2025 data cut | `geotest/outputs/design.json` |
 | Model context | Markets, window, paid spend, observed deals, blended CPA, holdout error | `channels.json`, `diagnostics_holdout.json` |
 | Paid media | Deals it causes, its incremental CPA and share of deals, each with a 90% range | `channels.json` summary |
 | Every channel | Spend, deals, CPA and marginal CPA with 90% ranges. Meta, YouTube and CTV include deals they create through brand search | `channels.json` |
@@ -68,7 +68,7 @@ From the repo root, after the MMM has written `mmm/outputs/` and `python -m geot
 | Reallocation | The optimizer's plan at the same total: each channel's move, extra deals and revenue with ranges, odds of a gain, extra brand-search spend, payback | `optimizer.json` |
 | YouTube +50% | New money on the lowest cost per extra deal, up to the optimizer's limit, kept for the grader | `optimizer.json`, `response_curves_total.csv` |
 | Risks | Wide ranges, always-on channels not measured, Meta mixed with the season, paid media likely under-credited, a good fit is not proof, YouTube past what the model has seen | `docs/mmm/README.md`, numbers from outputs |
-| The test | Markets, weeks, the YouTube step, its spend, the cuts' saving, the net cost, the MMM's forecast for each side with its range, the smallest lift each side can see, its power, and the shorter test that falls short | `geotest/outputs/design.json` |
+| The test | Markets, weeks, the YouTube step and its spend, search's share of plan and its saving, the net change in spend, the MMM's forecast for each side with its range, the smallest lift each side can see, its power, and the shorter test that falls short | `geotest/outputs/design.json` |
 
 **Payback** is months of first-year revenue from the extra deals needed to repay the extra spend. It uses revenue, not margin, because the MMM has no cost of goods. The reallocation adds no budget, so its only new cost is the $69K a year of brand search that follows the extra searches.
 
@@ -126,10 +126,11 @@ Trailing zeros in a whole number are not significant ($500K means $495K to $505K
 ## Limits
 
 - **The memo can be only as right as the MMM.** Its YouTube cost per extra deal is the model's; the test exists to check it.
-- **The cut side of the test is weak.** It sees the cuts only if they cost 2.7 times what the model expects. The memo says so in plain words.
+- **The search side of the test is a guardrail.** It sees the drop from pulling search back reliably only if it is 1.6 times what the model expects. The memo says so in plain words.
 - **One sample.** The memo is one draw from the writer. Wording changes run to run, and grounding and the style check are the only gates.
 
 ## Disclosures
 
 - The step 5 memo's grade (the table above, and its notes in git history) showed that its 8-week test would miss the cuts' true cost. The new test design was built with that grade in the repo. No answer-key number enters the design or the memo: every design number comes from 2023 to 2025 marts and the MMM's posterior (`geotest/design.py`), and tests check that `geotest/` and `memo/` never read the answer key.
+- The 2023 to 2025 world was rebuilt at Logan's direction (budgets drift from brand to search). The memo, the facts pack and the test design were rerun on the new world before its grade was read. Generating the world prints each channel's true average CPA; none of those numbers feeds the design or the memo.
 - The step 5 disclosures still hold: the first truth check printed each channel's true deal change under the plan, and fixes after it touched parsing and wording only.

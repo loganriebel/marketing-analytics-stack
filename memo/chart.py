@@ -29,8 +29,8 @@ def draw(pack: dict | None = None, path=CHART_PATH) -> dict:
     pack = pack or json.loads(F.FACTS_PATH.read_text(encoding="utf-8"))
     facts = {f["id"]: f for f in pack["facts"]}
     names = pack["channel_names"]
-    grow = pack["variants"]["youtube_ask"]["channel"]
-    cuts = set(pack["variants"]["reallocation"]["cuts"])
+    grow = pack["channels"]["grow"][0]
+    cuts = set(pack["channels"]["cut"])
     rows = sorted(names, key=lambda c: facts[f"{c}_mcpa"]["value"])
     plotted = []
 
@@ -64,10 +64,14 @@ def draw(pack: dict | None = None, path=CHART_PATH) -> dict:
     ax.tick_params(axis="both", length=0, pad=6)
     ax.set_xlabel("Cost per extra deal from the next dollar (dot: model's estimate; line: its 90% range)",
                   color=INK_2, fontsize=8)
-    fig.suptitle("YouTube's next dollar looks cheapest; the cut channels are a wide guess",
+    cut = sorted(cuts)[0]
+    pricier = facts[f"{cut}_mcpa"]["value"] >= 2 * facts[f"{grow}_mcpa"]["value"]
+    title = (f"{names[grow][0].upper() + names[grow][1:]}'s next dollar looks cheapest"
+             + (f"; {names[cut]}'s costs far more" if pricier else ""))
+    fig.suptitle(title,
                  x=0.02, y=0.985, ha="left", fontsize=10.5, color=INK, fontweight="bold")
     handles = [plt.Line2D([], [], color=GROW, marker="o", lw=2, label="Test grows it"),
-               plt.Line2D([], [], color=CUT, marker="o", lw=2, label="Test cuts it"),
+               plt.Line2D([], [], color=CUT, marker="o", lw=2, label="Test pulls it back"),
                plt.Line2D([], [], color=OTHER, marker="o", lw=2, label="Not in the test")]
     fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.01, 0.93), ncol=3, frameon=False,
                fontsize=7.5, labelcolor=INK_2, handlelength=1.6, columnspacing=1.4)

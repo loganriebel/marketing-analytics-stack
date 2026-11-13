@@ -54,7 +54,7 @@ Form. Executive style: the CFO reads the headline and the first lines and should
 - The appendix: short bullets, each an estimate with its 90% range, at most {APPENDIX_MAX_WORDS} words. Say once that every range is a 90% range.
 
 Content.
-- The problem: deals fell in 2025 while spend rose, and the team cannot say which channels work.
+- The problem: spend rose every year and most of the new money went to non-brand search, so the mix moved from mostly balanced to mostly performance. Deals fell in 2025 and the cost per deal climbed. The team cannot say whether the extra search money still works.
 - What we found: the model's view of where the next dollar works, and the plan it suggests. Say plainly what it cannot see, using the pack's risks.
 - The ask: follow the pack's recommendation. Approve the market test now; decide the rollout after the readout. Say what the test does in plain words and what it costs net.
 - What it's worth: what the plan adds if the model is right, and why testing first protects the budget.

@@ -313,11 +313,13 @@ def build(mmm_out: Path = MMM_OUT, design_path: Path = DESIGN) -> dict:
           "design")
     p.add("test_grow_spend", fc["grow"]["spend_change"], "USD", D, "forecast.grow.spend_change",
           "Extra YouTube spend over the test, all grow markets", "design")
+    p.add("test_search_keep", 100 * dz["arms"]["cut"]["value"], "percent", D, "arms.cut.value",
+          "Non-brand search runs at this share of plan in the search markets: its 2023 weekly pace", "design")
     p.add("test_cut_saving", -fc["cut"]["spend_change"], "USD", D, "forecast.cut.spend_change",
-          "Spend not spent on the cut channels over the test, all cut markets (last year's same weeks)", "design")
+          "Non-brand search spend saved over the test in the search markets (last year's same weeks)", "design")
     p.add("test_net_cost", fc["grow"]["spend_change"] + fc["cut"]["spend_change"], "USD", D, "forecast",
-          "Net extra spend for the whole test: the YouTube push minus what the cuts save", "derived",
-          how="test_grow_spend - test_cut_saving")
+          "Net change in spend for the whole test: the YouTube push minus what pulling search back saves. "
+          "Negative: the test spends less than plan", "derived", how="test_grow_spend - test_cut_saving")
     g, c = fc["grow"], fc["cut"]
     p.add("test_grow_forecast", g["lift_mean"], "deals", D, "forecast.grow.lift_mean",
           "Extra deals the MMM expects from the YouTube push in the readout window", "estimate",
@@ -329,7 +331,8 @@ def build(mmm_out: Path = MMM_OUT, design_path: Path = DESIGN) -> dict:
     p.add("test_grow_cost_per_deal", g["cost_per_extra_deal"], "USD", D, "forecast.grow.cost_per_extra_deal",
           "The MMM's expected cost per extra deal from the YouTube push, at the test's spend level", "estimate")
     p.add("test_cut_forecast", c["lift_mean"], "deals", D, "forecast.cut.lift_mean",
-          "Deals the MMM expects the cuts to cost in the readout window (negative = lost)", "estimate",
+          "Deals the MMM expects pulling non-brand search back to cost in the readout window (negative = lost)",
+          "estimate",
           low=c["lift_hdi_90"][0], high=c["lift_hdi_90"][1], stat="mean")
     p.add("test_grow_bar", dz["mde"]["grow"], "deals", D, "mde.grow",
           "Smallest YouTube lift the test can reliably see (80% power), from placebo tests on 2023 to 2025 data",
@@ -337,12 +340,13 @@ def build(mmm_out: Path = MMM_OUT, design_path: Path = DESIGN) -> dict:
     p.add("test_grow_power", 100 * g["power"], "percent", D, "forecast.grow.power",
           "Odds the test sees the YouTube lift if the model is right", "design")
     p.add("test_cut_bar", dz["mde"]["cut"], "deals", D, "mde.cut",
-          "Smallest drop from the cuts the test can reliably see (80% power)", "design")
+          "Smallest drop from pulling search back the test can reliably see (80% power)", "design")
     p.add("test_cut_power", 100 * c["power"], "percent", D, "forecast.cut.power",
-          "Odds the test sees the cuts' drop if the model is right", "design")
+          "Odds the test sees the drop from pulling search back if the model is right", "design")
     p.add("test_cut_multiple", c["multiple_of_forecast_for_80pct_power"], "multiplier", D,
           "forecast.cut.multiple_of_forecast_for_80pct_power",
-          "How many times the model's expected drop the cuts must cost for the test to reliably see it", "design")
+          "How many times the model's expected drop pulling search back must cost for the test to reliably see it",
+          "design")
     short = next(r for r in dz["durations"] if r["test_weeks"] < dt["test_weeks"])
     p.add("test_short_weeks", short["test_weeks"], "weeks", D, "durations", "A shorter test that was considered",
           "design")
@@ -359,6 +363,15 @@ def build(mmm_out: Path = MMM_OUT, design_path: Path = DESIGN) -> dict:
               f"Paid media spend in {y}, all 9 paid channels", "input")
         p.add(f"cost_per_deal_{y}", v["cost_per_deal"], "USD", D, f"data_cut.by_year.{y}.cost_per_deal",
               f"Blended cost per deal in {y}: paid spend / all deals", "input")
+    for y in ("2023", "2024", "2025"):
+        p.add(f"performance_share_{y}", 100 * by[y]["performance_share"], "percent", D,
+              f"data_cut.by_year.{y}.performance_share",
+              f"Performance channels' share of performance plus brand spend in {y} (brand: Meta, YouTube, CTV, "
+              "LinkedIn; performance: brand and non-brand search, display, affiliates)", "input")
+    nb = dz["mmm"]["cut_spend_by_year"]
+    for y in ("2023", "2025"):
+        p.add(f"nonbrand_spend_{y}", nb[y], "USD", D, f"mmm.cut_spend_by_year.{y}", f"Non-brand search spend in {y}",
+              "input")
     for k, unit in (("won_deals", "deals"), ("paid_spend", "spend"), ("cost_per_deal", "cost per deal")):
         p.add(f"{k}_change_pct", 100 * (by["2025"][k] / by["2024"][k] - 1), "percent", D, f"data_cut.by_year.*.{k}",
               f"Change in {unit} from 2024 to 2025", "derived", how="100 x (2025 / 2024 - 1)")
@@ -417,33 +430,36 @@ def build(mmm_out: Path = MMM_OUT, design_path: Path = DESIGN) -> dict:
              "facts": ["ask_step1_cost_per_deal", "ask_step2_cost_per_deal"]},
         ],
         "test": {
-            "what": "A spring market test of both sides of the plan at once. In one group of markets, YouTube "
-                    "runs far above plan, a level the model has never seen. In a crossing group, LinkedIn, display "
-                    "and affiliates go dark. Each group is measured against the markets outside it, so every market "
-                    "counts for both. Markets were matched by size and picked by how well they tracked each other "
-                    "in past placebo tests.",
+            "what": "A spring market test of both questions behind the budget. In one group of markets, "
+                    "YouTube runs well above plan, a level the model has never seen. In a crossing group, non-brand "
+                    "search goes back to its 2023 pace. Each group is measured against the markets outside it, so "
+                    "every market counts for both. Markets were matched by size and picked by how well they "
+                    "tracked each other in past placebo tests.",
             "decision_rule": "Rules written down before the test: YouTube works if its lift is clearly positive. "
-                             "The cuts cost more than modeled if their drop is clearly bigger than the model expects; "
-                             "then no cut channel goes below today's spend. Either way, the result goes into the model "
-                             "as a lift test, the model is refit, and the rollout follows the refit model.",
-            "limits": "The YouTube group is sized to see the lift the model expects. The cut group is a guardrail: it "
-                      "only sees the cuts if they cost far more than the model thinks. YouTube runs far past any "
-                      "level in the data, so the forecast there is a stretch.",
+                             "If pulling search back costs clearly more deals than the model expects, the rollout "
+                             "does not cut search below today's spend. Either way, both results go into the model "
+                             "as lift tests, the model is refit, and the rollout follows the refit model.",
+            "limits": "The YouTube group is sized to see the lift the model expects. The search group is a "
+                      "guardrail: it only sees the drop if search is worth much more than the model thinks. "
+                      "YouTube runs past any level in the data, so the forecast there is a stretch.",
             "readout": "Late May, after the last deals in the window have had time to close.",
             "dates": "Test: {} to {}. Deals counted through {}. Readout from the data as of {}.".format(
                 *(_day(dz["dates"][k]) for k in ("test_start", "test_end", "window_end", "readout_snapshot"))),
             "facts": ["test_markets", "test_arm_markets", "test_weeks", "test_tail_weeks", "test_window_weeks",
-                      "test_grow_step", "test_grow_spend", "test_cut_saving", "test_net_cost", "test_grow_forecast",
+                      "test_grow_step", "test_grow_spend", "test_search_keep", "test_cut_saving", "test_net_cost",
+                      "test_grow_forecast",
                       "test_grow_forecast_pct", "test_grow_cost_per_deal", "test_cut_forecast", "test_grow_bar",
                       "test_grow_power", "test_cut_bar", "test_cut_power", "test_cut_multiple", "test_short_weeks",
                       "test_short_power"],
         },
+        "channels": {"grow": [dz["arms"]["grow"]["channel"]], "cut": dz["arms"]["cut"]["channels"]},
         "recommendation": [
-            "Now: approve the spring market test. It needs a little new money, because the YouTube push costs more "
-            "than the cuts save.",
+            "Now: approve the spring market test. It needs no new money: pulling search back saves more than the "
+            "YouTube push costs.",
             "In late May: the test result goes into the model, and the refit model sets the rollout for the rest of "
             "the year. Approve that rollout then, not now.",
-            "Not now: the full reallocation. It rests on cuts to channels the data cannot see.",
+            "Not now: any big move in search. Search is the largest and least measured channel, and the test is "
+            "how we measure it.",
         ],
     }
     return pack
