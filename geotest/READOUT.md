@@ -38,7 +38,10 @@ Deals in the window, 2026-02-02 to 2026-05-24: the grow markets closed 1,461, an
 
 ## Cross-check: Bayesian synthetic control (does not decide)
 
-- Not run yet: `python -m geotest.crosscheck` in `.venv-mmm`.
+- **Grow arm:** +126 deals (+74 to +180), pre-test fit R² 0.23; 54% of the donor weight sits on the other arm's markets.
+- **Search arm:** -7 deals (-77 to +56), pre-test fit R² 0.02; 59% of the donor weight sits on the other arm's markets.
+- Each arm's donors include markets of the other arm, so this check does not take out the other arm's effect the way the registered 2x2 estimator does.
+- One market's weekly deals are noisy, so a weighted mix of single markets tracks an arm only loosely before the test (low R²). The registered estimator sums whole windows, which averages that noise out.
 
 ## Exploratory (does not decide)
 
