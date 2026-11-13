@@ -2,15 +2,16 @@
 
 A Bayesian geo MMM for Fernhook on [PyMC-Marketing](https://www.pymc-marketing.io/), fit on the golden marts, with brand search modeled as a mediator of the upper funnel, and graded once against the hidden answer key.
 
-**Final fit (Midwest world, paid search always on, last 13 weeks held out): it passes every health gate, predicts well, and still gives paid media 41% too little credit. With no experiments, the data cannot show what always-on channels add.**
+**Final fit (the rebuilt world: budgets drift from brand to non-brand search, last 13 weeks held out): it passes every health gate, predicts well, ranks channels better than before, and still gives paid media 28% too little credit. It reads non-brand search's average cost per deal almost exactly, but thinks its next dollar is cheaper than it is.**
 
-- **Health:** max r-hat 1.004, min bulk ESS 1,005, 1 divergence in 8,000 draws. The brand-search stage passes its own gates.
+- **Health:** max r-hat 1.003, min bulk ESS 1,704, 2 divergences in 8,000 draws. The brand-search stage passes its own gates.
 - **Prediction:** holdout weekly error 5.6%, 90% of holdout market-weeks inside the 90% interval. Residuals show no pattern.
-- **Scale:** paid media drives 9,579 deals in the model (90% HDI 7,185 to 12,204) against 16,145 in truth. The 90% HDIs cover the truth 21 of 32 times.
-- **Ranking:** CPA rank correlation with the truth is 0.00. Platform-reported numbers rank better (0.81).
-- **What it gets right:** CTV (CPA 6% off), YouTube as the best next dollar, and the budget shift: at the same spend the plan gains 582 true deals, inside the model's 90% HDI (30 to 1,001).
-- **Brand search as a mediator:** the upper funnel's share of brand-search deals comes out 2.9% against 2.8% true. CTV's deals through brand search land within 4%. Stage 1 sees the upper funnel creating 6.7% of brand searches against 16.7% true.
-- **The lesson:** on the dev seed, brand search landed on target (0% off) while 15 planned pauses gave it a lift test, and came out 54% low once search went always on. Without tests, every always-on channel's level rests on the prior. Fit statistics cannot catch that; only a test can.
+- **Scale:** paid media drives 11,060 deals in the model (90% HDI 8,515 to 13,937) against 15,389 in truth. The 90% HDIs cover the truth 27 of 32 times.
+- **Ranking:** CPA rank correlation with the truth is 0.48. Platform-reported numbers rank better (0.79); CRM last touch worse (0.10).
+- **What it gets right:** YouTube as the best next dollar and display as the worst; non-brand search's average cost per deal (7% off); YouTube and CTV within 20%.
+- **What it misses:** non-brand search's next dollar costs $11,116 in truth and $6,835 in the model, so the model understates how saturated search is. Meta comes out 77% low and affiliates 70% low.
+- **The budget shift:** at the same spend the plan gains 1,045 true deals, above the model's 90% HDI (363 to 932).
+- **The lesson:** the rebuilt world makes non-brand search grow fast, so its spend ramp lines up with time. The model separates them well enough on average cost, not on the margin. Only a test that moves search can show what the extra dollars buy.
 
 ## Run it
 
@@ -133,7 +134,7 @@ Stage 2 has 96 parameters for 2,860 market-weeks. Every one is summarized in `mm
 
 **Hill saturation, made safe at zero.** The stock `HillSaturation` has a NaN gradient for its slope at exactly zero input (`d(x^s)/ds = x^s log x`), and CTV is zero in 12 markets: every draw diverged until the input was floored at 1e-12 (`ZeroSafeHillSaturation`).
 
-**Curve shape by role.** Performance channels harvest intent that already exists, so their first dollar is their best: slope prior median 0.9 (90% 0.55 to 1.47). Brand channels can need a threshold of reach: median 1.5 (0.84 to 2.66).
+**Curve shape by role.** Performance channels harvest intent that already exists, so their first dollar is their best: slope prior median 0.9 (90% 0.55 to 1.47). Brand channels can need a threshold of reach: median 1.5 (0.84 to 2.66). The role comes from `dim_channel`; LinkedIn is a brand channel there since the rebuild.
 
 **One season, shifted by latitude.** Seasons arrive earlier in Fargo than in Cincinnati, and brand channels push into them. Free per-market season curves (60 terms) failed the r-hat and ESS gates on the dev seed. A shared curve plus latitude x each Fourier term (6 terms) passes. The latitude terms come out near zero on the graded seed.
 
@@ -148,7 +149,7 @@ Stage 2 has 96 parameters for 2,860 market-weeks. Every one is summarized in `mm
 | Brand search $\beta$ | Same, at half scale | Skeptical: its spend follows demand. |
 | Stage 1 $\theta_u$ | HalfNormal, scale so the upper funnel could explain half of brand-search spend | Wide. |
 
-**Controls.** Everything that acts on leads shows up in won deals after the lead-to-close delay, so these get the same fixed kernel: SDR and AE coverage (headcount per 1k accounts), email sends, log fleet activity index, the year-end promo, the July 2024 price increase and webinar cost. A linear trend, close-week dummies for weeks 52, 1, 2 and 3, and the latitude terms complete the baseline. On the graded seed, SDR and AE coverage, the promo and webinars carry clear positive effects and the price increase a negative one; email, the fleet index and trend sit near zero.
+**Controls.** Everything that acts on leads shows up in won deals after the lead-to-close delay, so these get the same fixed kernel: SDR and AE coverage (headcount per 1k accounts), email sends, log fleet activity index, the year-end promo, the July 2024 price increase and webinar cost. A linear trend, close-week dummies for weeks 52, 1, 2 and 3, and the latitude terms complete the baseline. On the graded seed, SDR and AE coverage, the fleet index and webinars carry clear positive effects; the price increase and the trend come out negative; the promo leans positive (87% of draws above zero) and email sits near zero.
 
 **Lift tests.** `mmm/lift_tests.py` turns any channel's planned regional pauses into a pooled lift test through `add_lift_test_measurements`: the deal deficit over the pause plus carryover, against the market's share of the other markets, with placebo windows for sigma. PyMC-Marketing compares absolute lifts, so pauses are pooled per channel, and a pooled test with the wrong sign enters as a zero drop. The current world has no pauses, so no lift test enters the fit.
 
@@ -158,16 +159,14 @@ No number is reported unless every gate passes (`mmm/config.py`). The gates read
 
 | Gate | Threshold | Final fit | Pass |
 |---|---|---|---|
-| r-hat, every sampled parameter | below 1.01 | 1.004 (display $\beta$) | yes |
-| Bulk ESS | at least 400 | 1,005 (display $\beta$) | yes |
-| Tail ESS | at least 400 | 586 | yes |
-| Divergences | at most 0.1% | 1 of 8,000 | yes |
-| Posterior predictive: market-weeks inside the 90% interval | 85% to 97% | 91.4% | yes |
+| r-hat, every sampled parameter | below 1.01 | 1.003 (display $\beta$) | yes |
+| Bulk ESS | at least 400 | 1,704 (brand search $\beta$) | yes |
+| Tail ESS | at least 400 | 1,053 | yes |
+| Divergences | at most 0.1% | 2 of 8,000 | yes |
+| Posterior predictive: market-weeks inside the 90% interval | 85% to 97% | 91.5% | yes |
 | Holdout: national weekly MAPE | at most 10% | 5.6% | yes |
-| Holdout: market-weeks inside the 90% interval | 80% to 98% | 89.6% | yes |
-| Stage 1: r-hat, bulk ESS, divergences | same | 1.005, 652, 0 | yes |
-
-At 1,000 draws per chain the final fit's tail ESS was 292 and 304 on brand search's and display's $\beta$, the two channels the data barely see. It now runs 2,000 draws per chain: same model, same seed.
+| Holdout: market-weeks inside the 90% interval | 80% to 98% | 90.4% | yes |
+| Stage 1: r-hat, bulk ESS, divergences | same | 1.003, 8,283, 0 | yes |
 
 ## Fit statistics
 
@@ -176,19 +175,19 @@ Reported in `diagnostics_<fit>.json` (`mmm/validation.py`). They describe the fi
 | | Train market-week | Train national week | Holdout market-week | Holdout national week |
 |---|---:|---:|---:|---:|
 | Rows | 2,860 | 143 | 260 | 13 |
-| Mean observed | 10.3 | 205.7 | 10.4 | 208.8 |
-| MSE | 10.4 | 173.3 | 10.6 | 247.3 |
-| RMSE | 3.23 | 13.2 | 3.26 | 15.7 |
-| MAE | 2.44 | 10.7 | 2.49 | 12.2 |
-| MAPE | 39% | 5.4% | 42% | 5.6% |
-| R² | 0.85 | 0.77 | 0.85 | -0.09 |
-| Bias (predicted - observed) | 0.00 | -0.07 | -0.42 | -8.4 |
+| Mean observed | 9.9 | 199.0 | 10.7 | 214.3 |
+| MSE | 10.3 | 197.7 | 9.2 | 311.7 |
+| RMSE | 3.21 | 14.1 | 3.03 | 17.7 |
+| MAE | 2.40 | 11.0 | 2.35 | 12.4 |
+| MAPE | 41% | 5.7% | 36% | 5.6% |
+| R² | 0.87 | 0.76 | 0.89 | -0.37 |
+| Bias (predicted - observed) | 0.00 | -0.09 | -0.43 | -8.7 |
 
-- **The misses are count noise.** A market-week averaging 10.3 deals has a noise floor of about 3.2 (its square root), and RMSE sits on it. Market-week MAPE is high only because small markets close a few deals a week. The holdout's national R² is negative because 13 weeks barely vary; its MAPE is 5.6%.
-- **PSIS-LOO:** elpd 2,392 (se 44), p_loo 73 against 96 parameters, every Pareto k below 0.7 (max 0.37).
-- **Residuals:** national lag-1 autocorrelation 0.06, Durbin-Watson 1.81, Ljung-Box p = 0.61. By market: median lag-1 0.02, median Durbin-Watson 1.94, no market with Ljung-Box p below 0.05.
-- **Residual vs spend:** every channel's correlation is within ±0.04.
-- **Stage 1:** R² 0.61 in training and 0.63 in the holdout, holdout national weekly MAPE 5.0%.
+- **The misses are count noise.** A market-week averaging 9.9 deals has a noise floor of about 3.1 (its square root), and RMSE sits on it. Market-week MAPE is high only because small markets close a few deals a week. The holdout's national R² is negative because 13 weeks barely vary; its MAPE is 5.6%.
+- **PSIS-LOO:** elpd 2,239 (se 46), p_loo 78 against 96 parameters; 1 of 2,860 Pareto k above 0.7 (max 0.71).
+- **Residuals:** national lag-1 autocorrelation -0.03, Durbin-Watson 2.03, Ljung-Box p = 0.25. By market: median lag-1 0.02, median Durbin-Watson 1.94, no market with Ljung-Box p below 0.05.
+- **Residual vs spend:** every channel's correlation is within ±0.03.
+- **Stage 1:** R² 0.66 in training and 0.69 in the holdout, holdout national weekly MAPE 4.3%.
 
 There is no ANOVA table. F-tests split variance for least squares with fixed effects; here each effect has a full posterior, so the 90% HDI and the share of draws above zero (in the parameter table) answer the same question.
 
@@ -216,70 +215,46 @@ Estimand definitions match the scenario's:
 
 Stage 2's numbers come from a numpy copy of its media path (`mmm/estimands.py`). The smoke test checks it against PyMC-Marketing's own `channel_contribution` to 1e-8.
 
-**Optimizer** (`mmm/optimize.py`): one multiplier per channel on its actual weekly path, bounded to 0.5 to 1.5, same total spend, maximizing posterior-mean deals. Brand search is not a lever: it is always on and its spend follows searches. Upper-funnel curves include their deals via brand search, and the plan reports the brand-search spend those searches add (about $208,000 for the final plan). SLSQP stops with "positive directional derivative" with most channels at a bound; the budget holds exactly.
+**Optimizer** (`mmm/optimize.py`): one multiplier per channel on its actual weekly path, bounded to 0.5 to 1.5, same total spend, maximizing posterior-mean deals. Brand search is not a lever: it is always on and its spend follows searches. Upper-funnel curves include their deals via brand search, and the plan reports the brand-search spend those searches add (about $189,000 for the final plan). SLSQP stops with "positive directional derivative" with most channels at a bound; the budget holds exactly.
 
 ## Grading
 
 `mmm/grade.py` is the only module that reads an answer key. It writes to `mmm/grading/`, never to `mmm/outputs/`. It scores 90% HDI coverage and percent error (posterior median) per channel, CPA rank agreement, the best and worst marginal-CPA picks, the same for CRM last touch and platform-reported (which rank the next dollar by average CPA), the mediation estimands, and the optimizer's plan run through the true, noise-free response curves (total curves for upper-funnel moves).
 
-Webinars are a control in the MMM, so the 8 media channels are graded.
+Webinars are a control in the MMM, so the 8 media channels are graded. 90% HDI coverage: 27 of 32 (84%). Point estimates are posterior medians. Full table: [`mmm/grading/grade_holdout.md`](../../mmm/grading/grade_holdout.md).
 
-90% HDI coverage: 21 of 32 (66%).
-
-Point estimates are posterior medians.
-
-| Channel | True CPA | MMM CPA (90% HDI) | CPA err | True mCPA | MMM mCPA (90% HDI) | True deals | MMM deals | CRM CPA | Platform CPA |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| paid_search_brand | 5,756 | 13,374 (1,623 to 78,055) | 132% | 35,584 | 28,914 (2,762 to 176,618) | 1,284 | 552 | 1,232 | 1,345 |
-| paid_search_nonbrand | 2,067 | 3,736 (1,763 to 6,777) | 81% | 5,074 | 6,198 (3,455 to 11,382) | 6,482 | 3,586 (miss) | 2,461 | 1,719 |
-| meta | 1,441 | 5,578 (1,064 to 25,828) | 287% | 1,725 | 6,827 (1,357 to 32,014) | 2,597 | 671 (miss) | 2,832 | 432 |
-| linkedin | 2,670 | 5,576 (1,057 to 29,512) | 109% | 3,954 | 12,109 (1,869 to 65,331) | 1,440 | 690 | 3,690 | 1,977 |
-| youtube | 1,516 | 2,179 (1,187 to 3,194) | 44% | 1,446 | 2,446 (1,562 to 3,482) (miss) | 1,328 | 924 | 14,918 | 802 |
-| ctv | 2,578 | 2,411 (1,949 to 2,979) | -6% | 3,141 | 3,888 (2,919 to 4,982) | 1,161 | 1,241 | n/a | 1,693 |
-| display | 37,654 | 5,568 (988 to 28,891) (miss) | -85% | 103,464 | 11,667 (1,731 to 73,732) (miss) | 123 | 833 | 5,138 | 2,027 |
-| affiliates | 1,160 | 6,668 (887 to 36,353) | 475% | 1,875 | 16,409 (2,565 to 85,376) (miss) | 1,730 | 301 (miss) | 1,367 | 719 |
-
-True best marginal CPA: youtube. True worst: display.
+| Channel | True CPA | MMM CPA (90% HDI) | CPA err | True mCPA | MMM mCPA (90% HDI) | True deals | MMM deals |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| paid_search_brand | 6,123 | 12,557 (1,366 to 85,642) | 105% | 37,735 | 27,198 (3,306 to 192,726) | 1,212 | 591 |
+| paid_search_nonbrand | 3,068 | 3,293 (1,860 to 5,409) | 7% | 11,116 | 6,835 (4,094 to 11,336) | 5,551 | 5,171 |
+| meta | 1,482 | 6,522 (1,091 to 26,506) | 340% | 1,834 | 7,099 (1,863 to 31,721) (miss) | 2,969 | 675 (miss) |
+| linkedin | 2,550 | 4,600 (798 to 26,806) | 80% | 3,294 | 8,093 (1,802 to 47,872) | 1,004 | 556 |
+| youtube | 1,542 | 1,829 (1,182 to 2,573) | 19% | 1,637 | 2,265 (1,580 to 3,093) | 1,815 | 1,531 |
+| ctv | 2,516 | 2,979 (2,235 to 3,841) | 18% | 3,096 | 3,850 (2,949 to 4,897) | 1,153 | 973 |
+| display | 42,123 | 11,515 (1,232 to 77,976) | -73% | 113,255 | 27,517 (3,359 to 182,094) | 103 | 378 |
+| affiliates | 1,232 | 4,161 (565 to 22,418) | 238% | 1,982 | 10,134 (1,639 to 53,687) | 1,583 | 469 (miss) |
 
 | View | CPA rank corr | Median abs CPA error | Picks best | Right? | Picks worst | Right? |
 |---|---:|---:|---|---|---|---|
-| MMM | 0.00 | 97% | youtube | yes | paid_search_brand | no |
-| CRM last touch | 0.14 | 79% | paid_search_brand | no | ctv | no |
-| Platform reported | 0.81 | 43% | meta | no | display | yes |
+| MMM | 0.48 | 77% | youtube | yes | display | yes |
+| CRM last touch | 0.10 | 80% | paid_search_brand | no | ctv | no |
+| Platform reported | 0.79 | 41% | meta | no | paid_search_nonbrand | no |
 
 | Total paid media | True | MMM (90% HDI) | Covered |
 |---|---:|---:|---|
-| incremental_deals_paid_media | 16,145 | 9,579 (7,185 to 12,204) | no |
-| incremental_cpa_paid_media | 2,479 | 4,178 (3,127 to 5,309) | no |
+| incremental_deals_paid_media | 15,389 | 11,060 (8,515 to 13,937) | no |
+| incremental_cpa_paid_media | 2,821 | 3,925 (2,987 to 4,916) | no |
 
-Upper funnel through brand search: 90% HDI coverage 9 of 12.
+Upper funnel through brand search: 90% HDI coverage 10 of 12. The upper funnel's share of brand-search deals comes out 2.8% against 2.8% true; stage 1 sees it creating 5.9% of brand searches against 16.7% true.
 
-| Channel | Metric | True | MMM (90% HDI) | Error |
-|---|---|---:|---:|---:|
-| all | upper_funnel_share_of_brand_searches | 16.7% | 6.7% (5.5% to 7.8%) | -60% |
-| all | upper_funnel_share_of_brand_search_deals | 2.8% | 2.9% | 2% |
-| meta | incremental_deals_via_brand_search | 19 | 4 (0 to 13) (miss) | -80% |
-| meta | incremental_deals_total | 2,615 | 676 (6 to 1,621) (miss) | -74% |
-| meta | cpa_total | 1,430 | 5,537 (777 to 24,592) | 287% |
-| meta | marginal_cpa_total | 1,715 | 6,750 (1,522 to 30,395) | 293% |
-| youtube | incremental_deals_via_brand_search | 10 | 5 (0 to 15) | -55% |
-| youtube | incremental_deals_total | 1,338 | 932 (502 to 1,367) | -30% |
-| youtube | cpa_total | 1,505 | 2,160 (1,209 to 3,200) | 44% |
-| youtube | marginal_cpa_total | 1,440 | 2,428 (1,542 to 3,441) (miss) | 69% |
-| ctv | incremental_deals_via_brand_search | 8 | 7 (0 to 23) | -4% |
-| ctv | incremental_deals_total | 1,168 | 1,252 (995 to 1,514) | 7% |
-| ctv | cpa_total | 2,561 | 2,390 (1,946 to 2,960) | -7% |
-| ctv | marginal_cpa_total | 3,130 | 3,838 (2,902 to 4,892) | 23% |
-
-Optimizer plan at the same total spend: model predicts 499 deals (30 to 1,001); the true world gives 582 (inside the HDI).
+Optimizer plan at the same total spend: the model predicts 654 deals (363 to 932); the true world gives 1,045, above the HDI.
 
 **Reading it.**
 
-- **Prediction is not attribution.** Every fit statistic is healthy while paid media is 41% low. A model that predicts deals well can still split them wrongly between baseline and media.
-- **Flighted channels are measured; always-on channels are not.** CTV runs its own flights in 8 markets and lands within 6% of its true CPA. YouTube's on and off flights put it at the top of the next-dollar ranking. The always-on channels (search, LinkedIn, display, affiliates) never stop, so their level comes from the prior: affiliates and non-brand search come out low, display (the true dud) high.
-- **Seasonal pushes hide in the season.** Meta pushes into the busy seasons in every market, and the shared season curve absorbs most of its effect (74% low).
-- **The halo is real in spend and small in deals.** The upper funnel creates about a sixth of brand searches, but brand search adds few deals per dollar, so only about 3% of brand search's deals trace back to the upper funnel. The model gets that share right (2.9%), but it sees fewer created searches than there are.
-- **The budget move still works.** Shifting toward YouTube, CTV and Meta and away from LinkedIn, display and affiliates gains 582 true deals (3.6% of true paid-media deals). The model's mean prediction is 499.
+- **Prediction is not attribution.** Every fit statistic is healthy while paid media is 28% low.
+- **Average is not margin.** Non-brand search's average cost per deal is 7% off, but its next dollar costs $11,116 in truth against $6,835 in the model. The search ramp lines up with time, so the model cannot tell how fast search saturated. The memo's market test pulls search back to its 2023 pace for exactly this reason.
+- **Flighted channels are measured; always-on channels are not.** YouTube and CTV land within 20%. Meta pushes into the busy seasons and the season curve absorbs most of it (77% low). Affiliates come out 70% low.
+- **The budget move still works, and better than modeled.** Growing YouTube and CTV and cutting display gains 1,045 true deals against the model's 654.
 
 ## How the model got here
 
@@ -295,17 +270,20 @@ Each change was tested on a development seed and kept only if it held there. The
 | Midwest, planned search tests, dev seed 2 | mw1 | Free per-market season curves | 12,416 vs 18,030 (-31%); r-hat and ESS gates fail | no |
 | same | mw2 | One season shifted by latitude; brand and non-brand pause tests | 12,547 (-30%); brand search on target | yes |
 | Midwest, always-on search, dev seed 2 | m1 | Brand-search mediation (stage 1) | 9,347 vs 17,797 (-47%) | yes |
-| same, seed 2026 | final | 2,000 draws per chain for tail ESS | 9,579 vs 16,145 (-41%) | graded |
+| same, seed 2026 | final | 2,000 draws per chain for tail ESS | 9,579 vs 16,145 (-41%) | replaced |
+| Rebuilt: budgets drift to search, seed 2026 | refit | Same model; LinkedIn's role prior is now brand | 11,060 vs 15,389 (-28%) | graded |
 
 **Disclosures.** The first seed-2026 grade (old world) was seen before the dev-seed work began, and it suggested the curve-shape hypothesis. While checking the new answer key's field names, some seed-2026 true values were printed: Meta's, YouTube's and CTV's direct and via-brand-search deals, and the paid-media summary. No model change followed. The only change after that was more draws, made because the final fit failed the tail ESS gate.
 
-The scenario changed twice during this step, at Logan's direction: the business now sells only in seven Midwest states, and paid search is always on with the upper funnel creating brand searches. The original plan to turn brand-search pauses into lift tests still exists in code, but the current world has no pauses.
+**Rebuild (step 6).** At Logan's direction the 2023 to 2025 world was rebuilt so budgets drift from brand to non-brand search (60/40 to 80/20) and search saturates. The same model was refit once on the new seed-2026 world; no model change was made. `python -m sim` prints each channel's true average CPA when it writes the world, so those 9 numbers were seen when the world was generated; the test design and memo use none of them.
+
+The scenario changed twice during step 4, at Logan's direction: the business now sells only in seven Midwest states, and paid search is always on with the upper funnel creating brand searches. The original plan to turn brand-search pauses into lift tests still exists in code, but the current world has no pauses.
 
 ## Limits and next steps
 
-- **Run one experiment.** On the dev seed, 15 planned brand-search pauses put brand search on target; without them it came out 54% low. A single planned budget test for non-brand search (a few markets at 50% to 70% of plan for 6 to 8 weeks) would give the biggest always-on channel the same anchor without pausing it.
+- **Run the experiment.** On the dev seed, 15 planned brand-search pauses put brand search on target; without them it came out 54% low. The 2026 market test ([`geotest/PREREGISTRATION.md`](../../geotest/PREREGISTRATION.md)) pulls non-brand search back to its 2023 pace in 10 markets and pushes YouTube in a crossing 10, and both results enter the refit as lift tests.
 - **Seasonal brand pushes** need variation the season cannot explain. A test that holds Meta flat in a few markets through one busy season would separate the two.
-- **Stage 1** sees 40% of the searches the upper funnel creates. Its carryover is linear and its season shares the confound; a saturating search response is the next thing to try on a dev seed.
+- **Stage 1** sees about a third of the searches the upper funnel creates (5.9% of brand searches against 16.7%). Its carryover is linear and its season shares the confound; a saturating search response is the next thing to try on a dev seed.
 - **Full-window fit:** these numbers come from the holdout fit's posterior applied to all 156 weeks. A `--holdout 0` fit uses the last 13 weeks too.
 - **ROI** values every deal at its market's average won-deal revenue, so it cannot see channels that bring bigger or smaller deals.
 - **Cross-check:** fit Google Meridian on the same marts and report where the two models disagree.

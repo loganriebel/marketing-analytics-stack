@@ -1,100 +1,100 @@
 {
-  "lead_to_won_rate": 0.045798566709862105,
+  "lead_to_won_rate": 0.043455821491420264,
   "channels": {
     "paid_search_brand": {
-      "spend": 7388809.18,
+      "spend": 7420000.11,
       "crm_last_touch": {
-        "deals": 5995.0,
-        "cpa": 1232.4952760633862
+        "deals": 6073.0,
+        "cpa": 1221.8014342170263
       },
       "platform_reported": {
-        "conversions": 119954.81999999989,
-        "deals": 5493.758825939496,
-        "cpa": 1344.9460404255055
+        "conversions": 127362.97000000002,
+        "deals": 5534.662488937115,
+        "cpa": 1340.641841274218
       }
     },
     "paid_search_nonbrand": {
-      "spend": 13396798.88,
+      "spend": 17030000.3,
       "crm_last_touch": {
-        "deals": 5444.0,
-        "cpa": 2460.837413666422
+        "deals": 4673.0,
+        "cpa": 3644.3398887224484
       },
       "platform_reported": {
-        "conversions": 170135.36000000007,
-        "deals": 7791.9556346664085,
-        "cpa": 1719.3114935610831
+        "conversions": 168911.2300000003,
+        "deals": 7340.176258776244,
+        "cpa": 2320.107814800519
       }
     },
     "meta": {
-      "spend": 3740823.15,
+      "spend": 4399999.9,
       "crm_last_touch": {
-        "deals": 1321.0,
-        "cpa": 2831.81161998486
+        "deals": 1456.0,
+        "cpa": 3021.9779532967036
       },
       "platform_reported": {
-        "conversions": 189241.0,
-        "deals": 8666.966562741014,
-        "cpa": 431.61850491977987
+        "conversions": 219287.0,
+        "deals": 9529.296727389075,
+        "cpa": 461.7339585358418
       }
     },
     "linkedin": {
-      "spend": 3845169.28,
+      "spend": 2560000.06,
       "crm_last_touch": {
-        "deals": 1042.0,
-        "cpa": 3690.1816506717846
+        "deals": 733.0,
+        "cpa": 3492.496671214188
       },
       "platform_reported": {
-        "conversions": 42460.0,
-        "deals": 1944.6071425007449,
-        "cpa": 1977.3501783270997
+        "conversions": 29895.0,
+        "deals": 1299.1117834860088,
+        "cpa": 1970.5771993927656
       }
     },
     "youtube": {
-      "spend": 2013928.57,
+      "spend": 2800000.15,
       "crm_last_touch": {
-        "deals": 135.0,
-        "cpa": 14917.989407407407
+        "deals": 190.0,
+        "cpa": 14736.842894736841
       },
       "platform_reported": {
-        "conversions": 54858.94,
-        "deals": 2512.4608232223227,
-        "cpa": 801.5761087239813
+        "conversions": 74241.71999999983,
+        "deals": 3226.234931535998,
+        "cpa": 867.8847664286279
       }
     },
     "ctv": {
-      "spend": 2991990.71,
+      "spend": 2900000.0,
       "crm_last_touch": {
         "deals": 0.0,
         "cpa": null
       },
       "platform_reported": {
-        "conversions": 38598.0,
-        "deals": 1767.7330778672576,
-        "cpa": 1692.5579701262309
+        "conversions": 42749.0,
+        "deals": 1857.692912936725,
+        "cpa": 1561.0760959493293
       }
     },
     "display": {
-      "spend": 4639512.25,
+      "spend": 4350000.16,
       "crm_last_touch": {
-        "deals": 903.0,
-        "cpa": 5137.887320044297
+        "deals": 841.0,
+        "cpa": 5172.413983353151
       },
       "platform_reported": {
-        "conversions": 49980.0,
-        "deals": 2289.012364158908,
-        "cpa": 2026.8620312607081
+        "conversions": 46405.0,
+        "deals": 2016.5673963093573,
+        "cpa": 2157.1310574400836
       }
     },
     "affiliates": {
-      "spend": 2006346.87,
+      "spend": 1949999.91,
       "crm_last_touch": {
-        "deals": 1468.0,
-        "cpa": 1366.7213010899184
+        "deals": 1364.0,
+        "cpa": 1429.618702346041
       },
       "platform_reported": {
-        "conversions": 60949.0,
-        "deals": 2791.3768423993856,
-        "cpa": 718.766036718784
+        "conversions": 56556.0,
+        "deals": 2457.6874402687645,
+        "cpa": 793.4287648012534
       }
     }
   }

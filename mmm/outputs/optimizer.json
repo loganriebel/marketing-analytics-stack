@@ -20,7 +20,7 @@
       "random_seed": 4
     },
     "estimand_draws": 2000,
-    "sampling_seconds": 476,
+    "sampling_seconds": 480,
     "hdi_prob": 0.9,
     "estimands_cover": "full window spend path with this fit's posterior"
   },
@@ -40,134 +40,134 @@
   ],
   "converged": false,
   "solver_message": "Positive directional derivative for linesearch",
-  "total_spend": 32634569.71,
+  "total_spend": 35990000.480000004,
   "plan": [
     {
       "channel": "paid_search_nonbrand",
-      "spend_now": 13396798.879999999,
-      "multiplier": 1.0812407260139678,
-      "spend_plan": 14485164.54727431,
-      "spend_change": 1088365.6672743107,
+      "spend_now": 17030000.3,
+      "multiplier": 0.9728105425956808,
+      "spend_plan": 16566963.832247607,
+      "spend_change": -463036.4677523935,
       "deal_change": {
-        "mean": 169.78617285488522,
-        "median": 169.72654752339258,
+        "mean": -68.48917242719646,
+        "median": -68.86505387978536,
         "hdi_90": [
-          71.13678136477301,
-          269.2157351010137
+          -102.18329979354894,
+          -36.57682962345007
         ]
       }
     },
     {
       "channel": "meta",
-      "spend_now": 3740823.15,
-      "multiplier": 1.2361893181947397,
-      "spend_plan": 4624365.619285598,
-      "spend_change": 883542.4692855983,
+      "spend_now": 4399999.9,
+      "multiplier": 1.0745539120296606,
+      "spend_plan": 4728037.105475116,
+      "spend_change": 328037.2054751153,
       "deal_change": {
-        "mean": 141.96610850783804,
-        "median": 123.80869791084308,
+        "mean": 50.108416829300566,
+        "median": 45.98253646983767,
         "hdi_90": [
-          1.885311475344162,
-          286.2352908800633
+          0.7587449572713751,
+          93.70110462063052
         ]
       },
-      "brand_search_spend_change": 27707.134488589592
+      "brand_search_spend_change": 8619.305822460425
     },
     {
       "channel": "linkedin",
-      "spend_now": 3845169.2800000003,
-      "multiplier": 0.5786155421738435,
-      "spend_plan": 2224874.7076974073,
-      "spend_change": -1620294.5723025927,
+      "spend_now": 2560000.0599999996,
+      "multiplier": 0.9399539378373168,
+      "spend_plan": 2406282.137260767,
+      "spend_change": -153717.92273923257,
       "deal_change": {
-        "mean": -197.76137705268684,
-        "median": -166.25946715843466,
+        "mean": -22.417174268634668,
+        "median": -19.714071335584606,
         "hdi_90": [
-          -398.6327434451057,
-          -0.03564519662102891
+          -44.834739442429395,
+          -0.07542675319868897
         ]
       }
     },
     {
       "channel": "youtube",
-      "spend_now": 2013928.57,
-      "multiplier": 1.500000000256257,
-      "spend_plan": 3020892.8555160835,
-      "spend_change": 1006964.2855160834,
+      "spend_now": 2800000.15,
+      "multiplier": 1.4999999960277357,
+      "spend_plan": 4200000.213877659,
+      "spend_change": 1400000.0638776594,
       "deal_change": {
-        "mean": 384.5226252176537,
-        "median": 377.8217248067418,
+        "mean": 558.88158879871,
+        "median": 560.6529907681478,
         "hdi_90": [
-          225.59236135194703,
-          517.3941718506355
+          376.0712967600542,
+          726.0556791737356
         ]
       },
-      "brand_search_spend_change": 66224.8785359529
+      "brand_search_spend_change": 53779.43654317037
     },
     {
       "channel": "ctv",
-      "spend_now": 2991990.71,
-      "multiplier": 1.500000000256257,
-      "spend_plan": 4487986.065766718,
-      "spend_change": 1495995.3557667185,
+      "spend_now": 2900000.0,
+      "multiplier": 1.500000000069369,
+      "spend_plan": 4350000.00020117,
+      "spend_change": 1450000.0002011699,
       "deal_change": {
-        "mean": 336.32002923199883,
-        "median": 333.7614500158791,
+        "mean": 328.46886215783513,
+        "median": 329.1181129179698,
         "hdi_90": [
-          240.23351125680267,
-          433.63805426456156
+          234.18092464814106,
+          412.3223694003874
         ]
       },
-      "brand_search_spend_change": 114210.95019249001
+      "brand_search_spend_change": 126224.31659862118
     },
     {
       "channel": "display",
-      "spend_now": 4639512.25,
-      "multiplier": 0.6009494811202416,
-      "spend_plan": 2788112.4792885045,
-      "spend_change": -1851399.7707114953,
+      "spend_now": 4350000.16,
+      "multiplier": 0.5000000017303567,
+      "spend_plan": 2175000.087527052,
+      "spend_change": -2175000.072472948,
       "deal_change": {
-        "mean": -231.29276784082074,
-        "median": -193.96327866396086,
+        "mean": -140.5319552644249,
+        "median": -105.31463906243359,
         "hdi_90": [
-          -482.52582483305173,
-          -0.8535814448588441
+          -311.026687761365,
+          -0.042439375175102934
         ]
       }
     },
     {
       "channel": "affiliates",
-      "spend_now": 2006346.87,
-      "multiplier": 0.500000000085419,
-      "spend_plan": 1003173.4351713802,
-      "spend_change": -1003173.4348286199,
+      "spend_now": 1949999.9100000001,
+      "multiplier": 0.8019062438883052,
+      "spend_plan": 1563717.1034106333,
+      "spend_change": -386282.8065893668,
       "deal_change": {
-        "mean": -104.5657060456683,
-        "median": -81.19557739021607,
+        "mean": -52.328244590904085,
+        "median": -42.38677700731992,
         "hdi_90": [
-          -223.73757558321483,
-          -0.22585771097603946
+          -112.22461392962748,
+          -0.001981619358538904
         ]
       }
     }
   ],
   "deal_change": {
-    "mean": 498.9750848731999,
-    "median": 513.4340059006009,
+    "mean": 653.6923212346856,
+    "median": 666.848311343181,
     "hdi_90": [
-      30.41697528836147,
-      1001.0411384892637
+      362.8259463911004,
+      932.0459539694381
     ]
   },
   "deal_change_pct_of_paid_incremental": {
-    "mean": 5.395471049335179,
-    "median": 5.419340872051098,
+    "mean": 6.045588784993852,
+    "median": 5.955225078434101,
     "hdi_90": [
-      -0.38496761371974025,
-      10.74644851252154
+      3.098172186354278,
+      9.418826318665905
     ]
   },
-  "prob_gain_positive": 0.9445,
+  "prob_gain_positive": 0.9995,
   "brand_search": "not a lever: always on, spend follows searches; the plan's upper-funnel moves change it by brand_search_spend_change",
-  "brand_search_spend_change": 208142.9632170325
+  "brand_search_spend_change": 188623.05896425198
 }
