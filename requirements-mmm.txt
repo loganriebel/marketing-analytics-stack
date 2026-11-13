@@ -1,0 +1,19 @@
+# Step 4 MMM environment, kept apart from requirements.txt so PyMC never moves the
+# pinned warehouse stack. Python 3.11.
+#   py -3.11 -m venv .venv-mmm
+#   .venv-mmm\Scripts\python -m pip install -r requirements-mmm.txt
+pymc-marketing==0.19.2
+pymc==5.28.5
+pytensor==2.38.3
+pymc-extras==0.10.0
+nutpie==0.16.8
+numba==0.65.1
+arviz==0.23.4
+xarray==2026.9.0
+numpy==2.4.6
+pandas==3.1.1
+scipy==1.17.1
+duckdb==2.0.0
+h5netcdf==1.8.3
+matplotlib==3.11.2
+pytest==9.2.0

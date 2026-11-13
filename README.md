@@ -11,16 +11,26 @@ An example of the stack I run at work: dashboards, Claude on golden tables, MMM 
 - Sales-assisted motion: inbound lead, SDR call, demo, 14-day trial, close.
 - Short cycle: a lead closes in about two weeks; nine in ten close in 6 to 27 days.
 - First-year contracts run about $2,800 on average, and it closes about 210 deals a week.
-- About $14M a year in paid media across nine channels, sold in 20 regions across North America, Europe, and APAC.
+- About $14M a year in paid media across nine channels.
+- Sold only in seven Midwest states: Minnesota, Wisconsin, Illinois, Iowa, Ohio, North Dakota, and South Dakota. They split into 20 metro markets in four sales areas.
 - About 50 SDRs and 70 AEs.
+
+| Sales area | Markets |
+|---|---|
+| Illinois and Iowa | Chicago, Rockford, Peoria, Quad Cities, Des Moines, Cedar Rapids |
+| Ohio | Cleveland, Columbus, Cincinnati, Dayton, Toledo, Akron |
+| Wisconsin | Milwaukee, Madison, Green Bay |
+| Upper Midwest | Minneapolis-St. Paul, Rochester, Duluth, Fargo (ND), Sioux Falls (SD) |
+
+**The seasons drive the business.** Fleets shop for software when the season turns: AC switches on in late spring (May and June) and heat switches on in late fall (October and November). The slowest stretch runs from mid-July into September, when crews are busy with AC calls and then coast before heat. Winter after the holidays is soft, and the holidays dip hard. The seasons arrive a little earlier or later by latitude: heat season starts in Fargo and Duluth a few weeks before Cincinnati and Columbus.
 
 ## The problem
 
 Fernhook grew on paid search, and its CRM credits every deal to the last UTM touch.
 
-- **The mix drifted to performance.** Budget reviews reward the channels closest to the click: search, retargeting, affiliates. Connected TV, YouTube, and Meta look weak in last touch, so they get cut. Performance took 67% of spend in 2023 and 80% in 2025.
-- **Search keeps getting more expensive.** Last-touch search cost per lead rose from $73 in 2023 to $93 in 2025.
-- **Growth stalled.** In 2025 spend rose 4% over 2024, and closed-won deals fell 8%. Blended cost per deal rose from about $1,180 to $1,330.
+- **The mix drifted to performance.** Budget reviews reward the channels closest to the click: search, retargeting, affiliates. Connected TV, YouTube, and Meta look weak in last touch, so they get cut. Performance took 68% of spend in 2023 and 78% in 2025.
+- **Search keeps getting more expensive.** Last-touch search cost per lead rose from $75 in 2023 to $96 in 2025.
+- **Growth stalled.** In 2025 spend rose 3% over 2024, and closed-won deals fell 11%. Blended cost per deal rose from about $1,240 to $1,440.
 - **Nobody agrees on the numbers.** Every ad platform claims credit for the same deals, so their totals add up to far more than the CRM has. Last touch never credits Connected TV at all.
 - **Finance has stopped trusting marketing.** When the CFO asks what a channel returns, the team can show last-touch numbers or platform numbers, and neither holds up.
 
@@ -41,12 +51,12 @@ To test it, headless Claude answered 50 ad-hoc questions twice: once through the
 
 | Arm | Answerable correct | Correct refusals | Wrong refusals | Overall | Cost |
 |---|---|---|---|---|---|
-| Claude + governed metrics (MCP) | 42/42 (100%) | 8/8 | 0 | 50/50 | $3.23 |
-| Claude + raw tables (SQL) | 22/42 (52%) | 8/8 | 3 | 30/50 | $4.98 |
+| Claude + governed metrics (MCP) | 42/42 (100%) | 8/8 | 0 | 50/50 | $3.24 |
+| Claude + raw tables (SQL) | 23/42 (55%) | 8/8 | 2 | 31/50 | $3.78 |
 
-Model `claude-sonnet-5-5`, one pass per arm, same instructions, built-in tools off. Per-question results: [evals/RESULTS.md](evals/RESULTS.md).
+Model `claude-sonnet-5-5`, one pass per arm, same instructions, built-in tools off, run on the current seven-state world. Per-question results: [evals/RESULTS.md](evals/RESULTS.md). The first run, on the earlier 20-region world, scored 50/50 and 30/50; its answers are kept in `evals/results/archive_global_world/`.
 
-Why the raw arm missed: it had to invent definitions. It left partner fees and webinars out of "paid media", grouped search and YouTube as "Google", counted deals by calendar close date instead of the house week rule, and could not answer share-of-spend questions without channel roles. Every one of those is a definition the semantic layer settles once.
+Why the raw arm missed: it had to invent definitions. It left partner fees and webinars out of "paid media", grouped search and YouTube as "Google", counted deals by calendar close date instead of the house week rule, read "CPA" as cost per lead, and could not answer share-of-spend questions without channel roles. Every one of those is a definition the semantic layer settles once.
 
 ## The model setup
 
@@ -65,7 +75,7 @@ Every table is weekly, by region, for 156 weeks (2023 to 2025).
 | Affiliates and partners | Performance | Placement and sponsor fees with resellers, fleet consultants, and review sites. | `partners_weekly` |
 | Meta | Brand | Prospecting video to small-business owners. | `ads_meta_weekly` |
 | YouTube | Brand | Prospecting video. | `ads_google_weekly` |
-| Connected TV (CTV) | Brand | Streaming TV ads, run as a test in 8 US markets. Cheaper to start and geo-target than broadcast TV. | `ctv_weekly` |
+| Connected TV (CTV) | Brand | Streaming TV ads, run as a test in 8 of the 20 markets. Cheaper to start and geo-target than broadcast TV. | `ctv_weekly` |
 | Webinars | Events | Regional live webinars. | `webinar_events` |
 
 **Controls:** what moves deals besides paid media (`fct_controls_weekly`).
@@ -77,11 +87,12 @@ Every table is weekly, by region, for 156 weeks (2023 to 2025).
 | Year-end promo | 15% off annual plans for trials started mid-November to mid-December. Lifts the win rate. | `promo_calendar` |
 | List price | Rose 10% in July 2024. Bigger deals, slightly lower win rate. | `promo_calendar` |
 | Fleet activity index | Market demand. When fleets are busy, more of them shop for software. | `fleet_activity_index_weekly` |
-| Seasonality and trend | Holiday dips, a summer slowdown, and steady organic growth. | the calendar |
+| Seasonality and trend | Busy at the spring and fall switchovers, a lull from mid-July into September, a soft winter, holiday dips, and steady organic growth. Timing shifts a little by latitude. | the calendar; `dim_region.latitude` |
 
-Two modeling traps are built in on purpose, because real teams hit them:
+Three modeling traps are built in on purpose, because real teams hit them:
 
-- **Brand search spend follows demand.** Brand search spend rises and falls with how many people search "Fernhook", and other channels drive some of those searches. A naive model cannot tell whether brand search causes deals or just follows them. Regional brand-search pauses act as holdout tests.
+- **Brand search spend follows demand.** Brand search spend rises and falls with how many people search "Fernhook". Part of that demand is created by the upper funnel: people see Fernhook on Meta, YouTube, or CTV and search for it by name later. Brand search never pauses, so no test separates what it adds from the demand it follows.
+- **Brand pushes are timed to demand.** Meta, YouTube, and CTV push before and into the busy seasons, the same weeks fleets shop anyway. A model without seasonality will mix up the season and the media. Each market's push lands on its own week and at its own size, and the size changes from season to season, so a model with market-level seasonality can still tell them apart.
 - **Affiliate commissions are not media spend.** Commissions are paid per closed deal, so they follow sales instead of causing them. Only placement and sponsor fees enter the model.
 
 ## Three views of the same spend
@@ -90,7 +101,7 @@ Two modeling traps are built in on purpose, because real teams hit them:
 |---|---|---|
 | Platform-reported conversions | `ads_*`, `ctv_weekly`, `partners_weekly`; `fct_channel_weekly.platform_conversions` | Each platform counts conversions it touched, not ones it caused, so their totals overlap. |
 | CRM last touch | `crm_leads` UTMs; `fct_channel_weekly.sourced_*` | It credits the final click. Channels people watch but rarely click, like CTV and YouTube, get little; brand search gets a lot. |
-| The truth | `sim/truth/truth.json` only | Nothing. It is the answer key, and no dbt model or later agent may read it. |
+| The truth | `sim/truth/truth.json` only | Nothing. It is the answer key, and no dbt model or later agent may read it. For Meta, YouTube, and CTV it holds both the direct effect and the deals they add through the brand searches they create. |
 
 The true effects are built in: carryover (adstock), diminishing returns (saturation), lead quality that differs by channel, seasonality, trend, and noise. Each run draws every true parameter from a realistic range, so nothing in the answer key is typed into the code. The simulator holds the ranges; the drawn values live only in `truth.json`, and the MMM step is graded against them.
 
@@ -98,12 +109,14 @@ The true effects are built in: carryover (adstock), diminishing returns (saturat
 
 Spend has to move a lot, and not in lockstep, or no model can tell the channels apart.
 
-- **Flighting:** CTV and YouTube run in on/off flights, Meta and LinkedIn run in bursts with pauses, non-brand search and display are always on.
-- **Regions:** each channel is spread unevenly across the 20 regions, and most channels have a few weeks where a region goes dark. Those act like natural geo holdouts. CTV runs in only 8 regions, on its own schedule in each.
-- **Webinars** are regional events, so their spend lands in one region and one week at a time.
-- **Non-brand search** is always on, so on its own it moves with the baseline. Regional budget tests and pauses keep it measurable.
-- **Affiliate fees** step up or down at quarterly contract renewals.
-- **Budget history:** each January plan moves in a step, and the team made seven changes between plans. Examples: an attribution review in April 2024 cut YouTube and CTV, two reseller contracts ended in November 2024, and Meta got a retest in June 2025.
+- **Performance channels are always on.** Brand search, non-brand search, LinkedIn, display, and affiliates run every week in every market. They never pause.
+- **Upper-funnel ads create brand searches.** When Meta, YouTube, or CTV reach more people in a market, more of them search for Fernhook by name in the next few weeks, with diminishing returns as reach fills up. Brand search bids on every search, so brand-search spend rises with the upper funnel. Cut one of those channels and brand searches and brand-search spend fall with it.
+- **Brand channels follow the season.** YouTube runs national flights several weeks ahead of each busy season, and each flight skips about one market in four. Meta is always on and pushes closer to the season and into it. CTV runs its own flight in each test market. All three ease off in the slow weeks.
+- **Pushes are not in lockstep.** Each market's Meta and CTV push starts on its own week and runs at its own size, and each season's push gets its own budget.
+- **Markets:** each channel is spread unevenly across the 20 markets, and always-on budgets are re-split across markets every quarter. CTV runs in only 8 markets.
+- **Webinars** are regional events, so their spend lands in one market and one week at a time.
+- **Affiliate fees** step up or down when each market's partner contracts renew every quarter.
+- **Budget history:** each January plan moves in a step, and the team made seven changes between plans. Examples: an attribution review in April 2024 cut YouTube and CTV, a cost cut in August 2024 trimmed LinkedIn, Meta, and display, and Meta got a retest in June 2025.
 - National weekly spend for any two channels correlates at under 0.6.
 
 ## Quality control

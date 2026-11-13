@@ -2,23 +2,38 @@ version: 2
 
 models:
   - name: stg_regions
-    description: One row per sales territory.
+    description: One row per sales region, a Midwest metro market and its service area.
     columns:
       - name: region_id
         data_tests: [unique, not_null]
       - name: region_name
         data_tests: [unique, not_null]
+      - name: state
+        description: State of the market's main city. Fernhook sells in seven states.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [IL, IA, MN, ND, OH, SD, WI]
       - name: sales_area
         data_tests:
           - accepted_values:
               arguments:
-                values: [NA, EMEA, APAC]
+                values: [Illinois and Iowa, Ohio, Wisconsin, Upper Midwest]
       - name: target_accounts
         data_tests:
           - not_null
           - accepted_range:
               arguments:
                 min_value: 1
+      - name: latitude
+        description: Latitude of the market's main city. Seasons arrive at different weeks north to south.
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 36
+                max_value: 49
 
   - name: stg_ads_google
     description: Google Ads rows split into brand search, non-brand search and YouTube, cost converted from micros to dollars.

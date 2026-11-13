@@ -57,47 +57,57 @@ def _ar1(rng: np.random.Generator, t: int, r: int, sigma: float, rho: float) -> 
     return out
 
 
-def _flight(rng: np.random.Generator, t: int, kind: str) -> tuple[np.ndarray, np.ndarray]:
-    """National flighting multiplier and, for 'flights', the flight id of each week."""
-    mult = np.ones(t)
-    flight_id = np.full(t, -1)
-    if kind == "bursts":
-        i = 0
-        while i < t:
-            u = rng.random()
-            if u < 0.07:
-                n = int(rng.integers(3, 7))
-                mult[i : i + n] = rng.uniform(1.5, 2.1)
-                i += n
-            elif u < 0.10:
-                n = int(rng.integers(2, 5))
-                mult[i : i + n] = 0.0
-                i += n
+def _season_log(sp: dict, woy: np.ndarray, lat: np.ndarray) -> np.ndarray:
+    """Log seasonal demand (T, R): spring and fall switchover humps, the summer lull
+    and the winter dip, each moved by latitude and by the market's own offset."""
+    dlat = lat - C.SEASON["ref_latitude"]
+    offset = np.array(sp["market_offset_weeks"])
+    shift = {"spring_peak": sp["spring_weeks_per_degree"] * dlat + offset,
+             "fall_peak": -sp["fall_weeks_per_degree"] * dlat + offset,
+             "winter_dip": offset}
+    shift["summer_lull"] = (shift["spring_peak"] + shift["fall_peak"]) / 2
+    out = np.zeros((woy.size, lat.size))
+    for key, sign in (("spring_peak", 1.0), ("fall_peak", 1.0), ("summer_lull", -1.0), ("winter_dip", -1.0)):
+        b = sp[key]
+        d = woy[:, None] - (b["week"] + shift[key][None, :])
+        d = (d + 26.0) % 52.0 - 26.0
+        out += sign * b["size"] * np.exp(-0.5 * (d / b["width"]) ** 2)
+    return out
+
+
+def _brand_flighting(rng, f: dict, cal: dict, lat: np.ndarray, region_ok: np.ndarray) -> np.ndarray:
+    """Spend shape (T, R) for a brand channel: a push ahead of and into each planned
+    busy season, a sustain level between pushes, and a soft level in slow weeks."""
+    t_total, n_reg = cal["T"], lat.size
+    m = np.repeat(np.where(cal["slow"], f["slow"], f["sustain"])[:, None], n_reg, axis=1)
+    pl = C.PLANNING
+    dlat = lat - pl["ref_latitude"]
+    lo, hi = f["len"]
+    if f["geo"] == "market":  # each market's own habit: some push early or big every year
+        market_shift = rng.normal(0.0, f["market_timing_sigma"], n_reg)
+        market_shift -= market_shift[region_ok].mean()  # markets differ around the plan, not all early
+        market_size = np.exp(rng.normal(0.0, f["market_mult_sigma"], n_reg))
+    for y in cal["iso_years"]:
+        for season in ("spring", "fall"):
+            if f["geo"] == "national":
+                start = np.full(n_reg, pl[f"{season}_peak_week"] - f["lead"] + rng.normal(0.0, f["timing_sigma"]))
+                length = np.full(n_reg, int(rng.integers(lo, hi + 1)))
+                amp = np.full(n_reg, f["mult"] * float(np.exp(rng.normal(0.0, f["mult_sigma"]))))
+                amp[rng.random(n_reg) >= f["market_share"]] = np.nan  # market left out of this flight
             else:
-                i += 1
-    elif kind == "flights":
-        mult[:] = 0.0
-        i = int(rng.integers(0, 4))
-        fid = 0
-        while i < t:
-            on, off = int(rng.integers(4, 9)), int(rng.integers(3, 7))
-            mult[i : i + on] = 1.0
-            flight_id[i : i + on] = fid
-            fid += 1
-            i += on + off
-        mult = mult / mult.mean()
-    return mult, flight_id
-
-
-def _dark_mask(rng, t: int, r: int, rate: float, length: tuple[int, int]) -> np.ndarray:
-    mask = np.ones((t, r))
-    counts = rng.poisson(rate, r)
-    for j in range(r):
-        for _ in range(counts[j]):
-            n = int(rng.integers(length[0], length[1] + 1))
-            start = int(rng.integers(0, t - n))
-            mask[start : start + n, j] = 0.0
-    return mask
+                peak = pl[f"{season}_peak_week"] + pl[f"{season}_weeks_per_degree"] * dlat
+                start = peak - f["lead"] + market_shift + rng.normal(0.0, f["timing_sigma"], n_reg)
+                length = rng.integers(lo, hi + 1, n_reg)
+                season_size = float(np.exp(rng.normal(0.0, f["season_sigma"])))  # this season's national budget
+                amp = f["mult"] * season_size * market_size * np.exp(rng.normal(0.0, f["mult_sigma"], n_reg))
+            for j in range(n_reg):
+                if np.isnan(amp[j]):
+                    continue
+                a = cal["iso_week1"][y] + int(round(start[j])) - 1
+                b = min(a + int(length[j]), t_total)
+                if b > max(a, 0):
+                    m[max(a, 0) : b, j] = amp[j]
+    return m
 
 
 def _categorical(rng, probs: np.ndarray, rows: np.ndarray) -> np.ndarray:
@@ -123,7 +133,7 @@ def _monday_of_iso_week(year: int, week: int) -> date:
 
 # --- true parameters ----------------------------------------------------------
 
-def _draw_true_params(rng: np.random.Generator) -> dict:
+def _draw_true_params(rng: np.random.Generator, n_reg: int) -> dict:
     """Every true effect, drawn from the config ranges in a fixed order."""
     def uni(lo_hi):
         return float(rng.uniform(*lo_hi))
@@ -143,7 +153,17 @@ def _draw_true_params(rng: np.random.Generator) -> dict:
         funnel[o] = {k: round(min(f[k] * float(np.exp(rng.normal(0.0, jit["rate_sigma"]))), 0.95), 4)
                      for k in ("p_mql", "p_sql", "p_opp", "p_won")}
         funnel[o]["amount_mult"] = round(f["amount_mult"] * float(np.exp(rng.normal(0.0, jit["amount_sigma"]))), 4)
-    return {
+    s = C.SEASON
+    season = {k: {"week": round(uni(s[k]["week"]), 2), "size": round(uni(s[k]["size"]), 3),
+                  "width": round(uni(s[k]["width"]), 2)}
+              for k in ("spring_peak", "fall_peak", "summer_lull", "winter_dip")}
+    season["spring_weeks_per_degree"] = round(uni(s["spring_weeks_per_degree"]), 3)
+    season["fall_weeks_per_degree"] = round(uni(s["fall_weeks_per_degree"]), 3)
+    offset_sigma = uni(s["market_offset_sigma_weeks"])
+    season["market_offset_sigma_weeks"] = round(offset_sigma, 3)
+    season["market_offset_weeks"] = [round(float(v), 2) for v in rng.normal(0.0, offset_sigma, n_reg)]
+    params = {
+        "season": season,
         "effect": effect,
         "funnel": funnel,
         "base_growth": round(uni(C.BASE["growth_per_year_range"]), 4),
@@ -155,50 +175,41 @@ def _draw_true_params(rng: np.random.Generator) -> dict:
         "year_end_win_mult": round(uni(C.PROMO["year_end_win_mult_range"]), 3),
         "price_win_mult": round(uni(C.PROMO["price_win_mult_range"]), 3),
     }
+    params["brand_searches"] = {
+        ch: {"alpha": round(uni(r["alpha"]), 3), "reach_spend": round(log_uni(r["reach_spend"]), -1),
+             "lift": round(uni(r["lift"]), 4)}
+        for ch, r in C.BRAND_SEARCH["created_by"].items()}
+    return params
 
 
 # --- spend ------------------------------------------------------------------
 
-def _planned_spend(rng, ch: str, cal: dict, size: np.ndarray,
-                   region_ok: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def _planned_spend(rng, ch: str, cal: dict, size: np.ndarray, region_ok: np.ndarray,
+                   lat: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Actual spend (T, R) and the national plan it was bought against (T,)."""
     p = C.SPEND[ch]
     t_total, n_reg = cal["T"], size.size
     yr = cal["year_idx"]
     year_noise = np.exp(rng.normal(0.0, C.YEAR_PLAN_SIGMA, yr.max() - yr.min() + 1))[yr - yr.min()]
     q_mult = np.exp(rng.normal(0.0, p["quarter_sigma"], cal["quarter"].max() + 1))[cal["quarter"]]
-    plan = (p["weekly_budget"] * np.exp(p["yearly_drift"] * yr) * cal["event_mult"][ch]
-            * cal["season"] ** p["season_follow"] * cal["holiday_cut"])
-    level = plan * year_noise * q_mult
+    plan = p["weekly_budget"] * np.exp(p["yearly_drift"] * yr) * cal["event_mult"][ch] * cal["holiday_cut"]
+    national = plan * year_noise * q_mult * np.exp(rng.normal(0.0, p["weekly_sigma"], t_total))
     tilt = np.exp(rng.normal(0.0, p["tilt_sigma"], n_reg))
     alloc = size * tilt * region_ok
     alloc = alloc / alloc.sum()
     noise = np.exp(_ar1(rng, t_total, n_reg, p["region_sigma"], 0.6))
 
-    if p["flight"] == "regional_flights":
-        national = level * np.exp(rng.normal(0.0, p["weekly_sigma"], t_total))
-        on = np.zeros((t_total, n_reg))
-        lo_on, hi_on = p["on_weeks"]
-        lo_off, hi_off = p["off_weeks"]
-        for j in np.nonzero(region_ok)[0]:
-            i = int(rng.integers(0, hi_off))
-            while i < t_total:
-                n_on = int(rng.integers(lo_on, hi_on + 1))
-                on[i : i + n_on, j] = 1.0
-                i += n_on + int(rng.integers(lo_off, hi_off + 1))
-        duty = on[:, region_ok].mean()
-        x = national[:, None] * alloc[None, :] * on / duty * noise
+    if p["flight"] == "seasonal_push":
+        shape = _brand_flighting(rng, p["push"], cal, lat, region_ok)
     else:
-        flight_mult, flight_id = _flight(rng, t_total, p["flight"])
-        national = level * flight_mult * np.exp(rng.normal(0.0, p["weekly_sigma"], t_total))
-        dark = _dark_mask(rng, t_total, n_reg, p["dark_rate"], p["dark_len"])
-        x = national[:, None] * alloc[None, :] * noise * dark
-        if p["flight"] == "flights":
-            include = (rng.random((flight_id.max() + 1, n_reg)) < 0.75).astype(float)
-            on_w = flight_id >= 0
-            x[on_w] *= include[flight_id[on_w]]
-    x = np.round(x, 2)
-    x[x < 25.0] = 0.0
+        n_q = cal["quarter"].max() + 1
+        resplit = np.exp(rng.normal(0.0, p["quarter_region_sigma"], (n_q, n_reg)))
+        resplit = resplit / (resplit * alloc).sum(axis=1, keepdims=True)  # moves budget between markets, not the total
+        shape = cal["season"] ** p["season_follow"] * resplit[cal["quarter"]]
+    # The budget sets the average week, so the shape only moves spend around the year.
+    shape = shape / (shape[cal["win"]] * alloc).sum(axis=1).mean()
+    x = np.round(national[:, None] * alloc[None, :] * shape * noise, 2)
+    x[x < 10.0] = 0.0  # platforms do not serve tiny budgets
     return x, plan
 
 
@@ -207,7 +218,7 @@ def _planned_spend(rng, ch: str, cal: dict, size: np.ndarray,
 def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     # Two child streams: one draws the hidden true parameters, one draws the data.
     truth_seq, data_seq = np.random.SeedSequence(seed).spawn(2)
-    tp = _draw_true_params(np.random.default_rng(truth_seq))
+    tp = _draw_true_params(np.random.default_rng(truth_seq), len(C.REGIONS))
     rng = np.random.default_rng(data_seq)
 
     # --- calendar and regions ---------------------------------------------------
@@ -220,14 +231,17 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
 
     codes = [r[0] for r in C.REGIONS]
     names = [r[1] for r in C.REGIONS]
-    areas = [r[2] for r in C.REGIONS]
-    accounts = np.array([r[3] for r in C.REGIONS], dtype=float)
+    states = [r[2] for r in C.REGIONS]
+    areas = [r[3] for r in C.REGIONS]
+    accounts = np.array([r[4] for r in C.REGIONS], dtype=float)
+    lat = np.array([r[5] for r in C.REGIONS], dtype=float)
     n_reg = len(codes)
     size = accounts / accounts.mean()
     area_lead = np.array([C.AREA[a]["base_leads"] for a in areas])
     area_amount = np.array([C.AREA[a]["amount"] for a in areas])
 
     woy = np.array([w.isocalendar().week for w in weeks])
+    iso_year = np.array([w.isocalendar().year for w in weeks])
     years = (np.arange(t_total) - C.BURN_IN_WEEKS) / 52.0
     quarter = np.array([(w.year - weeks[0].year) * 4 + (w.month - 1) // 3 for w in weeks])
     month_idx = np.array([(w.year - weeks[0].year) * 12 + w.month - weeks[0].month for w in weeks])
@@ -235,19 +249,20 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     is_holiday = np.isin(woy, [52, 53, 1])
     holiday_cut = np.where(is_holiday, C.HOLIDAY_SPEND_CUT, 1.0)
 
-    season_log = np.zeros(t_total)
-    for h, s_coef, c_coef in C.SEASON["fourier"]:
-        season_log += s_coef * np.sin(2 * np.pi * h * woy / 52) + c_coef * np.cos(2 * np.pi * h * woy / 52)
-    season = np.exp(season_log)
+    season = np.exp(_season_log(tp["season"], woy.astype(float), lat))  # (T, R)
     for wk, m in C.SEASON["holiday_weeks"].items():
         season[woy == wk] *= m
-    lo, hi = C.SEASON["summer_weeks"]
-    season[(woy >= lo) & (woy <= hi)] *= C.SEASON["summer_mult"]
+    slow = np.zeros(t_total, dtype=bool)
+    for lo, hi in C.PLANNING["slow_weeks"]:
+        slow |= (woy >= lo) & (woy <= hi)
     event_mult = {ch: np.ones(t_total) for ch in C.PLANNED_CHANNELS}
     for ev_date, _reason, changes in C.BUDGET_EVENTS:
         for ch, change in changes.items():
             event_mult[ch][week_d >= np.datetime64(ev_date, "D")] *= 1 + change
-    cal = {"T": t_total, "quarter": quarter, "season": season, "holiday_cut": holiday_cut,
+    iso_years = range(int(iso_year[0]), int(iso_year[-1]) + 1)
+    cal = {"T": t_total, "win": win, "quarter": quarter, "season": season, "holiday_cut": holiday_cut,
+           "slow": slow, "iso_years": iso_years,
+           "iso_week1": {y: (date.fromisocalendar(y, 1, 1) - t0).days // 7 for y in iso_years},
            "year_idx": np.array([w.year - C.WINDOW_START.year for w in weeks]), "event_mult": event_mult}
 
     # --- planned spend and webinars -------------------------------------------
@@ -256,7 +271,7 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     all_regions = np.ones(n_reg, dtype=bool)
     ctv_regions = np.isin(codes, C.CTV_REGIONS)
     for ch in C.PLANNED_CHANNELS:
-        spend[ch], plans[ch] = _planned_spend(rng, ch, cal, size, ctv_regions if ch == "ctv" else all_regions)
+        spend[ch], plans[ch] = _planned_spend(rng, ch, cal, size, ctv_regions if ch == "ctv" else all_regions, lat)
 
     w_cfg = C.WEBINARS
     ev_rate = w_cfg["events_per_week_national"] * size / n_reg
@@ -280,7 +295,7 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     eps = rng.normal(0.0, b["region_week_sigma"], (t_total, n_reg))
     trend = np.exp(tp["base_growth"] * years)
     mu_base = (b["leads_per_week_avg_region"] * size[None, :] * area_lead[None, :]
-               * (trend * season)[:, None] * np.exp(eps + tp["macro_elasticity"] * eta[:, None]))
+               * trend[:, None] * season * np.exp(eps + tp["macro_elasticity"] * eta[:, None]))
     fleet_index = np.round(C.MACRO["index_level"] * np.exp(eta + rng.normal(0.0, C.MACRO["measurement_sigma"], t_total)), 1)
 
     # --- sales capacity ---------------------------------------------------------
@@ -353,6 +368,8 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     pad = np.zeros((C.L_MAX, n_reg))
     mu_media: dict[str, np.ndarray] = {}
     channel_truth: dict[str, dict] = {}
+    betas: dict[str, float] = {}
+    direct_deals: dict = {}
 
     def fit_channel(ch: str) -> None:
         e = tp["effect"][ch]
@@ -372,9 +389,12 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
         spend_win = float(spend[ch][win].sum())
         beta = spend_win / (e["cpa"] * float((contrib(1.0) * deal_x).sum()))
         mu_media[ch] = beta * size * _hill(a_full[:t_total] / size, e["K"], e["S"])
+        betas[ch] = beta
 
         def deals(mult: float) -> float:
             return float((beta * contrib(mult) * deal_x).sum())
+
+        direct_deals[ch] = deals
 
         leads_1 = beta * contrib(1.0)
         inc_deals = deals(1.0)
@@ -410,17 +430,75 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     for ch in C.PLANNED_CHANNELS + ["webinars"]:
         fit_channel(ch)
 
+    # --- brand searches: baseline demand plus what the upper funnel creates ------
     bs = C.BRAND_SEARCH
-    demand = mu_base + sum(share * mu_media[src] for src, share in bs["demand_from"].items())
-    brand_raw = (demand * np.exp(rng.normal(0.0, bs["noise_sigma"], (t_total, n_reg)))
-                 * _dark_mask(rng, t_total, n_reg, bs["dark_rate"], bs["dark_len"]))
+    search_drivers = list(bs["created_by"])
+    cost_noise = np.exp(rng.normal(0.0, bs["noise_sigma"], (t_total, n_reg)))
+
+    def reach(ch: str, x: np.ndarray) -> np.ndarray:
+        h = tp["brand_searches"][ch]
+        a = _adstock(x, h["alpha"], C.L_MAX)
+        return size * (1.0 - np.exp(-a / (h["reach_spend"] * size)))
+
+    gamma = {ch: tp["brand_searches"][ch]["lift"] * float(mu_base[win].sum()) / float(reach(ch, spend[ch])[win].sum())
+             for ch in search_drivers}
+
+    def brand_searches(paths: dict[str, np.ndarray]) -> np.ndarray:
+        return mu_base + sum(gamma[ch] * reach(ch, paths[ch]) for ch in search_drivers)
+
+    searches = brand_searches(spend)
     planned_nonbrand_win = plans["paid_search_nonbrand"][win].sum()
     share = bs["planned_share_of_search"]
-    scale = share / (1 - share) * planned_nonbrand_win / brand_raw[win].sum()
-    brand = np.round(brand_raw * scale, 2)
-    brand[brand < 25.0] = 0.0
-    spend["paid_search_brand"] = brand
+    cost_per_search = share / (1 - share) * planned_nonbrand_win / float((searches * cost_noise)[win].sum())
+
+    def brand_spend(s: np.ndarray) -> np.ndarray:
+        x = np.round(s * cost_noise * cost_per_search, 2)
+        x[x < 25.0] = 0.0
+        return x
+
+    spend["paid_search_brand"] = brand_spend(searches)
     fit_channel("paid_search_brand")
+
+    e_b = tp["effect"]["paid_search_brand"]
+    brand_deal_x = extend(p_deal[o_index["paid_search_brand"]])
+
+    def brand_search_deals(x: np.ndarray) -> float:
+        a = _adstock(np.vstack([x, pad]), e_b["alpha"], C.L_MAX)
+        return float((betas["paid_search_brand"] * size * _hill(a / size, e_b["K"], e_b["S"]) * brand_deal_x).sum())
+
+    def via_brand_search(ch: str, mult: float) -> float:
+        """Brand-search deals from the brand searches this channel's in-window spend creates,
+        with that spend scaled by mult, against the same path with it removed."""
+        def path(m: float) -> np.ndarray:
+            x = spend[ch].copy()
+            x[win] *= m
+            return brand_spend(brand_searches({**spend, ch: x}))
+        return brand_search_deals(path(mult)) - brand_search_deals(path(0.0))
+
+    created_win = {ch: float((gamma[ch] * reach(ch, spend[ch]))[win].sum()) for ch in search_drivers}
+    for ch in search_drivers:
+        t_ch = channel_truth[ch]
+        spend_win = t_ch["spend"]
+
+        def total(m: float, ch: str = ch) -> float:
+            return direct_deals[ch](m) + via_brand_search(ch, m)
+
+        via = via_brand_search(ch, 1.0)
+        tot = direct_deals[ch](1.0) + via
+        t_ch["brand_searches_created"] = _r(created_win[ch], 2)
+        t_ch["incremental_deals_via_brand_search"] = _r(via, 2)
+        t_ch["incremental_deals_total"] = _r(tot, 2)
+        t_ch["cpa_total"] = _r(spend_win / tot, 2)
+        t_ch["marginal_cpa_total"] = _r(0.02 * spend_win / (total(1.01) - total(0.99)), 2)
+        h = tp["brand_searches"][ch]
+        t_ch["brand_search_creation"] = {
+            "type": "reach", "alpha": h["alpha"], "l_max": C.L_MAX, "reach_spend": h["reach_spend"],
+            "lift_over_baseline_searches": h["lift"], "gamma": _r(gamma[ch], 6)}
+        t_ch["response_curve_total"] = {
+            "spend_multiplier": RESPONSE_MULTIPLIERS,
+            "spend": [_r(spend_win * m, 2) for m in RESPONSE_MULTIPLIERS],
+            "incremental_deals": [_r(total(m), 3) for m in RESPONSE_MULTIPLIERS],
+        }
     channel_truth = {ch: channel_truth[ch] for ch in C.PAID_CHANNELS}
 
     # --- leads ---------------------------------------------------------------
@@ -665,8 +743,10 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     regions_df = pd.DataFrame({
         "region_code": codes,
         "region_name": names,
+        "state": states,
         "sales_area": areas,
         "target_accounts": accounts.astype(np.int64),
+        "latitude": lat,
     })
 
     tables = {
@@ -718,6 +798,15 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
             "lead_model": "leads(r,t) = base(r,t) + email(r,t) + sum_c beta_c * size_r * hill(adstock_c(spend_rc)(t) / size_r)",
             "deal_model": "deal probability per lead = p_mql * p_sql * sdr_mult(r,t) * p_opp * p_won * ae_mult(r,t) * promo(t) * price(t), by lead created week",
             "parameter_draws": "every true parameter here was drawn from the ranges in sim/config.py by a child stream of the seed; none is typed in",
+            "brand_searches": "searches(r,t) = baseline(r,t) + sum over meta, youtube, ctv of gamma_c * size_r * (1 - exp(-adstock_c(spend_rc)(t) / (reach_spend_c * size_r))), adstock geometric and normalized; baseline is the organic lead rate base(r,t). Brand-search spend = searches * cost per search * weekly cost noise, so it moves with every term",
+            "brand_searches_created": "in-window brand searches the channel's spend creates, in the units of baseline searches (organic leads per week)",
+            "incremental_deals_via_brand_search": "meta, youtube and ctv: expected deals brand search causes because of the extra brand searches, and so extra brand-search spend, that the channel's in-window spend creates. Counterfactual: remove the channel's in-window spend, recompute brand searches and brand-search spend, and take the difference in deals brand search causes. Counts deals that close after the window; brand-search spend after the last window week is not simulated",
+            "incremental_deals_total": "incremental_deals (direct) + incremental_deals_via_brand_search",
+            "cpa_total": "in-window spend divided by incremental_deals_total",
+            "marginal_cpa_total": "extra spend per extra total deal when the channel's whole in-window spend path is scaled by 1% (central difference, 0.99 to 1.01), with brand-search spend responding",
+            "response_curve_total": "incremental_deals_total when the channel's in-window spend path is scaled by spend_multiplier; brand-search spend responds, other channels unchanged",
+            "brand_search_incremental_deals": "paid_search_brand incremental_deals is given its actual spend path, which already includes the searches the upper funnel created",
+            "upper_funnel_share_of_brand_search_deals": "sum of incremental_deals_via_brand_search over meta, youtube and ctv, divided by paid_search_brand incremental_deals",
         },
         "channels": channel_truth,
         "summary": {
@@ -731,16 +820,26 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
                                                  / (channel_truth["paid_search_nonbrand"]["spend"]
                                                     + channel_truth["paid_search_brand"]["spend"])),
             "highest_cpa_channel": max(channel_truth, key=lambda c: channel_truth[c]["cpa"]),
+            "upper_funnel_share_of_brand_searches": _r(sum(created_win.values()) / float(searches[win].sum())),
+            "upper_funnel_share_of_brand_search_deals": _r(
+                sum(channel_truth[c]["incremental_deals_via_brand_search"] for c in search_drivers)
+                / channel_truth["paid_search_brand"]["incremental_deals"]),
         },
         "controls": {
             "baseline": {
                 "expected_deals_in_window": _r(base_deals, 2),
                 "leads_per_week_avg_region": b["leads_per_week_avg_region"],
                 "growth_per_year_log": tp["base_growth"],
-                "seasonality": {"fourier": C.SEASON["fourier"],
-                                "holiday_weeks": C.SEASON["holiday_weeks"],
-                                "summer_weeks": list(C.SEASON["summer_weeks"]),
-                                "summer_mult": C.SEASON["summer_mult"]},
+                "seasonality": {
+                    "form": "log season(r, w) = sum of humps size * exp(-0.5 * ((w - week - shift_r) / width) ** 2), "
+                            "summer_lull and winter_dip entering with a minus sign, w = ISO week; then holiday multipliers",
+                    "shift_r": "spring: spring_weeks_per_degree * (lat_r - ref) + offset_r; fall: "
+                               "-fall_weeks_per_degree * (lat_r - ref) + offset_r; summer_lull: mean of the two; "
+                               "winter_dip: offset_r",
+                    "ref_latitude": C.SEASON["ref_latitude"],
+                    **{k: v for k, v in tp["season"].items() if k != "market_offset_weeks"},
+                    "market_offset_weeks": dict(zip(codes, tp["season"]["market_offset_weeks"])),
+                    "holiday_weeks": C.SEASON["holiday_weeks"]},
                 "lead_quality": tp["funnel"]["base"],
                 "crm_last_touch_recording": C.CRM_ATTRIBUTION["base"],
             },

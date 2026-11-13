@@ -34,11 +34,11 @@ questions:
       where year(f.week_start) = 2023 group by 1 order by sum(f.spend) desc limit 1
   - id: q05
     category: media
-    question: How much did we spend on Connected TV in the US Texas region in 2024?
+    question: How much did we spend on Connected TV in the Columbus region in 2024?
     answer_type: number
     sql: >
       select sum(spend) from fct_channel_weekly
-      where channel_id = 'ctv' and region_name = 'US Texas' and year(week_start) = 2024
+      where channel_id = 'ctv' and region_name = 'Columbus' and year(week_start) = 2024
   - id: q06
     category: media
     question: How many Meta impressions did we get in the first half of 2025?
@@ -137,9 +137,9 @@ questions:
       where channel_id = 'meta' and year(week_start) = 2024
   - id: q22
     category: funnel
-    question: How many closed-won deals did the EMEA sales area have in 2025?
+    question: How many closed-won deals did the Upper Midwest sales area have in 2025?
     answer_type: number
-    sql: select sum(won_deals) from fct_funnel where sales_area = 'EMEA' and year(week_start) = 2025
+    sql: select sum(won_deals) from fct_funnel where sales_area = 'Upper Midwest' and year(week_start) = 2025
   - id: q23
     category: funnel
     question: Which region had the most closed-won deals in 2024?
