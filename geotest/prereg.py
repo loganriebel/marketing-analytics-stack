@@ -22,10 +22,23 @@ def _markets(codes, names):
     return ", ".join(f"{names[c]} ({c})" for c in codes)
 
 
+def _duration_line(d: dict) -> str:
+    rows = {r["test_weeks"]: r for r in d["durations"]}
+    w = d["dates"]["test_weeks"]
+    short = max(k for k in rows if k < w)
+    long = min(k for k in rows if k > w)
+    return (f"- Duration: {short} weeks gives the grow arm {rows[short]['grow']['power']:.0%} power. {w} weeks is "
+            f"the shortest that clears 80% ({rows[w]['grow']['power']:.0%}). {long} weeks reaches "
+            f"{rows[long]['grow']['power']:.0%}, but runs past the spring busy season into the readout.")
+
+
 def prereg_md(d: dict, market_names: dict) -> str:
     g, c, f, pl, dt = d["arms"]["grow"], d["arms"]["cut"], d["forecast"], d["placebo"], d["dates"]
     gname = NAMES[g["channel"]]
     cuts = _and(NAMES[x] for x in c["channels"])
+    keep = f"{100 * c['value']:.0f}%"
+    by = d["mmm"]["cut_spend_by_year"]
+    first, last = min(by), max(by)
     lines = [
         f"# Pre-registration: market test {d['test_id']}",
         "",
@@ -35,10 +48,11 @@ def prereg_md(d: dict, market_names: dict) -> str:
         "",
         "## Why this test",
         "",
-        f"The MMM recommends one move with two halves: put the next dollar into {gname}, its lowest cost per "
-        f"extra deal, and cut {cuts}, which it rates worst. {gname} runs in "
-        "flights, so the data show it on and off. The cut channels are always on, so the data never show life "
-        "without them, and their numbers rest on the model's assumptions. The test checks both halves at once.",
+        f"Two questions decide the 2026 budget. First, where should the next dollar go? The MMM says {gname}, "
+        f"its lowest cost per extra deal. {gname} runs in flights, so the data show it on and off, but never at "
+        f"the level the model recommends. Second, is the money poured into {cuts} still working? It is the "
+        f"biggest channel and always on, so the data never show life without it, and its spend went from "
+        f"{_money(by[first])} in {first} to {_money(by[last])} in {last}. The test checks both at once.",
         "",
         "## Design",
         "",
@@ -48,13 +62,14 @@ def prereg_md(d: dict, market_names: dict) -> str:
         f"- **Grow arm ({len(g['markets'])} markets):** {gname} adds {_money(g['value'])} a week per unit of "
         f"market size (target accounts over the market average), on top of plan. Markets: "
         f"{_markets(g['markets'], market_names)}.",
-        f"- **Cut arm ({len(c['markets'])} markets):** {cuts} go dark. Markets: "
-        f"{_markets(c['markets'], market_names)}.",
+        f"- **Search arm ({len(c['markets'])} markets):** {cuts} runs at {keep} of plan, its {first} weekly "
+        f"pace. Markets: {_markets(c['markets'], market_names)}.",
         "- **Cells (a 2x2 factorial):** " + "; ".join(f"{k}: {', '.join(v)}" for k, v in d["cells"].items()) + ".",
         f"- **Assignment:** markets sit in {len(d['blocks'])} blocks of 4 similar-size markets, and each block "
         f"gives one market to each cell. Of {d['assignment']['candidates']:,} random assignments, "
         f"{d['assignment']['kept_after_balance']:,} kept each arm's dose balanced across the other arm's sides "
-        f"(within {int(d['assignment']['max_cross'] * 100)}%), and the one with the smallest placebo error on 2024 windows was chosen.",
+        f"(within {int(d['assignment']['max_cross'] * 100)}%), and the one whose worst placebo error, over both "
+        "arms and over 2024 and 2025 windows, was smallest was chosen.",
         "- **Everything else** runs on the 2026 plan: every channel at its end-2025 budget, with its usual "
         "flighting and market split. Brand search follows searches, as always.",
         "",
@@ -64,7 +79,7 @@ def prereg_md(d: dict, market_names: dict) -> str:
         "(`fct_funnel.won_deals`), summed over each arm's markets and the measurement window.",
         f"- **Secondary: cost per deal.** For the grow arm, extra spend (with the brand-search spend that follows "
         f"the extra searches) per extra deal, against the MMM's {gname} cost per extra deal of "
-        f"{_money(d['mmm']['mcpa'][g['channel']])}. For the cut arm, dollars saved per deal lost. Blended cost per deal "
+        f"{_money(d['mmm']['mcpa'][g['channel']])}. For the search arm, dollars saved per deal lost. Blended cost per deal "
         "in each arm's markets against the rest is reported beside them.",
         "",
         "## Analysis",
@@ -88,7 +103,8 @@ def prereg_md(d: dict, market_names: dict) -> str:
     ]
     for k, name in ((0, "grow"), (1, "cut")):
         fk = f[name]
-        lines.append(f"| {name} | {pl['rms_2024'][k]:.0f} / {pl['rms_2025'][k]:.0f} / {pl['count_noise_floor'][k]:.0f} | "
+        label = "grow" if name == "grow" else "search"
+        lines.append(f"| {label} | {pl['rms_2024'][k]:.0f} / {pl['rms_2025'][k]:.0f} / {pl['count_noise_floor'][k]:.0f} | "
                      f"{d['mde'][name]:.0f} deals | {fk['lift_mean']:+.0f} ({fk['lift_hdi_90'][0]:+.0f} to "
                      f"{fk['lift_hdi_90'][1]:+.0f}) | {fk['power']:.0%} |")
     lines += [
@@ -97,16 +113,17 @@ def prereg_md(d: dict, market_names: dict) -> str:
         f"bar at 80% power. It adds {_money(f['grow']['spend_change'])} over the test; the MMM expects "
         f"{f['grow']['lift_mean']:.0f} extra deals in the window, {_money(f['grow']['cost_per_extra_deal'])} each. "
         f"Averaged over the forecast's own uncertainty, the chance of a clear result is {f['grow']['assurance']:.0%}.",
-        f"- The cut arm saves {_money(-f['cut']['spend_change'])}. At the forecast it has "
-        f"{f['cut']['power']:.0%} power; it reaches 80% if the cuts cost "
+        f"- The search arm saves {_money(-f['cut']['spend_change'])}. At the forecast it has "
+        f"{f['cut']['power']:.0%} power; it reaches 80% if pulling search back costs "
         f"{f['cut']['multiple_of_forecast_for_80pct_power']:.1f} times what the model expects. It is a guardrail: "
-        "it catches the cuts costing much more than modeled.",
+        "it catches search being worth much more than modeled.",
+        f"- Net, the test spends {_money(f['grow']['spend_change'] + f['cut']['spend_change'])} against plan "
+        "(negative means it saves money).",
         f"- Placebo false-positive rate at the 90% edge: {pl['false_positive_rate_max']:.0%}. A calibrated bar "
         "would give 5%; this one is lower because it uses the largest of the three errors.",
-        "- Duration: 8 weeks falls short of 80% power for the grow arm; 16 weeks adds little power for a third "
-        "more spend. 12 weeks is the shortest test that clears the bar.",
+        _duration_line(d),
         "",
-        "| Test weeks | Grow: bar / forecast / power | Cut: bar / forecast / power |",
+        "| Test weeks | Grow: bar / forecast / power | Search: bar / forecast / power |",
         "|---:|---:|---:|",
     ]
     for r in d["durations"]:
@@ -119,14 +136,15 @@ def prereg_md(d: dict, market_names: dict) -> str:
         "",
         f"1. **{gname} works** if the grow arm's 90% interval is above zero.",
         f"2. **Against the model:** the grow lift beats the forecast if its 90% interval lies above the forecast "
-        f"({f['grow']['lift_mean']:.0f}), falls short if it lies below, and agrees otherwise. The cuts cost more "
-        f"than modeled if the cut arm's 90% interval lies below the forecast ({f['cut']['lift_mean']:.0f}).",
-        f"3. **Either way, the model learns:** the grow arm enters the MMM as a {gname} lift test "
-        "(`add_lift_test_measurements`). The cut arm moved 3 channels at once, so it enters as one lift "
-        "measurement on their sum, built the same way. The MMM is refit on data through the readout and the "
-        "optimizer runs again. The rollout follows the refit model, not this plan.",
-        f"4. **Guardrail:** if the cuts cost more than modeled (rule 2), no cut channel falls below today's spend "
-        f"in the rollout. If {gname} shows no lift (rule 1 fails), the rollout does not grow it.",
+        f"({f['grow']['lift_mean']:.0f}), falls short if it lies below, and agrees otherwise. Pulling {cuts} "
+        f"back costs more than modeled if the search arm's 90% interval lies below the forecast "
+        f"({f['cut']['lift_mean']:.0f}), and less if it lies above.",
+        f"3. **Either way, the model learns:** each arm moved 1 channel, so each enters the MMM as a lift test "
+        f"(`add_lift_test_measurements`): {gname} for the grow arm, {cuts} for the search arm. The MMM is refit "
+        "on data through the readout and the optimizer runs again. The rollout follows the refit model, not "
+        "this plan.",
+        f"4. **Guardrail:** if pulling {cuts} back costs more than modeled (rule 2), the rollout does not cut it "
+        f"below today's spend. If {gname} shows no lift (rule 1 fails), the rollout does not grow it.",
         "5. **Validity:** the readout is void if an arm's realized spend change misses its plan by more than 20%, "
         "or if a market leaves its cell.",
         "",

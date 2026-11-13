@@ -57,9 +57,11 @@ def test_committed_plan_matches_design():
     grow = arms[f"{g['channel']}_up"]
     assert grow.markets == g["markets"]
     assert grow.moves[0].add_per_week_per_size == g["value"]
-    assert arms["cuts_dark"].markets == c["markets"]
-    assert sorted(m.channel for m in arms["cuts_dark"].moves) == sorted(c["channels"])
-    assert all(m.multiplier == 0.0 for m in arms["cuts_dark"].moves)
+    assert arms["search_back"].markets == c["markets"]
+    assert sorted(m.channel for m in arms["search_back"].moves) == sorted(c["channels"])
+    assert all(m.multiplier == c["value"] for m in arms["search_back"].moves)
+    by = d["mmm"]["cut_spend_by_year"]
+    assert 0 < c["value"] < 1 and by[min(by)] < by[max(by)]
     assert str(plan.test.start) == d["dates"]["test_start"]
     assert str(plan.approved) == d["approved"]
     assert d["forecast"]["grow"]["power"] >= 0.8

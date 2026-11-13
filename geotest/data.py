@@ -28,6 +28,7 @@ class Markets:
     latitude: np.ndarray
     sales_area: list[str]
     names: list[str]
+    roles: dict[str, str]       # channel -> dim_channel.marketing_role
 
     @property
     def size(self) -> np.ndarray:
@@ -44,6 +45,7 @@ def load(path: Path | None = None, through=None) -> Markets:
         s = con.sql("select week_start, region_id, channel_id, spend::double s from fct_channel_weekly").df()
         r = con.sql("select region_id, region_name, target_accounts, latitude, sales_area "
                     "from dim_region order by region_id").df()
+        roles = dict(con.sql("select channel_id, marketing_role from dim_channel").fetchall())
     finally:
         con.close()
     for df in (f, s):
@@ -58,4 +60,4 @@ def load(path: Path | None = None, through=None) -> Markets:
         spend[ch] = (g.pivot(index="week_start", columns="region_id", values="s")
                      .reindex(index=weeks, columns=regions).fillna(0.0).to_numpy())
     return Markets(weeks, regions, deals.fillna(0.0).to_numpy(), spend, r.target_accounts.to_numpy(float),
-                   r.latitude.to_numpy(float), list(r.sales_area), list(r.region_name))
+                   r.latitude.to_numpy(float), list(r.sales_area), list(r.region_name), roles)

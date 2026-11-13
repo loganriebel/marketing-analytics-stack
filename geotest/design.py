@@ -2,18 +2,22 @@
 
     .venv-mmm\\Scripts\\python -m geotest.design
 
-The MMM's plan has two halves: grow the channel it rates best for the next dollar,
-and cut the always-on channels it rates worst. They rest on different evidence, so
-the test checks both at once. Two arms cross the 20 markets (a 2x2 factorial):
+Two questions decide the 2026 budget. Where should the next dollar go (the MMM says:
+the channel with the lowest cost per extra deal)? And is the money poured into the
+biggest always-on channel, non-brand search, still working? They rest on different
+evidence, so the test checks both at once. Two arms cross the 20 markets (a 2x2
+factorial):
 
 * grow arm: more of the best next-dollar channel, a flat amount per week per unit of
   market size, so the model sees spend levels it has never seen;
-* cut arm: the plan's cut channels go dark.
+* cut arm: the biggest always-on channel goes back to its first-year budget level
+  (first-year spend over last-year spend, from the marts).
 
 Each arm is measured on all 20 markets (its markets against the rest), so neither
 arm halves the other's power. Markets sit in 5 blocks of 4 similar-size markets, and
-each block gets one market of each cell. Among many random assignments, the one with
-the smallest placebo error on 2024 windows is kept, and 2025 windows check it.
+each block gets one market of each cell. Among many random assignments, the one whose
+worst placebo error (over both arms, on 2024 windows and on 2025 windows) is smallest
+is kept. Picking on 2024 alone overfit: the pick's error doubled on 2025 windows.
 
 Power comes from placebo tests: the pre-registered estimator run on 2023 to 2025
 windows where nothing was tested. The smallest detectable lift (80% power, one-sided
@@ -62,8 +66,13 @@ ADD_GRID = np.arange(500, 8001, 250)   # grow-arm step, $ per week per unit of m
 TARGET_POWER = 0.80
 
 
-def _mmm_choices() -> dict:
-    """The plan's moves, from the MMM outputs: the best next dollar and the cuts."""
+ALWAYS_ON_SHARE = 0.95                 # a channel bought in at least this share of market-weeks never pauses
+
+
+def _mmm_choices(m: Markets) -> dict:
+    """The grow channel from the MMM (lowest cost per extra deal), and the cut channel
+    from the marts: the always-on lever with the most spend, taken back to its first
+    year's budget level."""
     ch = json.loads((MMM_OUT / "channels.json").read_text(encoding="utf-8"))["channels"]
     opt = json.loads((MMM_OUT / "optimizer.json").read_text(encoding="utf-8"))
 
@@ -73,8 +82,15 @@ def _mmm_choices() -> dict:
 
     levers = opt["levers"]
     grow = min(levers, key=mcpa)
-    cuts = [r["channel"] for r in opt["plan"] if r["multiplier"] < 1]
-    return {"grow": grow, "cuts": cuts, "mcpa": {c: mcpa(c) for c in levers},
+    always_on = [c for c in levers if (m.spend[c] > 0).mean() >= ALWAYS_ON_SHARE]
+    cut = max(always_on, key=lambda c: m.spend[c].sum())
+    years = sorted(set(m.weeks.year))
+    by_year = {int(y): float(m.spend[cut][m.weeks.year == y].sum()) for y in years}
+    weeks = {int(y): int((m.weeks.year == y).sum()) for y in years}
+    rate = {y: by_year[y] / weeks[y] for y in years}  # weekly pace, so 53- and 51-week years compare
+    value = round(rate[years[0]] / rate[years[-1]], 2)
+    return {"grow": grow, "cuts": [cut], "cut_value": value, "cut_spend_by_year": by_year,
+            "always_on": always_on, "mcpa": {c: mcpa(c) for c in levers},
             "plan_multipliers": {r["channel"]: r["multiplier"] for r in opt["plan"]}}
 
 
@@ -99,11 +115,12 @@ def _arms(cells: np.ndarray) -> np.ndarray:
     return np.stack([np.isin(cells, [0, 2]), np.isin(cells, [1, 2])])
 
 
-def _doses(m: Markets, arms: np.ndarray, cuts: list[str], proxy: int) -> np.ndarray:
+def _doses(m: Markets, arms: np.ndarray, cuts: list[str], proxy: int, keep: float) -> np.ndarray:
     """Planned dollars each market's move adds (grow) or removes (cut), up to scale:
-    grow is a flat amount per unit of size; cut removes last year's same-week spend."""
+    grow is a flat amount per unit of size; cut removes (1 - keep) of last year's
+    same-week spend."""
     grow = m.size * arms[0]
-    cut = sum(m.spend[c][proxy:proxy + TEST_WEEKS].sum(0) for c in cuts) * arms[1]
+    cut = sum(m.spend[c][proxy:proxy + TEST_WEEKS].sum(0) for c in cuts) * (1 - keep) * arms[1]
     return np.stack([grow, cut])
 
 
@@ -117,7 +134,8 @@ def _power(mean: float, sd: float) -> float:
 
 def design() -> dict:
     m = load()
-    mmm = _mmm_choices()
+    mmm = _mmm_choices(m)
+    keep = mmm["cut_value"]
     T = len(m.weeks)
     proxy = m.week_index(PROXY_START)
     n_win = TEST_WEEKS + TAIL_WEEKS
@@ -132,18 +150,18 @@ def design() -> dict:
     best, kept = None, 0
     for cells in cands:
         arms = _arms(cells)
-        doses = _doses(m, arms, mmm["cuts"], proxy)
+        doses = _doses(m, arms, mmm["cuts"], proxy, keep)
         A = E.dose_matrix(pre_last, arms, doses)
         if abs(A[0, 1] / A[1, 1]) > MAX_CROSS or abs(A[1, 0] / A[0, 0]) > MAX_CROSS:
             continue
         kept += 1
-        p = E.placebo(m.deals, arms, doses, starts[sel], PRE_WEEKS, n_win)
-        score = _rms(p).max()
+        p = E.placebo(m.deals, arms, doses, starts, PRE_WEEKS, n_win)
+        score = max(_rms(p[sel]).max(), _rms(p[val]).max())
         if best is None or score < best[0]:
             best = (score, cells)
     cells = best[1]
     arms = _arms(cells)
-    doses = _doses(m, arms, mmm["cuts"], proxy)
+    doses = _doses(m, arms, mmm["cuts"], proxy, keep)
     p_all = E.placebo(m.deals, arms, doses, starts, PRE_WEEKS, n_win)
     floor = E.count_noise_floor(m.deals, arms, n_win)
     rms_sel, rms_val, rms_all = _rms(p_all[sel]), _rms(p_all[val]), _rms(p_all)
@@ -153,7 +171,7 @@ def design() -> dict:
     # The MMM's forecast for each arm, and the grow step that clears the bar.
     from .forecast import Forecaster
     fc = Forecaster()
-    cut = fc.arm(m, arms[1], {c: ("mult", 0.0) for c in mmm["cuts"]}, proxy, TEST_WEEKS, n_win)
+    cut = fc.arm(m, arms[1], {c: ("mult", keep) for c in mmm["cuts"]}, proxy, TEST_WEEKS, n_win)
     grid = []
     for a in ADD_GRID:
         f = fc.arm(m, arms[0], {mmm["grow"]: ("add", float(a))}, proxy, TEST_WEEKS, n_win)
@@ -177,7 +195,7 @@ def design() -> dict:
         pz = E.placebo(m.deals, arms, doses, st, PRE_WEEKS, nw)
         sdz = np.maximum.reduce([_rms(pz[yr == 2024]), _rms(pz[yr == 2025]), E.count_noise_floor(m.deals, arms, nw)])
         fg = fc.arm(m, arms[0], {mmm["grow"]: ("add", add)}, proxy, w, nw)
-        fcut = fc.arm(m, arms[1], {c: ("mult", 0.0) for c in mmm["cuts"]}, proxy, w, nw)
+        fcut = fc.arm(m, arms[1], {c: ("mult", keep) for c in mmm["cuts"]}, proxy, w, nw)
         durations.append({"test_weeks": w, "window_weeks": nw,
                           "grow": {"mde": float(E.MDE_Z * sdz[0]), "lift_mean": float(fg["in_window"].mean()),
                                    "power": _power(fg["in_window"].mean(), sdz[0]), "spend_change": fg["spend_change"]},
@@ -188,7 +206,7 @@ def design() -> dict:
     cut_mean = float(cut["in_window"].mean())
     cut_multiple_80 = float(mde[1] / abs(cut_mean))
     win_deals = m.deals[proxy:proxy + n_win]
-    cell_names = {0: "grow only", 1: "cut only", 2: "grow and cut", 3: "neither"}
+    cell_names = {0: "grow only", 1: "search only", 2: "grow and search", 3: "neither"}
     test_end = TEST_START + timedelta(weeks=TEST_WEEKS - 1)
     window_end = TEST_START + timedelta(weeks=n_win) - timedelta(days=1)
     fp_rate = float(np.mean(p_all / sd > E.Z_90, axis=0).max())
@@ -206,14 +224,15 @@ def design() -> dict:
         "arms": {
             "grow": {"channel": mmm["grow"], "move": "add_per_week_per_size", "value": add,
                      "markets": [m.regions[g] for g in np.where(arms[0])[0]]},
-            "cut": {"channels": mmm["cuts"], "move": "multiplier", "value": 0.0,
+            "cut": {"channels": mmm["cuts"], "move": "multiplier", "value": keep,
+                    "basis": "the channel's first-year weekly pace over its last-year weekly pace",
                     "markets": [m.regions[g] for g in np.where(arms[1])[0]]},
         },
         "cells": {cell_names[c]: [m.regions[g] for g in np.where(cells == c)[0]] for c in range(4)},
         "market_names": dict(zip(m.regions, m.names)),
         "blocks": [[m.regions[g] for g in b] for b in blocks],
         "assignment": {"candidates": CANDIDATES, "kept_after_balance": kept, "seed": DESIGN_SEED,
-                       "rule": "smallest max placebo RMS over the two arms on 2024 windows",
+                       "rule": "smallest placebo RMS, worst of the two arms and the two years (2024 and 2025 windows)",
                        "max_cross": MAX_CROSS},
         "placebo": {
             "windows": int(len(starts)), "windows_2024": int(sel.sum()), "windows_2025": int(val.sum()),
@@ -252,8 +271,13 @@ def _by_year(m: Markets) -> dict:
         t = m.weeks.year == y
         deals = float(m.deals[t].sum())
         spend = float(sum(x[t].sum() for x in m.spend.values()))
+        role_spend = {}
+        for ch, x in m.spend.items():
+            role_spend[m.roles.get(ch, "other")] = role_spend.get(m.roles.get(ch, "other"), 0.0) + float(x[t].sum())
+        perf, brand = role_spend.get("performance", 0.0), role_spend.get("brand", 0.0)
         out[str(y)] = {"weeks": int(t.sum()), "won_deals": deals, "paid_spend": spend,
-                       "cost_per_deal": spend / deals}
+                       "cost_per_deal": spend / deals, "spend_by_role": role_spend,
+                       "performance_share": perf / (perf + brand)}
     return out
 
 
@@ -275,8 +299,8 @@ def plan_yaml(d: dict) -> str:
             "arms": [
                 {"id": f"{g['channel']}_up", "markets": g["markets"],
                  "moves": {g["channel"]: {"add_per_week_per_size": g["value"]}}},
-                {"id": "cuts_dark", "markets": c["markets"],
-                 "moves": {ch: {"multiplier": 0.0} for ch in c["channels"]}},
+                {"id": "search_back", "markets": c["markets"],
+                 "moves": {ch: {"multiplier": c["value"]} for ch in c["channels"]}},
             ],
         },
     }
@@ -293,7 +317,8 @@ def main() -> int:
     PLAN_PATH.write_text(plan_yaml(d), encoding="utf-8", newline="\n")
     PREREG_PATH.write_text(prereg_md(d, d["market_names"]), encoding="utf-8", newline="\n")
     print(json.dumps({k: d[k] for k in ("arms", "mde")}, indent=1))
-    print({k: {kk: vv for kk, vv in v.items() if kk != "by_channel"} for k, v in d["forecast"].items() if k != "grid"})
+    print({k: {kk: vv for kk, vv in v.items() if kk != "by_channel"} for k, v in d["forecast"].items()
+           if isinstance(v, dict)})
     print(d["placebo"])
     for r in d["durations"]:
         print(r)
