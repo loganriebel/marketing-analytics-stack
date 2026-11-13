@@ -5,428 +5,428 @@
     "channels": {
       "paid_search_brand": {
         "incremental_deals": {
-          "true": 1283.73,
-          "median": 552.4912301080346,
+          "true": 1211.77,
+          "median": 590.8849217943484,
           "hdi_90": [
-            0.8295922339336146,
-            1571.938870592347
+            0.42711616387159285,
+            1741.6396323427703
           ],
           "covered": true,
-          "pct_error": -56.96203795906969
+          "pct_error": -51.23786512338575
         },
         "cpa": {
-          "true": 5755.72,
-          "median": 13373.652496349054,
+          "true": 6123.3,
+          "median": 12557.436913216912,
           "hdi_90": [
-            1622.8794973436136,
-            78054.52882985465
+            1366.4477498372605,
+            85642.0543956521
           ],
           "covered": true,
-          "pct_error": 132.35411896946087
+          "pct_error": 105.07629731055005
         },
         "marginal_cpa": {
-          "true": 35584.04,
-          "median": 28914.475724789438,
+          "true": 37735.36,
+          "median": 27197.799913441,
           "hdi_90": [
-            2761.590718941244,
-            176618.0756368309
+            3306.2243482361623,
+            192726.10196586844
           ],
           "covered": true,
-          "pct_error": -18.743133930859347
+          "pct_error": -27.924896136035276
         },
         "roi_revenue": {
-          "true": 0.4863,
-          "median": 0.212705804113611,
+          "true": 0.4572,
+          "median": 0.22685655688235273,
           "hdi_90": [
-            0.00031938853413581293,
-            0.6051839493626907
+            0.00016399332419885242,
+            0.6686418722110626
           ],
           "covered": true,
-          "pct_error": -56.260373408675505
+          "pct_error": -50.38133051567088
         }
       },
       "paid_search_nonbrand": {
         "incremental_deals": {
-          "true": 6481.65,
-          "median": 3586.0763550892125,
+          "true": 5550.62,
+          "median": 5171.3739828500375,
           "hdi_90": [
-            1457.7357064961855,
-            5863.855060276489
+            2845.9431894548097,
+            8046.52867270008
           ],
-          "covered": false,
-          "pct_error": -44.67340329870924
+          "covered": true,
+          "pct_error": -6.832498300189212
         },
         "cpa": {
-          "true": 2066.88,
-          "median": 3735.781840136141,
+          "true": 3068.13,
+          "median": 3293.1287424211505,
           "hdi_90": [
-            1762.813085809256,
-            6777.213077605993
+            1860.0714641585068,
+            5409.123910679015
           ],
           "covered": true,
-          "pct_error": 80.74497987963214
+          "pct_error": 7.3334161988295925
         },
         "marginal_cpa": {
-          "true": 5073.5,
-          "median": 6197.558446619366,
+          "true": 11116.18,
+          "median": 6834.8891080484755,
           "hdi_90": [
-            3454.5264614132216,
-            11382.369606301494
+            4094.2526225359566,
+            11336.147934576073
           ],
           "covered": true,
-          "pct_error": 22.15548332747346
+          "pct_error": -38.514047918903124
         },
         "roi_revenue": {
-          "true": 1.4067,
-          "median": 0.7599537119803677,
+          "true": 0.9488,
+          "median": 0.8643198741997428,
           "hdi_90": [
-            0.30891621665479835,
-            1.2437271263685548
+            0.47541929245026143,
+            1.3446473297488637
           ],
-          "covered": false,
-          "pct_error": -45.97613478493157
+          "covered": true,
+          "pct_error": -8.90389184235426
         }
       },
       "meta": {
         "incremental_deals": {
-          "true": 2596.78,
-          "median": 670.6401502476905,
+          "true": 2968.81,
+          "median": 674.6728544165328,
           "hdi_90": [
-            1.1949164795187013,
-            1614.9094532430147
+            7.653887337723586,
+            1570.6213552796119
           ],
           "covered": false,
-          "pct_error": -74.1741637625178
+          "pct_error": -77.27463682699354
         },
         "cpa": {
-          "true": 1440.56,
-          "median": 5577.98973343322,
+          "true": 1482.08,
+          "median": 6521.679901544042,
           "hdi_90": [
-            1064.179427063948,
-            25828.10575933123
+            1090.8205074386435,
+            26505.583606211512
           ],
           "covered": true,
-          "pct_error": 287.20981655975595
+          "pct_error": 340.0356189641613
         },
         "marginal_cpa": {
-          "true": 1724.62,
-          "median": 6827.3737052206925,
+          "true": 1833.63,
+          "median": 7099.14099672765,
           "hdi_90": [
-            1357.4565725509624,
-            32013.919266856195
-          ],
-          "covered": true,
-          "pct_error": 295.87698769704014
-        },
-        "roi_revenue": {
-          "true": 1.6507,
-          "median": 0.5093584584364828,
-          "hdi_90": [
-            0.0009069787790214438,
-            1.227560959712134
+            1862.8690999193457,
+            31721.3247845364
           ],
           "covered": false,
-          "pct_error": -69.14288129663278
+          "pct_error": 287.1632225000491
+        },
+        "roi_revenue": {
+          "true": 1.6102,
+          "median": 0.4362169465647716,
+          "hdi_90": [
+            0.0049403914460943695,
+            1.0160183404997671
+          ],
+          "covered": false,
+          "pct_error": -72.90914504007132
         }
       },
       "linkedin": {
         "incremental_deals": {
-          "true": 1439.96,
-          "median": 689.6419615735833,
+          "true": 1004.01,
+          "median": 556.4930675538533,
           "hdi_90": [
-            0.09316765048280581,
-            1640.5486388172137
+            1.914285560549748,
+            1382.7257100231711
           ],
           "covered": true,
-          "pct_error": -52.10686674813306
+          "pct_error": -44.57295569228859
         },
         "cpa": {
-          "true": 2670.33,
-          "median": 5575.6248220416,
+          "true": 2549.78,
+          "median": 4600.237113524148,
           "hdi_90": [
-            1056.8498418167849,
-            29511.63267606014
+            797.8714513714782,
+            26806.059723404265
           ],
           "covered": true,
-          "pct_error": 108.79909307245173
+          "pct_error": 80.41702082235126
         },
         "marginal_cpa": {
-          "true": 3953.99,
-          "median": 12109.230433734545,
+          "true": 3293.89,
+          "median": 8093.074466881766,
           "hdi_90": [
-            1869.2518770283782,
-            65330.51211361495
+            1801.777453169542,
+            47871.96442920313
           ],
           "covered": true,
-          "pct_error": 206.2534410490301
+          "pct_error": 145.6995973417985
         },
         "roi_revenue": {
-          "true": 1.2684,
-          "median": 0.5107692132632948,
+          "true": 1.317,
+          "median": 0.6218195526946917,
           "hdi_90": [
-            6.917359082570181e-05,
-            1.2157634425739394
+            0.0021422305003244197,
+            1.5449133950731215
           ],
-          "covered": false,
-          "pct_error": -59.73121938952264
+          "covered": true,
+          "pct_error": -52.78515165568021
         }
       },
       "youtube": {
         "incremental_deals": {
-          "true": 1328.48,
-          "median": 924.291013909856,
+          "true": 1815.41,
+          "median": 1530.715591524112,
           "hdi_90": [
-            496.82411510800824,
-            1364.0803757668816
+            960.0848570603947,
+            2091.64348551375
           ],
           "covered": true,
-          "pct_error": -30.424920667992293
+          "pct_error": -15.682099827360659
         },
         "cpa": {
-          "true": 1515.96,
-          "median": 2178.8901664818754,
+          "true": 1542.35,
+          "median": 1829.2099677972521,
           "hdi_90": [
-            1186.9112672040192,
-            3193.8807893214484
+            1182.0981412741935,
+            2573.1138952936717
           ],
           "covered": true,
-          "pct_error": 43.73005662958622
+          "pct_error": 18.59888921433217
         },
         "marginal_cpa": {
-          "true": 1446.08,
-          "median": 2445.9522020846844,
+          "true": 1637.07,
+          "median": 2264.73391031814,
           "hdi_90": [
-            1561.7311673654908,
-            3482.4074247831168
-          ],
-          "covered": false,
-          "pct_error": 69.14362981886786
-        },
-        "roi_revenue": {
-          "true": 1.8711,
-          "median": 1.3064805901896128,
-          "hdi_90": [
-            0.7024523863979866,
-            1.9271623594769653
+            1580.0285900832241,
+            3093.0893808601713
           ],
           "covered": true,
-          "pct_error": -30.175800855667102
+          "pct_error": 38.340688566655054
+        },
+        "roi_revenue": {
+          "true": 1.8483,
+          "median": 1.5566349482789805,
+          "hdi_90": [
+            0.9770190457361239,
+            2.12758962398133
+          ],
+          "covered": true,
+          "pct_error": -15.780179176595764
         }
       },
       "ctv": {
         "incremental_deals": {
-          "true": 1160.8,
-          "median": 1240.8164167437485,
+          "true": 1152.74,
+          "median": 973.4392572378829,
           "hdi_90": [
-            990.6576760318782,
-            1510.2707553147288
+            704.8237624064751,
+            1228.4973937046009
           ],
           "covered": true,
-          "pct_error": 6.893213020653735
+          "pct_error": -15.554309103710908
         },
         "cpa": {
-          "true": 2577.52,
-          "median": 2411.308191917405,
+          "true": 2515.74,
+          "median": 2979.127884876205,
           "hdi_90": [
-            1949.4071053305938,
-            2978.905301932583
+            2234.8103422066647,
+            3841.3698054500464
           ],
           "covered": true,
-          "pct_error": -6.448516716944772
+          "pct_error": 18.419545933848696
         },
         "marginal_cpa": {
-          "true": 3141.11,
-          "median": 3887.932841068522,
+          "true": 3096.03,
+          "median": 3849.960420810457,
           "hdi_90": [
-            2918.948603192176,
-            4982.444752912216
+            2948.7668670023345,
+            4896.736199258483
           ],
           "covered": true,
-          "pct_error": 23.77576210538701
+          "pct_error": 24.351521813756868
         },
         "roi_revenue": {
-          "true": 1.0866,
-          "median": 1.1702859319305334,
+          "true": 1.1157,
+          "median": 0.9641955547013019,
           "hdi_90": [
-            0.9344358544151999,
-            1.4241651583233548
+            0.7004700093336822,
+            1.2164524401942638
           ],
           "covered": true,
-          "pct_error": 7.701631872863374
+          "pct_error": -13.579317495625887
         }
       },
       "display": {
         "incremental_deals": {
-          "true": 123.21,
-          "median": 833.2454310253052,
+          "true": 103.27,
+          "median": 377.77469434836786,
           "hdi_90": [
-            1.0902402516216654,
-            1973.8134019537804
+            0.2531328862831638,
+            1157.045795238752
           ],
           "covered": true,
-          "pct_error": 576.2806842182495
+          "pct_error": 265.81262162134976
         },
         "cpa": {
-          "true": 37653.8,
-          "median": 5568.010091666052,
+          "true": 42123.4,
+          "median": 11514.8007619238,
           "hdi_90": [
-            987.5831008324669,
-            28891.48229656179
-          ],
-          "covered": false,
-          "pct_error": -85.21262105905366
-        },
-        "marginal_cpa": {
-          "true": 103464.36,
-          "median": 11666.803790631468,
-          "hdi_90": [
-            1731.3148393635747,
-            73732.32878650799
-          ],
-          "covered": false,
-          "pct_error": -88.72384288596434
-        },
-        "roi_revenue": {
-          "true": 0.062,
-          "median": 0.5123950348955347,
-          "hdi_90": [
-            0.0006691020410838603,
-            1.21175251401575
+            1232.2232228839891,
+            77975.99648919489
           ],
           "covered": true,
-          "pct_error": 726.4436046702174
+          "pct_error": -72.6641231193973
+        },
+        "marginal_cpa": {
+          "true": 113255.34,
+          "median": 27516.705667620416,
+          "hdi_90": [
+            3358.5429951972046,
+            182094.02198846362
+          ],
+          "covered": true,
+          "pct_error": -75.7038337727648
+        },
+        "roi_revenue": {
+          "true": 0.0555,
+          "median": 0.2476330707108268,
+          "hdi_90": [
+            0.00016582413937953075,
+            0.7581330615447153
+          ],
+          "covered": true,
+          "pct_error": 346.1857129924807
         }
       },
       "affiliates": {
         "incremental_deals": {
-          "true": 1730.06,
-          "median": 300.91074402389705,
+          "true": 1582.52,
+          "median": 468.6543073659765,
           "hdi_90": [
-            0.39068777455842274,
-            852.9352635136503
+            0.02940214555377795,
+            1276.5016351381507
           ],
           "covered": false,
-          "pct_error": -82.60691860259777
+          "pct_error": -70.38556812135225
         },
         "cpa": {
-          "true": 1159.7,
-          "median": 6667.5814696951475,
+          "true": 1232.21,
+          "median": 4160.851439732665,
           "hdi_90": [
-            887.1599940688112,
-            36352.67971955914
+            565.3147990720875,
+            22418.201185549584
           ],
           "covered": true,
-          "pct_error": 474.94019743857444
+          "pct_error": 237.67388998082026
         },
         "marginal_cpa": {
-          "true": 1874.84,
-          "median": 16408.82715019895,
+          "true": 1981.6,
+          "median": 10134.208829493211,
           "hdi_90": [
-            2564.8313831529063,
-            85375.61494742899
+            1638.8148557937336,
+            53686.52540505969
           ],
-          "covered": false,
-          "pct_error": 775.2121327792745
+          "covered": true,
+          "pct_error": 411.4154637410785
         },
         "roi_revenue": {
-          "true": 2.6776,
-          "median": 0.4268075101247387,
+          "true": 2.5218,
+          "median": 0.68458320465806,
           "hdi_90": [
-            0.0010389869381481549,
-            1.2102148201185559
+            4.296089556477344e-05,
+            1.8645809620958753
           ],
           "covered": false,
-          "pct_error": -84.06007207481557
+          "pct_error": -72.85339025069156
         }
       }
     },
     "hdi_coverage": {
-      "covered": 21,
+      "covered": 27,
       "of": 32,
-      "rate": 0.65625,
+      "rate": 0.84375,
       "by_metric": {
-        "incremental_deals": 0.625,
-        "cpa": 0.875,
-        "marginal_cpa": 0.625,
-        "roi_revenue": 0.5
+        "incremental_deals": 0.75,
+        "cpa": 1.0,
+        "marginal_cpa": 0.875,
+        "roi_revenue": 0.75
       }
     },
     "median_abs_pct_error": {
-      "incremental_deals": 54.534452353601374,
-      "cpa": 97.00585706575269,
-      "marginal_cpa": 78.9337363524161,
-      "roi_revenue": 57.99579639909908
+      "incremental_deals": 47.90541040783717,
+      "cpa": 76.54057197087428,
+      "marginal_cpa": 57.108940845833956,
+      "roi_revenue": 51.583241085675546
     },
     "cpa_rank": {
-      "spearman": 0.0,
-      "kendall_tau": 0.0,
-      "best": "youtube",
-      "worst": "paid_search_brand"
-    },
-    "marginal_cpa_rank": {
       "spearman": 0.4761904761904762,
       "kendall_tau": 0.3571428571428571,
       "best": "youtube",
       "worst": "paid_search_brand"
     },
+    "marginal_cpa_rank": {
+      "spearman": 0.6904761904761906,
+      "kendall_tau": 0.5714285714285714,
+      "best": "youtube",
+      "worst": "display"
+    },
     "best_marginal_cpa_right": true,
-    "worst_marginal_cpa_right": false,
+    "worst_marginal_cpa_right": true,
     "true_best_marginal": "youtube",
     "true_worst_marginal": "display",
     "totals": {
       "incremental_deals_paid_media": {
-        "true": 16144.669999999996,
-        "median": 9578.60719787651,
+        "true": 15389.15,
+        "median": 11059.727872521506,
         "hdi_90": [
-          7185.299061601471,
-          12204.401582858975
+          8514.584679437703,
+          13936.85855413193
         ],
         "covered": false,
-        "pct_error": -40.67015802815101
+        "pct_error": -28.132951641113994
       },
       "incremental_cpa_paid_media": {
-        "true": 2479.045956962887,
-        "median": 4178.413312808859,
+        "true": 2820.818602067041,
+        "median": 3925.0514200080333,
         "hdi_90": [
-          3127.2612792250425,
-          5308.941812345203
+          2987.1219260736516,
+          4916.011118458872
         ],
         "covered": false,
-        "pct_error": 68.54924778917331
+        "pct_error": 39.14582870135045
       }
     }
   },
   "crm_last_touch": {
     "channels": {
       "paid_search_brand": {
-        "deals": 5995.0,
-        "cpa": 1232.4952760633862,
-        "deals_pct_error": 366.9985121481932,
-        "cpa_pct_error": -78.58660122341973
+        "deals": 6073.0,
+        "cpa": 1221.8014342170263,
+        "deals_pct_error": 401.16771334494166,
+        "cpa_pct_error": -80.04668341879336
       },
       "paid_search_nonbrand": {
-        "deals": 5444.0,
-        "cpa": 2460.837413666422,
-        "deals_pct_error": -16.009040907793537,
-        "cpa_pct_error": 19.06048796574653
+        "deals": 4673.0,
+        "cpa": 3644.3398887224484,
+        "deals_pct_error": -15.811206676010967,
+        "cpa_pct_error": 18.780491332585267
       },
       "meta": {
-        "deals": 1321.0,
-        "cpa": 2831.81161998486,
-        "deals_pct_error": -49.129306294718845,
-        "cpa_pct_error": 96.57713805637114
+        "deals": 1456.0,
+        "cpa": 3021.9779532967036,
+        "deals_pct_error": -50.95678066295923,
+        "cpa_pct_error": 103.90113578866888
       },
       "linkedin": {
-        "deals": 1042.0,
-        "cpa": 3690.1816506717846,
-        "deals_pct_error": -27.63687880218895,
-        "cpa_pct_error": 38.19197068046963
+        "deals": 733.0,
+        "cpa": 3492.496671214188,
+        "deals_pct_error": -26.99275903626458,
+        "cpa_pct_error": 36.97247100589807
       },
       "youtube": {
-        "deals": 135.0,
-        "cpa": 14917.989407407407,
-        "deals_pct_error": -89.83801035770203,
-        "cpa_pct_error": 884.0622052961429
+        "deals": 190.0,
+        "cpa": 14736.842894736841,
+        "deals_pct_error": -89.53404465107056,
+        "cpa_pct_error": 855.4798129307123
       },
       "ctv": {
         "deals": 0.0,
@@ -435,24 +435,24 @@
         "cpa_pct_error": null
       },
       "display": {
-        "deals": 903.0,
-        "cpa": 5137.887320044297,
-        "deals_pct_error": 632.8950572193816,
-        "cpa_pct_error": -86.35493012645657
+        "deals": 841.0,
+        "cpa": 5172.413983353151,
+        "deals_pct_error": 714.3700978018786,
+        "cpa_pct_error": -87.72080605232922
       },
       "affiliates": {
-        "deals": 1468.0,
-        "cpa": 1366.7213010899184,
-        "deals_pct_error": -15.147451533472823,
-        "cpa_pct_error": 17.851280597561296
+        "deals": 1364.0,
+        "cpa": 1429.618702346041,
+        "deals_pct_error": -13.808356292495514,
+        "cpa_pct_error": 16.02070283036502
       }
     },
-    "median_abs_cpa_pct_error": 78.58660122341973,
+    "median_abs_cpa_pct_error": 80.04668341879336,
     "channels_with_no_credit": [
       "ctv"
     ],
     "cpa_rank": {
-      "spearman": 0.14285714285714288,
+      "spearman": 0.09523809523809526,
       "kendall_tau": 0.14285714285714285,
       "best": "paid_search_brand",
       "worst": "ctv"
@@ -463,268 +463,268 @@
   "platform_reported": {
     "channels": {
       "paid_search_brand": {
-        "deals": 5493.758825939496,
-        "cpa": 1344.9460404255055,
-        "deals_pct_error": 327.95282699161794,
-        "cpa_pct_error": -76.63287928485914
+        "deals": 5534.662488937115,
+        "cpa": 1340.641841274218,
+        "deals_pct_error": 356.74199633074886,
+        "cpa_pct_error": -78.10589320669871
       },
       "paid_search_nonbrand": {
-        "deals": 7791.9556346664085,
-        "cpa": 1719.3114935610831,
-        "deals_pct_error": 20.215618471630048,
-        "cpa_pct_error": -16.816095101743542
+        "deals": 7340.176258776244,
+        "cpa": 2320.107814800519,
+        "deals_pct_error": 32.24065525610192,
+        "cpa_pct_error": -24.380394090194386
       },
       "meta": {
-        "deals": 8666.966562741014,
-        "cpa": 431.61850491977987,
-        "deals_pct_error": 233.75821450954695,
-        "cpa_pct_error": -70.0381445465805
+        "deals": 9529.296727389075,
+        "cpa": 461.7339585358418,
+        "deals_pct_error": 220.98034995129618,
+        "cpa_pct_error": -68.8455441989743
       },
       "linkedin": {
-        "deals": 1944.6071425007449,
-        "cpa": 1977.3501783270997,
-        "deals_pct_error": 35.04591394905031,
-        "cpa_pct_error": -25.95109299872676
+        "deals": 1299.1117834860088,
+        "cpa": 1970.5771993927656,
+        "deals_pct_error": 29.39231516479007,
+        "cpa_pct_error": -22.715795112018863
       },
       "youtube": {
-        "deals": 2512.4608232223227,
-        "cpa": 801.5761087239813,
-        "deals_pct_error": 89.12296935010859,
-        "cpa_pct_error": -47.124191355709826
+        "deals": 3226.234931535998,
+        "cpa": 867.8847664286279,
+        "deals_pct_error": 77.71384599269575,
+        "cpa_pct_error": -43.729713331693326
       },
       "ctv": {
-        "deals": 1767.7330778672576,
-        "cpa": 1692.5579701262309,
-        "deals_pct_error": 52.28575791413316,
-        "cpa_pct_error": -34.333856958385155
+        "deals": 1857.692912936725,
+        "cpa": 1561.0760959493293,
+        "deals_pct_error": 61.15454594589629,
+        "cpa_pct_error": -37.947637834222554
       },
       "display": {
-        "deals": 2289.012364158908,
-        "cpa": 2026.8620312607081,
-        "deals_pct_error": 1757.8137847243797,
-        "cpa_pct_error": -94.61711160291735
+        "deals": 2016.5673963093573,
+        "cpa": 2157.1310574400836,
+        "deals_pct_error": 1852.7136596391567,
+        "cpa_pct_error": -94.87901960088672
       },
       "affiliates": {
-        "deals": 2791.3768423993856,
-        "cpa": 718.766036718784,
-        "deals_pct_error": 61.34566676296693,
-        "cpa_pct_error": -38.021381674675865
+        "deals": 2457.6874402687645,
+        "cpa": 793.4287648012534,
+        "deals_pct_error": 55.30214090619799,
+        "cpa_pct_error": -35.60929023451738
       }
     },
-    "median_abs_cpa_pct_error": 42.572786515192846,
+    "median_abs_cpa_pct_error": 40.83867558295794,
     "channels_with_no_credit": [],
     "cpa_rank": {
-      "spearman": 0.8095238095238096,
+      "spearman": 0.7857142857142858,
       "kendall_tau": 0.6428571428571428,
       "best": "meta",
-      "worst": "display"
+      "worst": "paid_search_nonbrand"
     },
     "best_marginal_cpa_right": false,
-    "worst_marginal_cpa_right": true
+    "worst_marginal_cpa_right": false
   },
   "mediation": {
     "channels": {
       "meta": {
         "incremental_deals_via_brand_search": {
-          "true": 18.51,
-          "median": 3.719882303361402,
+          "true": 17.59,
+          "median": 4.159930907410342,
           "hdi_90": [
-            0.0018616129005499804,
-            13.161144586281353
+            0.0023052290167515643,
+            13.058842199839091
           ],
           "covered": false,
-          "pct_error": -79.90339112176444
+          "pct_error": -76.35059177140226
         },
         "incremental_deals_total": {
-          "true": 2615.3,
-          "median": 675.6587484651585,
+          "true": 2986.4,
+          "median": 680.135417279568,
           "hdi_90": [
-            5.581498056207458,
-            1620.9176702415057
+            10.006190074451952,
+            1572.4408425962515
           ],
           "covered": false,
-          "pct_error": -74.16515319599439
+          "pct_error": -77.22557536567213
         },
         "cpa_total": {
-          "true": 1430.36,
-          "median": 5536.557826723429,
+          "true": 1473.35,
+          "median": 6469.300994946163,
           "hdi_90": [
-            776.8729606273263,
-            24591.787451940807
+            1090.2213089574595,
+            25292.53865682779
           ],
           "covered": true,
-          "pct_error": 287.0744306834244
+          "pct_error": 339.0878606540308
         },
         "marginal_cpa_total": {
-          "true": 1715.41,
-          "median": 6750.05160133242,
+          "true": 1825.46,
+          "median": 7037.924450645541,
           "hdi_90": [
-            1522.1200246759365,
-            30395.255314369948
+            1554.7929149521526,
+            30150.002565041457
           ],
           "covered": true,
-          "pct_error": 293.4949429776217
+          "pct_error": 285.54251808560804
         }
       },
       "youtube": {
         "incremental_deals_via_brand_search": {
-          "true": 9.96,
-          "median": 4.510326478683851,
+          "true": 9.73,
+          "median": 3.997607751599105,
           "hdi_90": [
-            0.0023786452240490696,
-            14.56439372873956
+            0.003029639363455572,
+            12.355687663719891
           ],
           "covered": true,
-          "pct_error": -54.7155976035758
+          "pct_error": -58.914617146977335
         },
         "incremental_deals_total": {
-          "true": 1338.44,
-          "median": 932.3197745475628,
+          "true": 1825.14,
+          "median": 1533.795625236626,
           "hdi_90": [
-            502.2202894563944,
-            1366.6319730426258
+            966.9461076775758,
+            2093.813608061006
           ],
           "covered": true,
-          "pct_error": -30.34280396972873
+          "pct_error": -15.9628507820427
         },
         "cpa_total": {
-          "true": 1504.68,
-          "median": 2160.126530241365,
+          "true": 1534.13,
+          "median": 1825.5368420383097,
           "hdi_90": [
-            1208.6980498539906,
-            3200.3505498542554
+            1182.142766969629,
+            2567.582122091097
           ],
           "covered": true,
-          "pct_error": 43.56052650672334
+          "pct_error": 18.994924943669023
         },
         "marginal_cpa_total": {
-          "true": 1440.01,
-          "median": 2427.956954096233,
+          "true": 1632.25,
+          "median": 2253.3018639754578,
           "hdi_90": [
-            1542.2889599072887,
-            3441.2589007123624
+            1608.7015901787954,
+            3098.1762548977285
           ],
-          "covered": false,
-          "pct_error": 68.60695093063471
+          "covered": true,
+          "pct_error": 38.04881997092711
         }
       },
       "ctv": {
         "incremental_deals_via_brand_search": {
-          "true": 7.65,
-          "median": 7.327931216586478,
+          "true": 6.48,
+          "median": 8.244498943496154,
           "hdi_90": [
-            0.02791105678897088,
-            23.430244759594757
+            0.005263585057082132,
+            25.489061564714575
           ],
           "covered": true,
-          "pct_error": -4.210049456385912
+          "pct_error": 27.229921967533233
         },
         "incremental_deals_total": {
-          "true": 1168.45,
-          "median": 1251.7104150753105,
+          "true": 1159.23,
+          "median": 982.8186591501719,
           "hdi_90": [
-            994.5090502030541,
-            1513.71328911919
+            720.2904579646759,
+            1243.3480909629616
           ],
           "covered": true,
-          "pct_error": 7.125714842339034
+          "pct_error": -15.217975798575614
         },
         "cpa_total": {
-          "true": 2560.65,
-          "median": 2390.321844811635,
+          "true": 2501.67,
+          "median": 2950.69693008669,
           "hdi_90": [
-            1945.8435294976098,
-            2960.02783846955
+            2228.6047123402377,
+            3788.5340160782043
           ],
           "covered": true,
-          "pct_error": -6.651754639968958
+          "pct_error": 17.949087213209168
         },
         "marginal_cpa_total": {
-          "true": 3129.59,
-          "median": 3837.5973005719843,
+          "true": 3085.96,
+          "median": 3797.132877250703,
           "hdi_90": [
-            2901.8679227887937,
-            4892.224200010387
+            2888.8504832911617,
+            4777.710203098475
           ],
           "covered": true,
-          "pct_error": 22.623004948634936
+          "pct_error": 23.045434070781965
         }
       }
     },
     "hdi_coverage": {
-      "covered": 9,
+      "covered": 10,
       "of": 12
     },
     "shares": {
       "upper_funnel_share_of_brand_searches": {
         "true": 0.1672,
-        "median": 0.06685769700974545,
+        "median": 0.059224473943058034,
         "hdi_90": [
-          0.055312859222365424,
-          0.07833120120810236
+          0.05089111135797438,
+          0.06736953730593051
         ],
         "covered": false,
-        "pct_error": -60.013339109003915
+        "pct_error": -64.57866390965428
       },
       "upper_funnel_share_of_brand_search_deals": {
-        "true": 0.0281,
-        "median": 0.028624199848391988,
+        "true": 0.0279,
+        "median": 0.02810254850237362,
         "note": "ratio of posterior medians; no HDI"
       }
     }
   },
   "optimizer": {
     "method": "PCHIP through the answer key's noise-free response curves",
-    "true_deal_change": 581.5571762584934,
-    "model_deal_change": 498.9750848731999,
+    "true_deal_change": 1044.967535816224,
+    "model_deal_change": 653.6923212346856,
     "model_hdi_90": [
-      30.41697528836147,
-      1001.0411384892637
+      362.8259463911004,
+      932.0459539694381
     ],
-    "true_inside_hdi": true,
-    "true_gain_pct_of_true_paid_incremental": 3.602162052606176,
+    "true_inside_hdi": false,
+    "true_gain_pct_of_true_paid_incremental": 6.790287545551405,
     "by_channel": [
       {
         "channel": "paid_search_nonbrand",
-        "multiplier": 1.0812407260139678,
-        "true_deal_change": 202.49307813903488,
-        "model_deal_change": 169.78617285488522
+        "multiplier": 0.9728105425956808,
+        "true_deal_change": -41.82745890188562,
+        "model_deal_change": -68.48917242719646
       },
       {
         "channel": "meta",
-        "multiplier": 1.2361893181947397,
-        "true_deal_change": 488.91402938048896,
-        "model_deal_change": 141.96610850783804
+        "multiplier": 1.0745539120296606,
+        "true_deal_change": 176.24126886045406,
+        "model_deal_change": 50.108416829300566
       },
       {
         "channel": "linkedin",
-        "multiplier": 0.5786155421738435,
-        "true_deal_change": -493.90429551857505,
-        "model_deal_change": -197.76137705268684
+        "multiplier": 0.9399539378373168,
+        "true_deal_change": -47.53319940884717,
+        "model_deal_change": -22.417174268634668
       },
       {
         "channel": "youtube",
-        "multiplier": 1.500000000256257,
-        "true_deal_change": 663.5310003186421,
-        "model_deal_change": 384.5226252176537
+        "multiplier": 1.4999999960277357,
+        "true_deal_change": 789.1719942928341,
+        "model_deal_change": 558.88158879871
       },
       {
         "channel": "ctv",
-        "multiplier": 1.500000000256257,
-        "true_deal_change": 411.6480001770599,
-        "model_deal_change": 336.32002923199883
+        "multiplier": 1.500000000069369,
+        "true_deal_change": 407.5640000479784,
+        "model_deal_change": 328.46886215783513
       },
       {
         "channel": "display",
-        "multiplier": 0.6009494811202416,
-        "true_deal_change": -23.288636380467636,
-        "model_deal_change": -231.29276784082074
+        "multiplier": 0.5000000017303567,
+        "true_deal_change": -27.129999865387006,
+        "model_deal_change": -140.5319552644249
       },
       {
         "channel": "affiliates",
-        "multiplier": 0.500000000085419,
-        "true_deal_change": -667.8359998576898,
-        "model_deal_change": -104.5657060456683
+        "multiplier": 0.8019062438883052,
+        "true_deal_change": -211.51906920892293,
+        "model_deal_change": -52.328244590904085
       }
     ]
   },
@@ -733,69 +733,69 @@
     "variants": {
       "reallocation": {
         "claim_fact": "realloc_deals_per_year",
-        "claimed_per_year": 166.325,
+        "claimed_per_year": 217.8974,
         "claimed_hdi_90": [
-          10.139,
-          333.6804
+          120.942,
+          310.682
         ],
-        "true_per_year": 193.81887579786925,
-        "covered": true,
-        "pct_error": -14.185344788885375,
+        "true_per_year": 348.362448936117,
+        "covered": false,
+        "pct_error": -37.45095067925699,
         "memo_states_range": true,
         "by_channel": [
           {
             "channel": "paid_search_nonbrand",
-            "multiplier": 1.0812,
-            "true_deal_change_per_year": 67.46569758571543
+            "multiplier": 0.9728,
+            "true_deal_change_per_year": -13.94816994105986
           },
           {
             "channel": "meta",
-            "multiplier": 1.2362,
-            "true_deal_change_per_year": 162.97833401005633
+            "multiplier": 1.0746,
+            "true_deal_change_per_year": 58.78273455143684
           },
           {
             "channel": "linkedin",
-            "multiplier": 0.5786,
-            "true_deal_change_per_year": -164.64201513033166
+            "multiplier": 0.94,
+            "true_deal_change_per_year": -15.83201347379683
           },
           {
             "channel": "youtube",
             "multiplier": 1.5,
-            "true_deal_change_per_year": 221.177
+            "true_deal_change_per_year": 263.0573333333334
           },
           {
             "channel": "ctv",
             "multiplier": 1.5,
-            "true_deal_change_per_year": 137.21599999999998
+            "true_deal_change_per_year": 135.85466666666662
           },
           {
             "channel": "display",
-            "multiplier": 0.6009,
-            "true_deal_change_per_year": -7.7641406675708
+            "multiplier": 0.5,
+            "true_deal_change_per_year": -9.043333333333331
           },
           {
             "channel": "affiliates",
-            "multiplier": 0.5,
-            "true_deal_change_per_year": -222.612
+            "multiplier": 0.8019,
+            "true_deal_change_per_year": -70.50876886712983
           }
         ]
       },
       "youtube_ask": {
         "claim_fact": "ask_deals_per_year",
-        "claimed_per_year": 128.1742,
+        "claimed_per_year": 186.2939,
         "claimed_hdi_90": [
-          75.1975,
-          172.4647
+          125.3571,
+          242.0186
         ],
-        "true_per_year": 221.177,
+        "true_per_year": 263.0573333333334,
         "covered": false,
-        "pct_error": -42.04903764858009,
-        "memo_states_range": true,
+        "pct_error": -29.181255797215332,
+        "memo_states_range": false,
         "by_channel": [
           {
             "channel": "youtube",
             "multiplier": 1.5,
-            "true_deal_change_per_year": 221.177
+            "true_deal_change_per_year": 263.0573333333334
           }
         ]
       }

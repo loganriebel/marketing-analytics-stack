@@ -30,6 +30,10 @@ RESPONSE_MULTIPLIERS = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0]
 class SimResult:
     tables: dict[str, pd.DataFrame]
     truth: dict
+    # Internal arrays a later period needs to carry on from this one (sim/extend.py).
+    # Never written anywhere.
+    state: dict | None = None
+    truth_2026: dict | None = None
 
 
 # --- small helpers ------------------------------------------------------------
@@ -75,18 +79,27 @@ def _season_log(sp: dict, woy: np.ndarray, lat: np.ndarray) -> np.ndarray:
     return out
 
 
-def _brand_flighting(rng, f: dict, cal: dict, lat: np.ndarray, region_ok: np.ndarray) -> np.ndarray:
+def _brand_flighting(rng, f: dict, cal: dict, lat: np.ndarray, region_ok: np.ndarray,
+                     keep: dict | None = None, habits: dict | None = None) -> np.ndarray:
     """Spend shape (T, R) for a brand channel: a push ahead of and into each planned
-    busy season, a sustain level between pushes, and a soft level in slow weeks."""
+    busy season, a sustain level between pushes, and a soft level in slow weeks.
+
+    habits: a market-bought channel's per-market timing and size, carried over from an
+    earlier period instead of drawn. keep: receives them."""
     t_total, n_reg = cal["T"], lat.size
     m = np.repeat(np.where(cal["slow"], f["slow"], f["sustain"])[:, None], n_reg, axis=1)
     pl = C.PLANNING
     dlat = lat - pl["ref_latitude"]
     lo, hi = f["len"]
     if f["geo"] == "market":  # each market's own habit: some push early or big every year
-        market_shift = rng.normal(0.0, f["market_timing_sigma"], n_reg)
-        market_shift -= market_shift[region_ok].mean()  # markets differ around the plan, not all early
-        market_size = np.exp(rng.normal(0.0, f["market_mult_sigma"], n_reg))
+        if habits is None:
+            market_shift = rng.normal(0.0, f["market_timing_sigma"], n_reg)
+            market_shift -= market_shift[region_ok].mean()  # markets differ around the plan, not all early
+            market_size = np.exp(rng.normal(0.0, f["market_mult_sigma"], n_reg))
+        else:
+            market_shift, market_size = habits["market_shift"], habits["market_size"]
+        if keep is not None:
+            keep["habits"] = {"market_shift": market_shift, "market_size": market_size}
     for y in cal["iso_years"]:
         for season in ("spring", "fall"):
             if f["geo"] == "national":
@@ -179,28 +192,35 @@ def _draw_true_params(rng: np.random.Generator, n_reg: int) -> dict:
         ch: {"alpha": round(uni(r["alpha"]), 3), "reach_spend": round(log_uni(r["reach_spend"]), -1),
              "lift": round(uni(r["lift"]), 4)}
         for ch, r in C.BRAND_SEARCH["created_by"].items()}
+    params["nonbrand_quality_slope"] = round(uni(C.NONBRAND_QUALITY["slope_range"]), 3)
     return params
 
 
 # --- spend ------------------------------------------------------------------
 
 def _planned_spend(rng, ch: str, cal: dict, size: np.ndarray, region_ok: np.ndarray,
-                   lat: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """Actual spend (T, R) and the national plan it was bought against (T,)."""
+                   lat: np.ndarray, keep: dict | None = None) -> tuple[np.ndarray, np.ndarray]:
+    """Actual spend (T, R) and the national plan it was bought against (T,).
+
+    keep: receives the channel's buying habits (market split, noise state, quarter
+    draws) so a later period can carry on from them. It changes no draw."""
     p = C.SPEND[ch]
     t_total, n_reg = cal["T"], size.size
-    yr = cal["year_idx"]
-    year_noise = np.exp(rng.normal(0.0, C.YEAR_PLAN_SIGMA, yr.max() - yr.min() + 1))[yr - yr.min()]
-    q_mult = np.exp(rng.normal(0.0, p["quarter_sigma"], cal["quarter"].max() + 1))[cal["quarter"]]
-    plan = p["weekly_budget"] * np.exp(p["yearly_drift"] * yr) * cal["event_mult"][ch] * cal["holiday_cut"]
-    national = plan * year_noise * q_mult * np.exp(rng.normal(0.0, p["weekly_sigma"], t_total))
+    budget = p["annual_budget"]
+    year = np.maximum(cal["year_of"], min(budget))  # burn-in weeks run at the first year's pace
+    q_draw = np.exp(rng.normal(0.0, p["quarter_sigma"], cal["quarter"].max() + 1))
+    q_mult = q_draw[cal["quarter"]]
+    plan = np.array([budget[y] for y in year]) / 52.0 * cal["event_mult"][ch] * cal["holiday_cut"]
+    national = plan * q_mult * np.exp(rng.normal(0.0, p["weekly_sigma"], t_total))
     tilt = np.exp(rng.normal(0.0, p["tilt_sigma"], n_reg))
     alloc = size * tilt * region_ok
     alloc = alloc / alloc.sum()
-    noise = np.exp(_ar1(rng, t_total, n_reg, p["region_sigma"], 0.6))
+    log_noise = _ar1(rng, t_total, n_reg, p["region_sigma"], 0.6)
+    noise = np.exp(log_noise)
 
+    resplit = None
     if p["flight"] == "seasonal_push":
-        shape = _brand_flighting(rng, p["push"], cal, lat, region_ok)
+        shape = _brand_flighting(rng, p["push"], cal, lat, region_ok, keep)
     else:
         n_q = cal["quarter"].max() + 1
         resplit = np.exp(rng.normal(0.0, p["quarter_region_sigma"], (n_q, n_reg)))
@@ -208,14 +228,53 @@ def _planned_spend(rng, ch: str, cal: dict, size: np.ndarray, region_ok: np.ndar
         shape = cal["season"] ** p["season_follow"] * resplit[cal["quarter"]]
     # The budget sets the average week, so the shape only moves spend around the year.
     shape = shape / (shape[cal["win"]] * alloc).sum(axis=1).mean()
-    x = np.round(national[:, None] * alloc[None, :] * shape * noise, 2)
+    x = national[:, None] * alloc[None, :] * shape * noise
+    x = _pace(x, cal["year_of"], budget)
+    x = np.round(x, 2)
     x[x < 10.0] = 0.0  # platforms do not serve tiny budgets
+    if keep is not None:
+        last = max(budget)
+        weeks_last = int((cal["year_of"] == last).sum())
+        keep.update(alloc=alloc, log_noise_last=log_noise[-1].copy(), q_mult_last=float(q_draw[-1]),
+                    resplit_last=None if resplit is None else resplit[-1].copy(),
+                    weekly_level_last=float(budget[last] / weeks_last / cal["holiday_cut"][cal["year_of"] == last].mean()))
     return x, plan
+
+
+def _pace(x: np.ndarray, year_of: np.ndarray, budget: dict) -> np.ndarray:
+    """Scale each year's weeks so the year adds up to its budget. Burn-in weeks before
+    the first budget year take the first year's factor."""
+    x = x.copy()
+    first = min(budget)
+    for y in sorted(budget):
+        rows = year_of == y
+        f = budget[y] / x[rows].sum()
+        x[rows] *= f
+        if y == first:
+            x[year_of < first] *= f
+    return x
+
+
+def _depth_price(m: dict, x: np.ndarray, size: np.ndarray) -> np.ndarray | float:
+    """CPM multiplier for a channel whose auctions get pricier as it buys deeper."""
+    if "depth_ref" not in m:
+        return 1.0
+    depth = np.maximum(x / (size[None, :] * m["depth_ref"]), 0.25)
+    return depth ** m["depth_elasticity"]
+
+
+def _nonbrand_quality(x: np.ndarray, size: np.ndarray, slope: float) -> np.ndarray:
+    """Lead quality of non-brand search leads by week and market (1 = full quality)."""
+    depth = x / (size[None, :] * C.NONBRAND_QUALITY["ref_spend"])
+    return 1.0 / (1.0 + slope * np.maximum(depth - 1.0, 0.0))
 
 
 # --- simulation ---------------------------------------------------------------
 
-def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
+def simulate(seed: int = C.DEFAULT_SEED, keep_state: bool = False) -> SimResult:
+    """The 2023 to 2025 world. keep_state also returns the internal arrays that
+    sim/extend.py needs to run the world on into 2026; the tables and truth are the
+    same either way."""
     # Two child streams: one draws the hidden true parameters, one draws the data.
     truth_seq, data_seq = np.random.SeedSequence(seed).spawn(2)
     tp = _draw_true_params(np.random.default_rng(truth_seq), len(C.REGIONS))
@@ -263,15 +322,19 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     cal = {"T": t_total, "win": win, "quarter": quarter, "season": season, "holiday_cut": holiday_cut,
            "slow": slow, "iso_years": iso_years,
            "iso_week1": {y: (date.fromisocalendar(y, 1, 1) - t0).days // 7 for y in iso_years},
-           "year_idx": np.array([w.year - C.WINDOW_START.year for w in weeks]), "event_mult": event_mult}
+           "year_idx": np.array([w.year - C.WINDOW_START.year for w in weeks]), "event_mult": event_mult,
+           "year_of": np.array([w.year for w in weeks])}  # the house week rule: a week's year is its Monday's
+    year_of = cal["year_of"]
 
     # --- planned spend and webinars -------------------------------------------
     spend: dict[str, np.ndarray] = {}
     plans: dict[str, np.ndarray] = {}
+    habits: dict[str, dict] = {ch: {} for ch in C.PLANNED_CHANNELS}
     all_regions = np.ones(n_reg, dtype=bool)
     ctv_regions = np.isin(codes, C.CTV_REGIONS)
     for ch in C.PLANNED_CHANNELS:
-        spend[ch], plans[ch] = _planned_spend(rng, ch, cal, size, ctv_regions if ch == "ctv" else all_regions, lat)
+        spend[ch], plans[ch] = _planned_spend(rng, ch, cal, size, ctv_regions if ch == "ctv" else all_regions, lat,
+                                              keep=habits[ch])
 
     w_cfg = C.WEBINARS
     ev_rate = w_cfg["events_per_week_national"] * size / n_reg
@@ -280,7 +343,11 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     reps = ev_counts[nz_t, nz_r]
     ev_t, ev_r = np.repeat(nz_t, reps), np.repeat(nz_r, reps)
     n_ev = ev_t.size
-    ev_cost = np.round(w_cfg["cost_median"] * np.exp(rng.normal(0.0, w_cfg["cost_sigma"], n_ev)), 2)
+    ev_cost = w_cfg["cost_median"] * np.exp(rng.normal(0.0, w_cfg["cost_sigma"], n_ev))
+    ev_paced = _pace(ev_cost[:, None], year_of[ev_t], w_cfg["annual_budget"])[:, 0]  # events paced to the budget
+    webinar_factor_last = float(ev_paced[year_of[ev_t] == max(w_cfg["annual_budget"])].sum()
+                                / ev_cost[year_of[ev_t] == max(w_cfg["annual_budget"])].sum())
+    ev_cost = np.round(ev_paced, 2)
     ev_day = rng.integers(1, 4, n_ev)  # Tue to Thu
     ev_topic = rng.integers(0, len(w_cfg["topics"]), n_ev)
     ev_regs = rng.poisson(ev_cost / w_cfg["cost_per_registrant"])
@@ -305,7 +372,7 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
                     for m in range(n_months)]
     region_eff = rng.normal(0.0, s_cfg["region_sigma"], n_reg)
     area_off = np.array([s_cfg["area_offset"][a] for a in areas])
-    counts_by_role, mult_by_role = {}, {}
+    counts_by_role, mult_by_role, cov_last = {}, {}, {}
     for role in ("sdr", "ae"):
         path = np.zeros(n_months)
         cov = s_cfg["start_coverage"]
@@ -316,6 +383,7 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
                 if ms.month in s_cfg["hiring_months"] and not frozen:
                     cov += s_cfg["hiring_gain_per_month"]
             path[m] = cov
+        cov_last[role] = cov
         target = s_cfg[f"{role}_per_1k_accounts"] * accounts / 1000
         noise = rng.normal(0.0, s_cfg["month_sigma"], (n_months, n_reg))
         cov_r = path[:, None] * np.exp(area_off[None, :] + region_eff[None, :] + noise)
@@ -352,10 +420,17 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
 
     # --- conversion by origin, region and created week ---------------------------
     fp = {k: np.array([tp["funnel"][o][k] for o in C.ORIGINS]) for k in ("p_mql", "p_sql", "p_opp", "p_won", "amount_mult")}
-    p_sql_eff = np.minimum(fp["p_sql"][:, None, None] * sdr_mult[None], 0.95)  # (O, T, R)
-    p_won_eff = np.minimum(fp["p_won"][:, None, None] * ae_mult[None] * win_time[None, :, None], 0.95)
-    p_opp_lead = fp["p_mql"][:, None, None] * p_sql_eff * fp["p_opp"][:, None, None]
+    i_nb = C.ORIGINS.index("paid_search_nonbrand")
+    quality_nb = _nonbrand_quality(spend["paid_search_nonbrand"], size, tp["nonbrand_quality_slope"])  # (T, R)
+    q_half = np.ones((len(C.ORIGINS), t_total, n_reg))
+    q_half[i_nb] = np.sqrt(quality_nb)  # half on the MQL rate, half on the win rate
+    p_mql_eff = fp["p_mql"][:, None, None] * q_half  # (O, T, R)
+    p_sql_eff = np.minimum(fp["p_sql"][:, None, None] * sdr_mult[None], 0.95)
+    p_won_base = np.minimum(fp["p_won"][:, None, None] * ae_mult[None] * win_time[None, :, None], 0.95)
+    p_won_eff = p_won_base * q_half
+    p_opp_lead = p_mql_eff * p_sql_eff * fp["p_opp"][:, None, None]
     p_deal = p_opp_lead * p_won_eff
+    p_deal_base = fp["p_mql"][:, None, None] * p_sql_eff * fp["p_opp"][:, None, None] * p_won_base  # before quality
     amount_mean = (C.AMOUNT_MEDIAN * np.exp(C.AMOUNT_SIGMA**2 / 2) * fp["amount_mult"][:, None, None]
                    * amount_time[None, :, None] * area_amount[None, None, :])
 
@@ -371,7 +446,12 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     betas: dict[str, float] = {}
     direct_deals: dict = {}
 
+    ref_year = C.WINDOW_START.year
+    year_ext = np.concatenate([year_of, np.full(C.L_MAX, 0)])
+
     def fit_channel(ch: str) -> None:
+        """beta is set so the channel's 2023 spend, run on its own, costs the drawn cpa
+        per deal it causes. Later years' cost per deal is whatever the curve gives."""
         e = tp["effect"][ch]
         x_full = np.vstack([spend[ch], pad])
         x_burn = x_full.copy()
@@ -380,26 +460,52 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
         a_burn = _adstock(x_burn, e["alpha"], C.L_MAX)
         a_win = a_full - a_burn
         base_resp = _hill(a_burn / size, e["K"], e["S"])
-
-        def contrib(mult: float) -> np.ndarray:
-            return size * (_hill((a_burn + mult * a_win) / size, e["K"], e["S"]) - base_resp)
-
         i = o_index[ch]
-        deal_x, opp_x, amt_x = extend(p_deal[i]), extend(p_opp_lead[i]), extend(amount_mean[i])
-        spend_win = float(spend[ch][win].sum())
-        beta = spend_win / (e["cpa"] * float((contrib(1.0) * deal_x).sum()))
+        deal_base, amt_x = extend(p_deal_base[i]), extend(amount_mean[i])
+        opp_base = extend(fp["p_mql"][i] * p_sql_eff[i] * fp["p_opp"][i])
+
+        def quality(path: np.ndarray) -> np.ndarray:
+            if ch != "paid_search_nonbrand":
+                return np.ones_like(path)
+            q = _nonbrand_quality(path[:t_total], size, tp["nonbrand_quality_slope"])
+            return np.vstack([q, np.repeat(q[-1:], C.L_MAX, axis=0)])
+
+        def lead_rate(path: np.ndarray) -> np.ndarray:  # leads per unit of beta, by week and market
+            return size * _hill(_adstock(path, e["alpha"], C.L_MAX) / size, e["K"], e["S"])
+
+        base_leads, base_q = size * base_resp, quality(x_burn)
+
+        def deals_for(path: np.ndarray, beta: float = 1.0) -> float:
+            """Deals the path causes against burn-in spend only (window weeks at zero)."""
+            return float((beta * (lead_rate(path) * quality(path) - base_leads * base_q) * deal_base).sum())
+
+        x_ref = x_burn.copy()
+        x_ref[year_ext == ref_year] = x_full[year_ext == ref_year]
+        spend_ref = float(spend[ch][year_of == ref_year].sum())
+        beta = spend_ref / (e["cpa"] * deals_for(x_ref))
         mu_media[ch] = beta * size * _hill(a_full[:t_total] / size, e["K"], e["S"])
         betas[ch] = beta
 
         def deals(mult: float) -> float:
-            return float((beta * contrib(mult) * deal_x).sum())
+            return deals_for(x_burn + mult * (x_full - x_burn), beta)
 
         direct_deals[ch] = deals
 
-        leads_1 = beta * contrib(1.0)
+        leads_1 = beta * size * (_hill(a_full / size, e["K"], e["S"]) - base_resp)
+        q1 = quality(x_full)
+        dealt = beta * (lead_rate(x_full) * q1 - base_leads * base_q)  # deal-weighted lead increments
         inc_deals = deals(1.0)
-        inc_rev = float((leads_1 * deal_x * amt_x).sum())
-        inc_pipe = float((leads_1 * opp_x * amt_x).sum())
+        inc_rev = float((dealt * deal_base * amt_x).sum())
+        inc_pipe = float((leads_1 * opp_base * np.sqrt(q1) * amt_x).sum())
+        spend_win = float(spend[ch][win].sum())
+        by_year = {}
+        for y in sorted(set(year_of[win])):
+            x_wo = x_full.copy()
+            x_wo[year_ext == y] = 0.0
+            d = deals_for(x_full, beta) - deals_for(x_wo, beta)
+            s_y = float(spend[ch][year_of == y].sum())
+            by_year[str(y)] = {"spend": _r(s_y, 2), "incremental_deals": _r(d, 2),
+                               "cpa": _r(s_y / d, 2) if d > 0 else None}
         f = tp["funnel"][ch]
         channel_truth[ch] = {
             "spend": _r(spend_win, 2),
@@ -408,6 +514,8 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
             "incremental_revenue": _r(inc_rev, 2),
             "incremental_pipeline": _r(inc_pipe, 2),
             "cpa": _r(spend_win / inc_deals, 2),
+            "cpa_2023_reference": e["cpa"],
+            "by_year": by_year,
             "marginal_cpa": _r(0.02 * spend_win / (deals(1.01) - deals(0.99)), 2),
             "roi_revenue": _r(inc_rev / spend_win),
             "roi_pipeline": _r(inc_pipe / spend_win),
@@ -417,6 +525,8 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
                            "input": "adstocked weekly spend / region size index"},
             "beta_leads_per_week_per_size_unit": _r(beta, 6),
             "lead_quality": {k: f[k] for k in ("p_mql", "p_sql", "p_opp", "p_won", "amount_mult")},
+            **({"lead_quality_depth": {"ref_spend": C.NONBRAND_QUALITY["ref_spend"],
+                                       "slope": tp["nonbrand_quality_slope"]}} if ch == "paid_search_nonbrand" else {}),
             "crm_last_touch_recording": C.CRM_ATTRIBUTION[ch],
             "platform_reporting": C.PLATFORM.get(ch, {"source": "webinar registrants",
                                                       "cost_per_registrant": w_cfg["cost_per_registrant"]}),
@@ -447,12 +557,18 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
         return mu_base + sum(gamma[ch] * reach(ch, paths[ch]) for ch in search_drivers)
 
     searches = brand_searches(spend)
-    planned_nonbrand_win = plans["paid_search_nonbrand"][win].sum()
-    share = bs["planned_share_of_search"]
-    cost_per_search = share / (1 - share) * planned_nonbrand_win / float((searches * cost_noise)[win].sum())
+    # One cost per search per year, set so the year's brand-search spend lands on budget;
+    # within the year spend follows searches. Burn-in weeks use the first year's.
+    raw = searches * cost_noise
+    cps = np.zeros(t_total)
+    for y, target in bs["annual_budget"].items():
+        cps[year_of == y] = target / float(raw[year_of == y].sum())
+    first_bs = min(bs["annual_budget"])
+    cps[year_of < first_bs] = cps[year_of == first_bs][0]
+    cost_per_search = float(cps[year_of == max(bs["annual_budget"])][0])
 
     def brand_spend(s: np.ndarray) -> np.ndarray:
-        x = np.round(s * cost_noise * cost_per_search, 2)
+        x = np.round(s * cost_noise * cps[:, None], 2)
         x[x < 25.0] = 0.0
         return x
 
@@ -523,7 +639,7 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     utm_source, utm_medium, utm_campaign = vsrc[rec, var], vmed[rec, var], vcamp[rec, var]
 
     u = rng.random((4, n))
-    is_mql = u[0] < fp["p_mql"][lo_]
+    is_mql = u[0] < p_mql_eff[lo_, lt, lr]
     is_sql = is_mql & (u[1] < p_sql_eff[lo_, lt, lr])
     is_opp = is_sql & (u[2] < fp["p_opp"][lo_])
     is_won = is_opp & (u[3] < p_won_eff[lo_, lt, lr])
@@ -593,6 +709,7 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     for ch in ("paid_search_brand", "paid_search_nonbrand", "meta", "linkedin", "youtube", "display"):
         m = C.MEDIA[ch]
         cpm = m["cpm"] * (1 + C.Q4_CPM_LIFT * is_q4)[:, None] * np.exp(rng.normal(0.0, 0.08, (t_total, n_reg)))
+        cpm = cpm * _depth_price(m, spend[ch], size)
         impressions = np.round(spend[ch] / cpm * 1000).astype(np.int64)
         ctr = np.clip(m["ctr"] * np.exp(rng.normal(0.0, 0.10, (t_total, n_reg))), 0, 1)
         delivery[ch] = {"impressions": impressions, "clicks": rng.binomial(impressions, ctr)}
@@ -792,6 +909,9 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
         },
         "definitions": {
             "cpa": "in-window spend divided by the expected closed-won deals it causes",
+            "cpa_2023_reference": "the drawn cost per deal: 2023 spend divided by the deals 2023 spend causes on its own. beta is set to hit it, so later years cost whatever the curve gives",
+            "by_year": "per year (weeks by their Monday): that year's spend, the deals it causes (all spend minus the same path with that year's weeks at zero) and their ratio",
+            "nonbrand_lead_quality": "non-brand leads in a market-week have quality 1 / (1 + slope * max(spend / (size * ref_spend) - 1, 0)); the MQL rate and the win rate are each multiplied by its square root. Deals and response curves include it",
             "marginal_cpa": "extra spend per extra deal when the channel's whole in-window spend path is scaled by 1%",
             "incremental": "expected value, net of noise, counting deals that land after the window ends",
             "response_curve": "incremental deals when the channel's in-window spend path is scaled by spend_multiplier, other channels unchanged",
@@ -877,17 +997,40 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
         "region_size_index": {c: _r(s, 6) for c, s in zip(codes, size)},
         "ctv_regions": C.CTV_REGIONS,
     }
-    return SimResult(tables=tables, truth=truth)
+    state = None
+    if keep_state:
+        state = {
+            "seed": seed, "tp": tp, "codes": codes, "names": names, "areas": areas, "accounts": accounts,
+            "lat": lat, "size": size, "area_lead": area_lead, "area_amount": area_amount, "t0": t0,
+            "weeks": weeks, "week_d": week_d, "t_total": t_total, "snapshot": snapshot,
+            "spend": spend, "habits": habits, "eta": eta, "sends": sends, "beta_email": beta_email,
+            "betas": betas, "gamma": gamma, "cost_per_search": cost_per_search, "fp": fp,
+            "month_starts": month_starts, "counts_by_role": counts_by_role, "cov_last": cov_last,
+            "region_eff": region_eff, "area_off": area_off, "attr": attr, "vprob": vprob,
+            "vsrc": vsrc, "vmed": vmed, "vcamp": vcamp,
+            "leads": {"t": lt, "r": lr, "o": lo_, "created": created, "rec": rec, "var": var,
+                      "is_mql": is_mql, "is_sql": is_sql, "is_opp": is_opp, "is_won": is_won,
+                      "mql_date": mql_date, "sql_date": sql_date, "opp_date": opp_date,
+                      "close_date": close_date, "amount": amount, "order": order, "lead_ids": lead_ids,
+                      "lead_id_of": lead_id_of, "n_opps": int(opp_rows.size)},
+            "n_events": int(keep.sum()), "webinar_factor_last": webinar_factor_last,
+        }
+    return SimResult(tables=tables, truth=truth, state=state)
 
 
 def write_outputs(result: SimResult, raw_dir: Path = DEFAULT_RAW_DIR,
-                  truth_path: Path = DEFAULT_TRUTH_PATH) -> None:
+                  truth_path: Path = DEFAULT_TRUTH_PATH, truth_2026_path: Path | None = None) -> None:
     raw_dir = Path(raw_dir)
     truth_path = Path(truth_path)
     raw_dir.mkdir(parents=True, exist_ok=True)
     truth_path.parent.mkdir(parents=True, exist_ok=True)
     for name, df in result.tables.items():
         df.to_csv(raw_dir / f"{name}.csv", index=False, lineterminator="\n", float_format="%.2f")
-    with open(truth_path, "w", encoding="utf-8", newline="\n") as fh:
-        json.dump(result.truth, fh, indent=2)
-        fh.write("\n")
+    keys = [(result.truth, truth_path)]
+    if result.truth_2026 is not None:
+        keys.append((result.truth_2026, Path(truth_2026_path or truth_path.with_name("truth_2026.json"))))
+    for obj, path in keys:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="utf-8", newline="\n") as fh:
+            json.dump(obj, fh, indent=2)
+            fh.write("\n")

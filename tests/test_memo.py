@@ -1,4 +1,4 @@
-"""Step 5 funding memo: facts pack, grounding check, and what memo/ may read."""
+"""The proposal memo: facts pack, chart, grounding check, and what memo/ may read."""
 
 import builtins
 import json
@@ -61,9 +61,11 @@ def test_invented_number_fails(pack, invented):
 
 def test_changed_number_fails(pack):
     memo = G.MEMO_PATH.read_text(encoding="utf-8")
-    assert "166" in memo
-    result = G.check(memo.replace("166", "176", 1), pack)
-    assert [u["text"] for u in result["unmatched"]] == ["176"]
+    first = next(n for n in G.check(memo, pack)["numbers"] if n["kind"] == "number" and n["text"].startswith("$"))
+    digits = first["text"].lstrip("$")
+    bumped = "$" + str(int(digits[0]) % 9 + 1) + digits[1:]
+    result = G.check(memo.replace(first["text"], bumped, 1), pack)
+    assert [u["text"] for u in result["unmatched"]] == [bumped]
 
 
 def test_grounding_cli_fails_below_100(tmp_path, pack):
@@ -158,11 +160,25 @@ def _audit_reads(monkeypatch):
     return seen
 
 
-def test_facts_pack_reads_only_mmm_outputs(monkeypatch):
+def test_facts_pack_reads_only_mmm_outputs_and_the_test_design(monkeypatch):
     seen = _audit_reads(monkeypatch)
     F.build()
     out = (REPO / "mmm" / "outputs").resolve()
-    assert seen and all(out in p.parents for p in seen), seen
+    design = (REPO / "geotest" / "outputs" / "design.json").resolve()
+    assert seen and all(out in p.parents or p == design for p in seen), seen
+
+
+def test_chart_plots_only_facts(monkeypatch, tmp_path, pack):
+    from memo import chart
+    seen = _audit_reads(monkeypatch)
+    drawn = chart.draw(None, tmp_path / "c.png")
+    assert {p.name for p in seen} <= {"facts.json", "c.png"} and seen
+    facts = {f["id"]: f for f in pack["facts"]}
+    assert len(drawn["plotted"]) == len(pack["channel_names"])
+    for row in drawn["plotted"]:
+        f = facts[row["fact"]]
+        assert (row["value"], row["low"], row["high"]) == (f["value"], f["low"], f["high"])
+    assert (MEMO / "outputs" / "proposal_chart.png").exists()
 
 
 def test_grounding_reads_only_memo_outputs(monkeypatch, tmp_path):
@@ -174,14 +190,15 @@ def test_grounding_reads_only_memo_outputs(monkeypatch, tmp_path):
 
 def test_facts_sources_are_model_outputs_or_the_test_design(pack):
     for f in pack["facts"]:
-        assert f["source"].startswith("mmm/outputs/") or f["kind"] == "design", f["id"]
+        assert f["source"].startswith(("mmm/outputs/", "geotest/outputs/")), f["id"]
         assert "truth" not in json.dumps(f).lower() and "grading" not in json.dumps(f).lower(), f["id"]
-    assert all(r.startswith("mmm/outputs/") for r in pack["meta"]["reads"])
+    assert all(r.startswith(("mmm/outputs/", "geotest/outputs/")) for r in pack["meta"]["reads"])
 
 
 def test_memo_outputs_hold_no_answer_key():
     for p in (MEMO / "outputs").glob("*"):
-        assert "truth" not in p.read_text(encoding="utf-8").lower(), p.name
+        if p.suffix != ".png":
+            assert "truth" not in p.read_text(encoding="utf-8").lower(), p.name
 
 
 # --- the facts pack is deterministic -----------------------------------------------
@@ -207,7 +224,7 @@ def test_fact_ids_unique_and_complete(pack):
 def test_pack_prose_has_no_numbers(pack):
     """Numbers live in facts. The prose the writer reads carries none, so it cannot pass one on."""
     texts = [r["text"] for r in pack["risks"]] + pack["recommendation"] + \
-        [pack["test"][k] for k in ("what", "decision_rule", "limits")] + [v["what"] for v in pack["variants"].values()]
+        [pack["test"][k] for k in ("what", "decision_rule", "limits", "readout", "dates")] +         [v["what"] for v in pack["variants"].values()]
     for t in texts:
         assert G.check(t, {"facts": []})["checked"] == 0, t
 
@@ -226,3 +243,16 @@ def test_writer_runs_headless_with_no_tools():
 def test_committed_memo_meets_style():
     memo = G.MEMO_PATH.read_text(encoding="utf-8")
     assert W.style_problems(memo) == []
+
+
+def test_style_catches_a_range_above_the_appendix():
+    memo = G.MEMO_PATH.read_text(encoding="utf-8")
+    app = memo.index("## Appendix")
+    text = memo[:app] + "Also, 166 deals (10 to 334).\n\n" + memo[app:]
+    assert any("range" in p["text"] for p in W.style_problems(text))
+
+
+def test_style_catches_a_busy_headline():
+    memo = G.MEMO_PATH.read_text(encoding="utf-8")
+    text = "# Approve 12 weeks, $1.5M, 20 markets and 166 deals\n" + memo.split("\n", 1)[1]
+    assert any("headline" in p["text"] for p in W.style_problems(text))

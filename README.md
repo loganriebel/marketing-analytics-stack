@@ -10,8 +10,8 @@ An example of the stack I run at work: dashboards, Claude on golden tables, MMM 
 
 - Sales-assisted motion: inbound lead, SDR call, demo, 14-day trial, close.
 - Short cycle: a lead closes in about two weeks; nine in ten close in 6 to 27 days.
-- First-year contracts run about $2,800 on average, and it closes about 210 deals a week.
-- About $14M a year in paid media across nine channels.
+- First-year contracts run about $2,800 on average, and it closes about 200 deals a week.
+- Paid media across nine channels: $13.5M in 2023, $14.85M in 2024 and $17.23M in 2025.
 - Sold only in seven Midwest states: Minnesota, Wisconsin, Illinois, Iowa, Ohio, North Dakota, and South Dakota. They split into 20 metro markets in four sales areas.
 - About 50 SDRs and 70 AEs.
 
@@ -28,9 +28,10 @@ An example of the stack I run at work: dashboards, Claude on golden tables, MMM 
 
 Fernhook grew on paid search, and its CRM credits every deal to the last UTM touch.
 
-- **The mix drifted to performance.** Budget reviews reward the channels closest to the click: search, retargeting, affiliates. Connected TV, YouTube, and Meta look weak in last touch, so they get cut. Performance took 68% of spend in 2023 and 78% in 2025.
-- **Search keeps getting more expensive.** Last-touch search cost per lead rose from $75 in 2023 to $96 in 2025.
-- **Growth stalled.** In 2025 spend rose 3% over 2024, and closed-won deals fell 11%. Blended cost per deal rose from about $1,240 to $1,440.
+- **The money went to search.** Budget reviews reward the channels closest to the click, and non-brand search is closest of all. Its budget went from $3.4M in 2023 to $8.4M in 2025, paid for partly by trimming Meta, YouTube, Connected TV and LinkedIn. Performance against brand went from 60/40 in 2023 to 70/30 in 2024 and 80/20 in 2025.
+- **Spend kept climbing.** Total paid media rose 10% in 2024 and 16% in 2025.
+- **Search keeps getting more expensive.** Non-brand cost per click rose from $7.93 in 2023 to $10.82 in 2025, and its last-touch cost per lead from $115 to $180. Its leads close less often too: the win rate fell from 30% to 25%.
+- **Growth stalled.** Closed-won deals rose 5% in 2024, then fell 12% in 2025. Blended cost per deal went from $1,284 to $1,349 to $1,774.
 - **Nobody agrees on the numbers.** Every ad platform claims credit for the same deals, so their totals add up to far more than the CRM has. Last touch never credits Connected TV at all.
 - **Finance has stopped trusting marketing.** When the CFO asks what a channel returns, the team can show last-touch numbers or platform numbers, and neither holds up.
 
@@ -51,10 +52,10 @@ To test it, headless Claude answered 50 ad-hoc questions twice: once through the
 
 | Arm | Answerable correct | Correct refusals | Wrong refusals | Overall | Cost |
 |---|---|---|---|---|---|
-| Claude + governed metrics (MCP) | 42/42 (100%) | 8/8 | 0 | 50/50 | $3.24 |
-| Claude + raw tables (SQL) | 23/42 (55%) | 8/8 | 2 | 31/50 | $3.78 |
+| Claude + governed metrics (MCP) | 42/42 (100%) | 8/8 | 0 | 50/50 | $3.27 |
+| Claude + raw tables (SQL) | 23/42 (55%) | 8/8 | 3 | 31/50 | $3.64 |
 
-Model `claude-sonnet-5-5`, one pass per arm, same instructions, built-in tools off, run on the current seven-state world. Per-question results: [evals/RESULTS.md](evals/RESULTS.md). The first run, on the earlier 20-region world, scored 50/50 and 30/50; its answers are kept in `evals/results/archive_global_world/`.
+Model `claude-sonnet-5-5`, one pass per arm, same instructions, built-in tools off, run on the rebuilt world where budgets drift from brand to search. Per-question results: [evals/RESULTS.md](evals/RESULTS.md). Earlier runs are kept: the balanced-mix seven-state world (50/50 and 31/50) in `evals/results/archive_balanced_mix_world/`, and the first 20-region world (50/50 and 30/50) in `evals/results/archive_global_world/`.
 
 Why the raw arm missed: it had to invent definitions. It left partner fees and webinars out of "paid media", grouped search and YouTube as "Google", counted deals by calendar close date instead of the house week rule, read "CPA" as cost per lead, and could not answer share-of-spend questions without channel roles. Every one of those is a definition the semantic layer settles once.
 
@@ -68,9 +69,9 @@ Every table is weekly, by region, for 156 weeks (2023 to 2025).
 
 | Channel | Role | What Fernhook buys | Raw export |
 |---|---|---|---|
-| Paid search, non-brand | Performance | Google ads on category searches like "fleet maintenance software". About 65% of search spend. | `ads_google_weekly` |
-| Paid search, brand | Performance | Google ads on searches for "Fernhook". About 35% of search spend, planned against non-brand. | `ads_google_weekly` |
-| LinkedIn | Performance | Lead-gen form ads to fleet and operations managers. | `ads_linkedin_weekly` |
+| Paid search, non-brand | Performance | Google ads on category searches like "fleet maintenance software". From 58% of search spend in 2023 to 77% in 2025. | `ads_google_weekly` |
+| Paid search, brand | Performance | Google ads on searches for "Fernhook". Grows about 3% a year; week to week, spend follows searches. | `ads_google_weekly` |
+| LinkedIn | Brand | Lead-gen form ads to fleet and operations managers. Always on. | `ads_linkedin_weekly` |
 | Display retargeting | Performance | Programmatic ads that follow past site visitors. | `ads_display_weekly` |
 | Affiliates and partners | Performance | Placement and sponsor fees with resellers, fleet consultants, and review sites. | `partners_weekly` |
 | Meta | Brand | Prospecting video to small-business owners. | `ads_meta_weekly` |
@@ -109,15 +110,15 @@ The true effects are built in: carryover (adstock), diminishing returns (saturat
 
 Spend has to move a lot, and not in lockstep, or no model can tell the channels apart.
 
-- **Performance channels are always on.** Brand search, non-brand search, LinkedIn, display, and affiliates run every week in every market. They never pause.
+- **Performance channels and LinkedIn are always on.** Brand search, non-brand search, display, affiliates and LinkedIn run every week in every market. They never pause.
 - **Upper-funnel ads create brand searches.** When Meta, YouTube, or CTV reach more people in a market, more of them search for Fernhook by name in the next few weeks, with diminishing returns as reach fills up. Brand search bids on every search, so brand-search spend rises with the upper funnel. Cut one of those channels and brand searches and brand-search spend fall with it.
 - **Brand channels follow the season.** YouTube runs national flights several weeks ahead of each busy season, and each flight skips about one market in four. Meta is always on and pushes closer to the season and into it. CTV runs its own flight in each test market. All three ease off in the slow weeks.
 - **Pushes are not in lockstep.** Each market's Meta and CTV push starts on its own week and runs at its own size, and each season's push gets its own budget.
 - **Markets:** each channel is spread unevenly across the 20 markets, and always-on budgets are re-split across markets every quarter. CTV runs in only 8 markets.
 - **Webinars** are regional events, so their spend lands in one market and one week at a time.
 - **Affiliate fees** step up or down when each market's partner contracts renew every quarter.
-- **Budget history:** each January plan moves in a step, and the team made seven changes between plans. Examples: an attribution review in April 2024 cut YouTube and CTV, a cost cut in August 2024 trimmed LinkedIn, Meta, and display, and Meta got a retest in June 2025.
-- National weekly spend for any two channels correlates at under 0.6.
+- **Budget history:** every channel is paced to an annual budget, and the team made seven changes inside the years. Examples: an attribution review in April 2024 cut YouTube and CTV and added search, the hiring freeze in August 2024 trimmed LinkedIn and Meta while protecting search, and Meta got a retest in June 2025.
+- **Budgets drift together on purpose:** search goes up while brand goes down, so yearly levels are correlated. Inside each year, week-to-week spend on any two planned channels correlates at under 0.6.
 
 ## Quality control
 

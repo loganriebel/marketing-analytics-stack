@@ -2,7 +2,7 @@ channel_id,channel_name,channel_group,marketing_role,source_system,is_paid,repor
 paid_search_brand,Paid Search Brand,search,performance,google_ads,true,true,true,1,"Bids on every search for Fernhook, always on in every market. Spend follows how many people search the brand, and Meta, YouTube and CTV ads drive some of those searches."
 paid_search_nonbrand,Paid Search Non-Brand,search,performance,google_ads,true,true,true,2,"Always on in every market. Budgets lean into busy seasons and are re-split across markets every quarter."
 meta,Meta,paid_social,brand,meta_ads,true,true,true,3,"Always-on prospecting that pushes before and into the spring and fall busy seasons and eases off in slow weeks. Each market's timing differs."
-linkedin,LinkedIn,paid_social,performance,linkedin_ads,true,true,true,4,"Lead-gen forms, always on. Market budgets are re-split every quarter."
+linkedin,LinkedIn,paid_social,brand,linkedin_ads,true,true,true,4,"Lead-gen forms, always on. Market budgets are re-split every quarter."
 youtube,YouTube,video,brand,google_ads,true,true,true,5,"National flights that run several weeks ahead of each busy season, with a low level in between. Each flight targets about three in four markets."
 ctv,Connected TV,ctv,brand,ctv_platform,true,true,false,6,"A market test in 8 markets. Each runs its own flight ahead of each busy season and goes dark between flights."
 display,Display Retargeting,display,performance,dsp,true,true,true,7,"Always-on retargeting of past site visitors. Market budgets are re-split every quarter."

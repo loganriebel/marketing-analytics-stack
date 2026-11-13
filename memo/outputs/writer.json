@@ -3,24 +3,8 @@
   "attempts": [
     {
       "attempt": 1,
-      "cost_usd": 0.2043834,
-      "seconds": 28.1,
-      "models_used": [
-        "claude-sonnet-5-5"
-      ],
-      "grounding_score": 1.0,
-      "unmatched": [],
-      "style": [
-        {
-          "line": 0,
-          "text": "561 words; aim for 350 to 450"
-        }
-      ]
-    },
-    {
-      "attempt": 2,
-      "cost_usd": 0.2250324,
-      "seconds": 28.5,
+      "cost_usd": 0.3575574,
+      "seconds": 87.5,
       "models_used": [
         "claude-sonnet-5-5"
       ],
@@ -31,5 +15,5 @@
   ],
   "grounding_pass": true,
   "style_pass": true,
-  "words": 433
+  "words": 487
 }

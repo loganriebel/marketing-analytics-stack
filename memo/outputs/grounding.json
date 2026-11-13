@@ -1,878 +1,613 @@
 {
-  "memo": "memo/outputs/funding_memo.md",
+  "memo": "memo/outputs/proposal_memo.md",
   "facts": "memo/outputs/facts.json",
-  "checked": 49,
-  "matched": 49,
+  "checked": 32,
+  "matched": 32,
   "score": 1.0,
   "pass": true,
   "unmatched": [],
   "numbers": [
     {
       "kind": "number",
-      "text": "$1.5M",
-      "line": 1,
+      "text": "$3.4M",
+      "line": 4,
       "unit": "USD",
-      "context": "unding memo: test the cuts first, then reallocate $1.5M a year",
+      "context": "d most of the new money went to non-brand search ($3.4M in 2023, $8.4M in 2025). The mix moved from mostly bal",
       "values": [
-        1500000.0
+        3400000.0
       ],
       "precisions": [
         100000
       ],
       "matched": [
-        "display_spend_per_year",
-        "realloc_moved_per_year"
+        "nonbrand_spend_2023"
       ],
       "ok": true
     },
     {
       "kind": "number",
-      "text": "$1.5M",
-      "line": 5,
+      "text": "$8.4M",
+      "line": 4,
       "unit": "USD",
-      "context": "ds, approve a same-budget reallocation that moves $1.5M a year toward YouTube, CTV, Meta and non-brand search.",
+      "context": "ew money went to non-brand search ($3.4M in 2023, $8.4M in 2025). The mix moved from mostly balanced to mostly",
       "values": [
-        1500000.0
+        8400000.0
       ],
       "precisions": [
         100000
       ],
       "matched": [
-        "display_spend_per_year",
-        "realloc_moved_per_year"
+        "nonbrand_spend_2025"
       ],
       "ok": true
     },
     {
       "kind": "number",
-      "text": "$336K",
-      "line": 5,
-      "unit": "USD",
-      "context": "d non-brand search. The alternative is new money: $336K a year more for YouTube, a 50% increase.",
-      "values": [
-        336000.0
-      ],
-      "precisions": [
-        1000
-      ],
-      "matched": [
-        "realloc_youtube_spend_change_per_year",
-        "ask_spend_per_year",
-        "ask_step3_spend_per_year"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "50%",
-      "line": 5,
+      "text": "60%",
+      "line": 4,
       "unit": "percent",
-      "context": "ve is new money: $336K a year more for YouTube, a 50% increase.",
+      "context": "moved from mostly balanced to mostly performance: 60% of spend in 2023, 80% in 2025.",
       "values": [
-        50.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "realloc_youtube_change_pct",
-        "realloc_ctv_change_pct",
-        "realloc_affiliates_change_pct",
-        "realloc_cut_levels",
-        "ask_change_pct"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "$2,430",
-      "line": 7,
-      "unit": "USD",
-      "context": "move rests on cost per extra deal. YouTube costs $2,430 (90% range: $1,540 to $3,440). The cut channels cost",
-      "values": [
-        2430.0
-      ],
-      "precisions": [
-        10
-      ],
-      "matched": [
-        "youtube_mcpa"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "90%",
-      "line": 7,
-      "unit": "percent",
-      "context": "sts on cost per extra deal. YouTube costs $2,430 (90% range: $1,540 to $3,440). The cut channels cost more:",
-      "values": [
-        90.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "hdi_prob"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "range",
-      "text": "$1,540 to $3,440",
-      "line": 7,
-      "unit": "USD",
-      "context": "per extra deal. YouTube costs $2,430 (90% range: $1,540 to $3,440). The cut channels cost more:",
-      "values": [
-        1540.0,
-        3440.0
-      ],
-      "precisions": [
-        10,
-        10
-      ],
-      "matched": [
-        "youtube_mcpa"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "$12,100",
-      "line": 8,
-      "unit": "USD",
-      "context": "- LinkedIn: $12,100 (90% range: $1,870 to $65,300)",
-      "values": [
-        12100.0
-      ],
-      "precisions": [
-        100
-      ],
-      "matched": [
-        "linkedin_mcpa"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "90%",
-      "line": 8,
-      "unit": "percent",
-      "context": "- LinkedIn: $12,100 (90% range: $1,870 to $65,300)",
-      "values": [
-        90.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "hdi_prob"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "range",
-      "text": "$1,870 to $65,300",
-      "line": 8,
-      "unit": "USD",
-      "context": "- LinkedIn: $12,100 (90% range: $1,870 to $65,300)",
-      "values": [
-        1870.0,
-        65300.0
-      ],
-      "precisions": [
-        10,
-        100
-      ],
-      "matched": [
-        "linkedin_mcpa"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "$11,700",
-      "line": 9,
-      "unit": "USD",
-      "context": "- Display retargeting: $11,700 (90% range: $1,730 to $73,700)",
-      "values": [
-        11700.0
-      ],
-      "precisions": [
-        100
-      ],
-      "matched": [
-        "display_mcpa"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "90%",
-      "line": 9,
-      "unit": "percent",
-      "context": "- Display retargeting: $11,700 (90% range: $1,730 to $73,700)",
-      "values": [
-        90.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "hdi_prob"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "range",
-      "text": "$1,730 to $73,700",
-      "line": 9,
-      "unit": "USD",
-      "context": "- Display retargeting: $11,700 (90% range: $1,730 to $73,700)",
-      "values": [
-        1730.0,
-        73700.0
-      ],
-      "precisions": [
-        10,
-        100
-      ],
-      "matched": [
-        "display_mcpa"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "$16,400",
-      "line": 10,
-      "unit": "USD",
-      "context": "- Affiliates and partners: $16,400 (90% range: $2,560 to $85,400)",
-      "values": [
-        16400.0
-      ],
-      "precisions": [
-        100
-      ],
-      "matched": [
-        "affiliates_mcpa"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "90%",
-      "line": 10,
-      "unit": "percent",
-      "context": "- Affiliates and partners: $16,400 (90% range: $2,560 to $85,400)",
-      "values": [
-        90.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "hdi_prob"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "range",
-      "text": "$2,560 to $85,400",
-      "line": 10,
-      "unit": "USD",
-      "context": "- Affiliates and partners: $16,400 (90% range: $2,560 to $85,400)",
-      "values": [
-        2560.0,
-        85400.0
-      ],
-      "precisions": [
-        10,
-        100
-      ],
-      "matched": [
-        "affiliates_mcpa"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "166",
-      "line": 16,
-      "unit": "deals",
-      "context": "- **Reallocation:** 166 more deals a year (90% range: 10 to 334), or $472K of first-year revenue (90% range: $",
-      "values": [
-        166.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "realloc_deals_per_year"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "90%",
-      "line": 16,
-      "unit": "percent",
-      "context": "- **Reallocation:** 166 more deals a year (90% range: 10 to 334), or $472K of first-year revenue (90% range: $",
-      "values": [
-        90.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "hdi_prob"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "range",
-      "text": "10 to 334",
-      "line": 16,
-      "unit": null,
-      "context": "Reallocation:** 166 more deals a year (90% range: 10 to 334), or $472K of first-year revenue (90% range: $28.8",
-      "values": [
-        10.0,
-        334.0
-      ],
-      "precisions": [
-        1,
-        1
-      ],
-      "matched": [
-        "realloc_deals_per_year"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "$472K",
-      "line": 16,
-      "unit": "USD",
-      "context": "166 more deals a year (90% range: 10 to 334), or $472K of first-year revenue (90% range: $28.8K to $948K). Od",
-      "values": [
-        472000.0
-      ],
-      "precisions": [
-        1000
-      ],
-      "matched": [
-        "realloc_revenue_per_year"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "90%",
-      "line": 16,
-      "unit": "percent",
-      "context": "ange: 10 to 334), or $472K of first-year revenue (90% range: $28.8K to $948K). Odds of any gain: 94%.",
-      "values": [
-        90.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "hdi_prob"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "range",
-      "text": "$28.8K to $948K",
-      "line": 16,
-      "unit": "USD",
-      "context": "334), or $472K of first-year revenue (90% range: $28.8K to $948K). Odds of any gain: 94%.",
-      "values": [
-        28800.0,
-        948000.0
-      ],
-      "precisions": [
-        100,
-        1000
-      ],
-      "matched": [
-        "realloc_revenue_per_year"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "94%",
-      "line": 16,
-      "unit": "percent",
-      "context": "e (90% range: $28.8K to $948K). Odds of any gain: 94%.",
-      "values": [
-        94.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "realloc_prob_gain"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "128",
-      "line": 17,
-      "unit": "deals",
-      "context": "- **YouTube ask:** 128 more deals a year (90% range: 75 to 172), or $364K of first-year revenue (90% range: $2",
-      "values": [
-        128.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "realloc_youtube_deals_per_year",
-        "ask_deals_per_year"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "90%",
-      "line": 17,
-      "unit": "percent",
-      "context": "- **YouTube ask:** 128 more deals a year (90% range: 75 to 172), or $364K of first-year revenue (90% range: $2",
-      "values": [
-        90.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "hdi_prob"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "range",
-      "text": "75 to 172",
-      "line": 17,
-      "unit": null,
-      "context": "*YouTube ask:** 128 more deals a year (90% range: 75 to 172), or $364K of first-year revenue (90% range: $214K",
-      "values": [
-        75.0,
-        172.0
-      ],
-      "precisions": [
-        1,
-        1
-      ],
-      "matched": [
-        "realloc_youtube_deals_per_year",
-        "ask_deals_per_year"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "$364K",
-      "line": 17,
-      "unit": "USD",
-      "context": "128 more deals a year (90% range: 75 to 172), or $364K of first-year revenue (90% range: $214K to $490K).",
-      "values": [
-        364000.0
-      ],
-      "precisions": [
-        1000
-      ],
-      "matched": [
-        "ask_revenue_per_year"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "90%",
-      "line": 17,
-      "unit": "percent",
-      "context": "ange: 75 to 172), or $364K of first-year revenue (90% range: $214K to $490K).",
-      "values": [
-        90.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "hdi_prob"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "range",
-      "text": "$214K to $490K",
-      "line": 17,
-      "unit": "USD",
-      "context": "172), or $364K of first-year revenue (90% range: $214K to $490K).",
-      "values": [
-        214000.0,
-        490000.0
-      ],
-      "precisions": [
-        1000,
-        10000
-      ],
-      "matched": [
-        "ask_revenue_per_year"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "$69.4K",
-      "line": 21,
-      "unit": "USD",
-      "context": "- **Reallocation:** the only new cost is $69.4K a year of extra brand-search spend. Payback is 1.8 months (90%",
-      "values": [
-        69400.0
-      ],
-      "precisions": [
-        100
-      ],
-      "matched": [
-        "realloc_brand_search_per_year"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "1.8",
-      "line": 21,
-      "unit": "months",
-      "context": "4K a year of extra brand-search spend. Payback is 1.8 months (90% range: 0.88 to 28.9 months).",
-      "values": [
-        1.8
-      ],
-      "precisions": [
-        0.1
-      ],
-      "matched": [
-        "realloc_payback_months"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "90%",
-      "line": 21,
-      "unit": "percent",
-      "context": "extra brand-search spend. Payback is 1.8 months (90% range: 0.88 to 28.9 months).",
-      "values": [
-        90.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "hdi_prob"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "range",
-      "text": "0.88 to 28.9",
-      "line": 21,
-      "unit": "months",
-      "context": "d-search spend. Payback is 1.8 months (90% range: 0.88 to 28.9 months).",
-      "values": [
-        0.88,
-        28.9
-      ],
-      "precisions": [
-        0.01,
-        0.1
-      ],
-      "matched": [
-        "realloc_payback_months"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "11.8",
-      "line": 22,
-      "unit": "months",
-      "context": "- **YouTube ask:** 11.8 months (90% range: 8.8 to 20.1 months).",
-      "values": [
-        11.8
-      ],
-      "precisions": [
-        0.1
-      ],
-      "matched": [
-        "ask_payback_months"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "90%",
-      "line": 22,
-      "unit": "percent",
-      "context": "- **YouTube ask:** 11.8 months (90% range: 8.8 to 20.1 months).",
-      "values": [
-        90.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "hdi_prob"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "range",
-      "text": "8.8 to 20.1",
-      "line": 22,
-      "unit": "months",
-      "context": "- **YouTube ask:** 11.8 months (90% range: 8.8 to 20.1 months).",
-      "values": [
-        8.8,
-        20.1
-      ],
-      "precisions": [
-        0.1,
-        0.1
-      ],
-      "matched": [
-        "ask_payback_months"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "178",
-      "line": 27,
-      "unit": "deals",
-      "context": "- Paid media is likely under-credited. If so, the 178 deals a year the model expects the cuts to cost is too l",
-      "values": [
-        178.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "realloc_cut_loss_per_year"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "24%",
-      "line": 28,
-      "unit": "percent",
-      "context": "from the busy season, yet the plan grows Meta by 24%.",
-      "values": [
-        24.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "realloc_meta_change_pct"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "13",
-      "line": 29,
-      "unit": "weeks",
-      "context": "- The model predicts well on 13 hidden weeks (5.6% average miss), but that does not prove it splits deals corr",
-      "values": [
-        13.0
-      ],
-      "precisions": [
-        1
-      ],
-      "matched": [
-        "holdout_weeks"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "5.6%",
-      "line": 29,
-      "unit": "percent",
-      "context": "- The model predicts well on 13 hidden weeks (5.6% average miss), but that does not prove it splits deals corr",
-      "values": [
-        5.6
-      ],
-      "precisions": [
-        0.1
-      ],
-      "matched": [
-        "holdout_weekly_error"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "range",
-      "text": "50% to 60%",
-      "line": 36,
-      "unit": "percent",
-      "context": "- Cut channels run at 50% to 60% of today's spend in 4 markets for 8 weeks. The other 16 markets stay at today",
-      "values": [
-        50.0,
         60.0
       ],
       "precisions": [
+        1
+      ],
+      "matched": [
+        "performance_share_2023"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "80%",
+      "line": 4,
+      "unit": "percent",
+      "context": "nced to mostly performance: 60% of spend in 2023, 80% in 2025.",
+      "values": [
+        80.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "performance_share_2025"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "12%",
+      "line": 6,
+      "unit": "percent",
+      "context": "Deals fell 12% in 2025 and cost per deal climbed 31%. We cannot say whether the extra search money still works",
+      "values": [
+        12.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "won_deals_change_pct"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "31%",
+      "line": 6,
+      "unit": "percent",
+      "context": "Deals fell 12% in 2025 and cost per deal climbed 31%. We cannot say whether the extra search money still works",
+      "values": [
+        31.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "cost_per_deal_change_pct"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "$2,250",
+      "line": 9,
+      "unit": "USD",
+      "context": "The model rates YouTube best for the next dollar: $2,250 per extra deal, against $6,830 for non-brand search.",
+      "values": [
+        2250.0
+      ],
+      "precisions": [
+        10
+      ],
+      "matched": [
+        "youtube_mcpa"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "$6,830",
+      "line": 9,
+      "unit": "USD",
+      "context": "r the next dollar: $2,250 per extra deal, against $6,830 for non-brand search. Its plan keeps the budget flat,",
+      "values": [
+        6830.0
+      ],
+      "precisions": [
+        10
+      ],
+      "matched": [
+        "paid_search_nonbrand_mcpa"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "90%",
+      "line": 16,
+      "unit": "percent",
+      "context": "rom the next dollar, by channel, with the model's 90% range](proposal_chart.png)",
+      "values": [
+        90.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "hdi_prob"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "12",
+      "line": 21,
+      "unit": "weeks",
+      "context": "The test runs 12 weeks, to . One group of markets gets YouTube well above plan, a level the",
+      "values": [
+        12.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "test_weeks"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "$342K",
+      "line": 23,
+      "unit": "USD",
+      "context": "Net, it spends $342K less than plan: pulling search back saves more than the YouTube push costs.",
+      "values": [
+        342000.0
+      ],
+      "precisions": [
+        1000
+      ],
+      "matched": [
+        "test_net_cost"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "218",
+      "line": 26,
+      "unit": "deals",
+      "context": "If the model is right, the plan adds 218 deals a year and $621K in extra revenue, on the same budget. Testing",
+      "values": [
+        218.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "realloc_deals_per_year"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "$621K",
+      "line": 26,
+      "unit": "USD",
+      "context": "odel is right, the plan adds 218 deals a year and $621K in extra revenue, on the same budget. Testing first pr",
+      "values": [
+        621000.0
+      ],
+      "precisions": [
+        1000
+      ],
+      "matched": [
+        "realloc_revenue_per_year"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "81%",
+      "line": 35,
+      "unit": "percent",
+      "context": "Limits: the YouTube group has 81% odds of seeing the lift if the model is right. The search group is a guardra",
+      "values": [
+        81.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "test_grow_power"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "45%",
+      "line": 35,
+      "unit": "percent",
+      "context": "l is right. The search group is a guardrail, with 45% odds of seeing the drop. YouTube runs beyond our data, s",
+      "values": [
+        45.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "paid_share_of_deals",
+        "test_cut_power"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "90%",
+      "line": 38,
+      "unit": "percent",
+      "context": "Every range here is a 90% range: the model gives 90% odds the true value is inside.",
+      "values": [
+        90.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "hdi_prob"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "90%",
+      "line": 38,
+      "unit": "percent",
+      "context": "Every range here is a 90% range: the model gives 90% odds the true value is inside.",
+      "values": [
+        90.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "hdi_prob"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "218",
+      "line": 39,
+      "unit": null,
+      "context": "- Plan, extra deals a year: 218 (121 to 311)",
+      "values": [
+        218.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "realloc_deals_per_year"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "range",
+      "text": "121 to 311",
+      "line": 39,
+      "unit": null,
+      "context": "- Plan, extra deals a year: 218 (121 to 311)",
+      "values": [
+        121.0,
+        311.0
+      ],
+      "precisions": [
         1,
         1
       ],
       "matched": [
-        "realloc_cut_levels"
+        "realloc_deals_per_year"
       ],
       "ok": true
     },
     {
       "kind": "number",
-      "text": "4",
-      "line": 36,
-      "unit": "markets",
-      "context": "ut channels run at 50% to 60% of today's spend in 4 markets for 8 weeks. The other 16 markets stay at today's",
+      "text": "$621K",
+      "line": 40,
+      "unit": "USD",
+      "context": "- Plan, extra revenue a year: $621K ($345K to $885K)",
       "values": [
-        4.0
+        621000.0
       ],
       "precisions": [
-        0.1
+        1000
       ],
       "matched": [
-        "test_markets"
+        "realloc_revenue_per_year"
       ],
       "ok": true
     },
     {
-      "kind": "number",
-      "text": "8",
-      "line": 36,
-      "unit": "weeks",
-      "context": "n at 50% to 60% of today's spend in 4 markets for 8 weeks. The other 16 markets stay at today's spend.",
+      "kind": "range",
+      "text": "$345K to $885K",
+      "line": 40,
+      "unit": "USD",
+      "context": "- Plan, extra revenue a year: $621K ($345K to $885K)",
       "values": [
-        8.0
+        345000.0,
+        885000.0
       ],
       "precisions": [
-        0.1
+        1000,
+        1000
       ],
       "matched": [
-        "test_weeks",
-        "test_weeks_range"
+        "realloc_revenue_per_year"
       ],
       "ok": true
     },
     {
       "kind": "number",
-      "text": "16",
-      "line": 36,
-      "unit": "markets",
-      "context": "today's spend in 4 markets for 8 weeks. The other 16 markets stay at today's spend.",
+      "text": "$2,250",
+      "line": 41,
+      "unit": "USD",
+      "context": "- Cost per extra deal, YouTube: $2,250 ($1,610 to $3,100)",
       "values": [
-        16.0
+        2250.0
       ],
       "precisions": [
-        1
+        10
       ],
       "matched": [
-        "test_control_markets"
+        "youtube_mcpa"
       ],
       "ok": true
     },
     {
-      "kind": "number",
-      "text": "5.5",
-      "line": 37,
-      "unit": "deals",
-      "context": "- The model expects a drop of 5.5 deals, 1.7% of those markets' 329 deals. The test can detect only about 36 d",
+      "kind": "range",
+      "text": "$1,610 to $3,100",
+      "line": 41,
+      "unit": "USD",
+      "context": "- Cost per extra deal, YouTube: $2,250 ($1,610 to $3,100)",
       "values": [
-        5.5
+        1610.0,
+        3100.0
       ],
       "precisions": [
-        0.1
+        10,
+        100
       ],
       "matched": [
-        "test_expected_drop"
+        "youtube_mcpa"
       ],
       "ok": true
     },
     {
       "kind": "number",
-      "text": "1.7%",
-      "line": 37,
+      "text": "$6,830",
+      "line": 42,
+      "unit": "USD",
+      "context": "- Cost per extra deal, non-brand search: $6,830 ($4,090 to $11,300)",
+      "values": [
+        6830.0
+      ],
+      "precisions": [
+        10
+      ],
+      "matched": [
+        "paid_search_nonbrand_mcpa"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "range",
+      "text": "$4,090 to $11,300",
+      "line": 42,
+      "unit": "USD",
+      "context": "- Cost per extra deal, non-brand search: $6,830 ($4,090 to $11,300)",
+      "values": [
+        4090.0,
+        11300.0
+      ],
+      "precisions": [
+        10,
+        100
+      ],
+      "matched": [
+        "paid_search_nonbrand_mcpa"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "35%",
+      "line": 43,
       "unit": "percent",
-      "context": "- The model expects a drop of 5.5 deals, 1.7% of those markets' 329 deals. The test can detect only about 36 d",
+      "context": "- Share of all deals that paid media causes: 35% (27% to 45%)",
       "values": [
-        1.7
-      ],
-      "precisions": [
-        0.1
-      ],
-      "matched": [
-        "test_expected_drop_pct"
-      ],
-      "ok": true
-    },
-    {
-      "kind": "number",
-      "text": "329",
-      "line": 37,
-      "unit": "deals",
-      "context": "pects a drop of 5.5 deals, 1.7% of those markets' 329 deals. The test can detect only about 36 deals, 6.6 time",
-      "values": [
-        329.0
+        35.0
       ],
       "precisions": [
         1
       ],
       "matched": [
-        "test_market_deals"
+        "paid_share_of_deals"
       ],
       "ok": true
     },
     {
-      "kind": "number",
-      "text": "36",
-      "line": 37,
-      "unit": "deals",
-      "context": "arkets' 329 deals. The test can detect only about 36 deals, 6.6 times that. It catches a large miss, not a sma",
+      "kind": "range",
+      "text": "27% to 45%",
+      "line": 43,
+      "unit": "percent",
+      "context": "- Share of all deals that paid media causes: 35% (27% to 45%)",
       "values": [
-        36.0
+        27.0,
+        45.0
       ],
       "precisions": [
+        1,
         1
       ],
       "matched": [
-        "test_detectable_drop"
+        "paid_share_of_deals"
       ],
       "ok": true
     },
     {
       "kind": "number",
-      "text": "6.6",
-      "line": 37,
+      "text": "119",
+      "line": 44,
       "unit": null,
-      "context": "9 deals. The test can detect only about 36 deals, 6.6 times that. It catches a large miss, not a small one.",
+      "context": "- Test, extra deals from the YouTube push: 119 (88 to 154)",
       "values": [
-        6.6
+        119.0
       ],
       "precisions": [
-        0.1
+        1
       ],
       "matched": [
-        "test_detectable_multiple"
+        "test_grow_forecast"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "range",
+      "text": "88 to 154",
+      "line": 44,
+      "unit": "deals",
+      "context": "- Test, extra deals from the YouTube push: 119 (88 to 154)",
+      "values": [
+        88.0,
+        154.0
+      ],
+      "precisions": [
+        1,
+        1
+      ],
+      "matched": [
+        "test_grow_forecast"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "83",
+      "line": 45,
+      "unit": null,
+      "context": "- Test, deals lost from pulling search back: -83 (-120 to -41)",
+      "values": [
+        83.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "test_cut_forecast"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "120",
+      "line": 45,
+      "unit": null,
+      "context": "Test, deals lost from pulling search back: -83 (-120 to -41)",
+      "values": [
+        120.0
+      ],
+      "precisions": [
+        10
+      ],
+      "matched": [
+        "realloc_deals_per_year",
+        "test_grow_forecast",
+        "test_cut_forecast",
+        "test_grow_bar"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "41",
+      "line": 45,
+      "unit": null,
+      "context": "eals lost from pulling search back: -83 (-120 to -41)",
+      "values": [
+        41.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "test_cut_forecast"
       ],
       "ok": true
     }
   ],
-  "exempt": []
+  "exempt": [
+    {
+      "text": "2023",
+      "line": 4,
+      "why": "year"
+    },
+    {
+      "text": "2025",
+      "line": 4,
+      "why": "year"
+    },
+    {
+      "text": "2023",
+      "line": 4,
+      "why": "year"
+    },
+    {
+      "text": "2025",
+      "line": 4,
+      "why": "year"
+    },
+    {
+      "text": "2025",
+      "line": 6,
+      "why": "year"
+    },
+    {
+      "text": "February 2",
+      "line": 21,
+      "why": "date"
+    },
+    {
+      "text": "April 26",
+      "line": 21,
+      "why": "date"
+    },
+    {
+      "text": "2023",
+      "line": 21,
+      "why": "year"
+    }
+  ]
 }

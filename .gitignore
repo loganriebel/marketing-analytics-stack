@@ -18,3 +18,5 @@ logs/
 
 # MMM posterior files (large, rebuilt by python -m mmm)
 mmm/fits/
+# runs of the world into 2026 (python -m sim --through ... --out data/cut_<date>)
+data/cut_*/
