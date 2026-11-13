@@ -226,19 +226,32 @@ def mmm_channel_views(dims: pd.DataFrame, mmm: dict, baselines: dict, grade: dic
     total = {"grain": "paid_media_total", "channel_id": "paid_media_total",
              "channel_name": f"Paid media ({len(channels)} channels)", "channel_group": None,
              "marketing_role": None, "channel_sort": 99, "spend": spend}
+    # View-level scores from the grader sit on the total rows. CRM and platform rank the
+    # next dollar by average CPA; the MMM by marginal CPA.
+    def score(g: dict, rank_key: str, err: float) -> dict:
+        return {"cpa_rank_corr_vs_truth": g["cpa_rank"]["spearman"], "median_abs_cpa_error_pct": err,
+                "best_next_dollar": g[rank_key]["best"], "best_next_dollar_right": int(g["best_marginal_cpa_right"])}
+
     for vid in ("crm_last_touch", "platform_reported"):
         deals = sum(baselines["channels"][ch][vid]["deals"] for ch in channels)
         rows.append({**total, **_view(vid), **empty_post, "deals": deals, "cpa": spend / deals,
+                     **score(grade[vid], "cpa_rank", grade[vid]["median_abs_cpa_pct_error"]),
                      "note": "Sum over the channels the MMM measures; webinars are a control."})
     s = mmm["summary"]
     rows.append({**total, **_view("mmm"), **empty_post, **_post(s["incremental_deals_paid_media"], "deals"),
                  **_post(s["incremental_cpa_paid_media"], "cpa"),
+                 **score(grade["model"], "marginal_cpa_rank", grade["model"]["median_abs_pct_error"]["cpa"]),
                  "note": "Total incremental deals, posterior median with 90% HDI."})
     t = grade["model"]["totals"]
     rows.append({**total, **_view("truth"), **empty_post, "deals": _true(t, "incremental_deals_paid_media"),
-                 "cpa": _true(t, "incremental_cpa_paid_media"), "note": ANSWER_KEY_NOTE})
+                 "cpa": _true(t, "incremental_cpa_paid_media"), "best_next_dollar": grade["model"]["true_best_marginal"],
+                 "note": ANSWER_KEY_NOTE})
 
     df = pd.DataFrame(rows)
+    df = df[[c for c in df.columns if c != "note"] + ["note"]]
+    df["best_next_dollar_right"] = df["best_next_dollar_right"].astype("Int64")
+    df[["cpa_rank_corr_vs_truth", "median_abs_cpa_error_pct"]] = df[
+        ["cpa_rank_corr_vs_truth", "median_abs_cpa_error_pct"]].astype(float).round(4)
     money = [c for c in df.columns if c.startswith(("cpa", "marginal_cpa")) or c == "spend"]
     df[money] = df[money].astype(float).round(2)
     count = [c for c in df.columns if c.startswith("deals")]
