@@ -24,6 +24,13 @@ Z_80 = 0.8416212335729143    # 80% power
 MDE_Z = Z_90 + Z_80          # 2.487
 
 
+def planned_doses(size: np.ndarray, arms: np.ndarray, cut_spend: np.ndarray, keep: float) -> np.ndarray:
+    """Planned dollars each market's move adds (grow) or removes (cut), up to scale:
+    grow is a flat amount per unit of size; cut removes (1 - keep) of `cut_spend`
+    (G,), last year's same-week spend in the cut channels."""
+    return np.stack([size * arms[0], cut_spend * (1 - keep) * arms[1]])
+
+
 def contrasts(pre: np.ndarray, win: np.ndarray, arms: np.ndarray) -> np.ndarray:
     """pre, win: (..., G) deal sums; arms: (K, G) bool. Returns (..., K)."""
     out = []

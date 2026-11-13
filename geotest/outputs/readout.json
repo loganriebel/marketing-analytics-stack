@@ -1,0 +1,793 @@
+{
+  "test_id": "MT2026Q1",
+  "readout_snapshot": "2026-05-31",
+  "data_cut": {
+    "warehouse": "data/cut_2026-05-31/data/warehouse.duckdb",
+    "first_week": "2023-01-02",
+    "last_week": "2026-05-25"
+  },
+  "window": {
+    "test_start": "2026-02-02",
+    "test_end": "2026-04-26",
+    "window_start": "2026-02-02",
+    "window_end": "2026-05-24",
+    "pre_period_weeks": 52,
+    "test_weeks": 12,
+    "window_weeks": 16
+  },
+  "arms": {
+    "grow": {
+      "channels": [
+        "youtube"
+      ],
+      "markets": [
+        "CAK",
+        "CID",
+        "CMH",
+        "CVG",
+        "FSD",
+        "MKE",
+        "MLI",
+        "MSN",
+        "RFD",
+        "RST"
+      ],
+      "lift": 130.12152709088232,
+      "interval_90": [
+        52.229549459978244,
+        208.0135047217864
+      ],
+      "sd": 47.354959951826835,
+      "forecast": {
+        "lift_mean": 118.97400647306966,
+        "hdi_90": [
+          88.08811655432002,
+          153.74234415340254
+        ]
+      },
+      "power_at_forecast": 0.8071752025283355,
+      "smallest_detectable_lift": 117.74691744135653,
+      "window_deals": 1461.0,
+      "window_deals_other_markets_scaled": 1334.7860132542728,
+      "simple_contrast": 126.2139867457272
+    },
+    "cut": {
+      "channels": [
+        "paid_search_nonbrand"
+      ],
+      "markets": [
+        "CID",
+        "CLE",
+        "CVG",
+        "FAR",
+        "MKE",
+        "MLI",
+        "MSP",
+        "PIA",
+        "RST",
+        "TOL"
+      ],
+      "lift": -37.4477488073173,
+      "interval_90": [
+        -126.80061719277577,
+        51.905119578141175
+      ],
+      "sd": 54.32268678585261,
+      "forecast": {
+        "lift_mean": -82.62541752588088,
+        "hdi_90": [
+          -120.28982210586405,
+          -40.911783658080495
+        ]
+      },
+      "power_at_forecast": 0.4507200375540964,
+      "smallest_detectable_lift": 135.07199504916278,
+      "window_deals": 1609.0,
+      "window_deals_other_markets_scaled": 1638.6735059760956,
+      "simple_contrast": -29.673505976095612
+    }
+  },
+  "decision": {
+    "valid": true,
+    "rule_1_grow_works": true,
+    "rule_2_grow": "agrees with the forecast",
+    "rule_2_cut": "agrees with the forecast",
+    "cut_drop_is_clear": false,
+    "rule_3_lift_tests_enter_mmm": [
+      "grow",
+      "cut"
+    ],
+    "rule_4_keep_cut_channels_at_todays_spend": false,
+    "rule_4_do_not_grow": false
+  },
+  "validity": {
+    "spend": {
+      "grow": {
+        "observed": 361611.69999999995,
+        "without_move": 143297.33329102737,
+        "realized_change": 218314.36670897258,
+        "plan_change": 252631.5789473684,
+        "registered_change": 252631.5789473684,
+        "miss": -0.1358389651103168,
+        "check_noise_rel_sd": 0.4727046487753994,
+        "within_limit": true
+      },
+      "cut": {
+        "observed": 343395.99,
+        "without_move": 925026.1833091123,
+        "realized_change": -581630.1933091123,
+        "plan_change": -537106.5484615384,
+        "registered_change": -594201.366,
+        "miss": 0.08289536773495931,
+        "check_noise_rel_sd": 0.13745293257529456,
+        "within_limit": true
+      }
+    },
+    "cells": {
+      "plan": {
+        "plan_file": "plans/2026_test.yaml",
+        "arms_match": true,
+        "dates_match": true,
+        "matches": true
+      },
+      "grow": {
+        "line_per_size_week": 1250.0,
+        "markets": [
+          {
+            "market": "CAK",
+            "grow_arm": true,
+            "median_weekly_per_size": 3380.86,
+            "grow_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "CHI",
+            "grow_arm": false,
+            "median_weekly_per_size": 587.2969852941176,
+            "grow_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "CID",
+            "grow_arm": true,
+            "median_weekly_per_size": 3028.2105,
+            "grow_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "CLE",
+            "grow_arm": false,
+            "median_weekly_per_size": 319.37689655172414,
+            "grow_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "CMH",
+            "grow_arm": true,
+            "median_weekly_per_size": 2950.437931034482,
+            "grow_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "CVG",
+            "grow_arm": true,
+            "median_weekly_per_size": 3514.2989655172414,
+            "grow_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "DAY",
+            "grow_arm": false,
+            "median_weekly_per_size": 351.139,
+            "grow_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "DLH",
+            "grow_arm": false,
+            "median_weekly_per_size": 501.84277777777777,
+            "grow_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "DSM",
+            "grow_arm": false,
+            "median_weekly_per_size": 378.753125,
+            "grow_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "FAR",
+            "grow_arm": false,
+            "median_weekly_per_size": 841.9744444444445,
+            "grow_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "FSD",
+            "grow_arm": true,
+            "median_weekly_per_size": 3015.226111111111,
+            "grow_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "GRB",
+            "grow_arm": false,
+            "median_weekly_per_size": 359.52750000000003,
+            "grow_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "MKE",
+            "grow_arm": true,
+            "median_weekly_per_size": 2843.0725999999995,
+            "grow_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "MLI",
+            "grow_arm": true,
+            "median_weekly_per_size": 3020.936666666667,
+            "grow_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "MSN",
+            "grow_arm": true,
+            "median_weekly_per_size": 2933.688214285715,
+            "grow_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "MSP",
+            "grow_arm": false,
+            "median_weekly_per_size": 330.334,
+            "grow_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "PIA",
+            "grow_arm": false,
+            "median_weekly_per_size": 748.5568181818182,
+            "grow_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "RFD",
+            "grow_arm": true,
+            "median_weekly_per_size": 3233.661818181818,
+            "grow_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "RST",
+            "grow_arm": true,
+            "median_weekly_per_size": 3167.216875,
+            "grow_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "TOL",
+            "grow_arm": false,
+            "median_weekly_per_size": 557.6792307692308,
+            "grow_seen": false,
+            "in_cell": true
+          }
+        ],
+        "all_in_cell": true
+      },
+      "cut": {
+        "weeks_before": 4,
+        "weeks_after": 9,
+        "line": 0.6244997998398398,
+        "noise_log_sd": 0.22286041017520375,
+        "noise_quarters": 12,
+        "markets": [
+          {
+            "market": "CAK",
+            "cut_arm": false,
+            "step": 0.8357850871365691,
+            "z_if_no_move": -0.8049153800284018,
+            "z_if_cut": 3.4201892005392764,
+            "cut_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "CHI",
+            "cut_arm": false,
+            "step": 1.2061739974159775,
+            "z_if_no_move": 0.841124559607082,
+            "z_if_cut": 5.066229140174761,
+            "cut_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "CID",
+            "cut_arm": true,
+            "step": 0.37932125947426265,
+            "z_if_no_move": -4.3496814075789105,
+            "z_if_cut": -0.12457682701123256,
+            "cut_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "CLE",
+            "cut_arm": true,
+            "step": 0.3374520228993352,
+            "z_if_no_move": -4.874494901506972,
+            "z_if_cut": -0.6493903209392935,
+            "cut_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "CMH",
+            "cut_arm": false,
+            "step": 0.9220344928068179,
+            "z_if_no_move": -0.3642308887797318,
+            "z_if_cut": 3.8608736917879463,
+            "cut_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "CVG",
+            "cut_arm": true,
+            "step": 0.4233068851777315,
+            "z_if_no_move": -3.857382589539346,
+            "z_if_cut": 0.36772199102833225,
+            "cut_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "DAY",
+            "cut_arm": false,
+            "step": 0.8089883166365449,
+            "z_if_no_move": -0.9511370978635809,
+            "z_if_cut": 3.273967482704097,
+            "cut_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "DLH",
+            "cut_arm": false,
+            "step": 0.6007797001574232,
+            "z_if_no_move": -2.2863054354191417,
+            "z_if_cut": 1.9387991451485367,
+            "cut_seen": true,
+            "in_cell": false
+          },
+          {
+            "market": "DSM",
+            "cut_arm": false,
+            "step": 1.0789964214132315,
+            "z_if_no_move": 0.3411614006882293,
+            "z_if_cut": 4.566265981255907,
+            "cut_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "FAR",
+            "cut_arm": true,
+            "step": 0.2890906392778397,
+            "z_if_no_move": -5.5685754519913795,
+            "z_if_cut": -1.3434708714237016,
+            "cut_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "FSD",
+            "cut_arm": false,
+            "step": 1.2887717172489366,
+            "z_if_no_move": 1.138334114225067,
+            "z_if_cut": 5.3634386947927455,
+            "cut_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "GRB",
+            "cut_arm": false,
+            "step": 0.9408410924472977,
+            "z_if_no_move": -0.27362879098699483,
+            "z_if_cut": 3.9514757895806834,
+            "cut_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "MKE",
+            "cut_arm": true,
+            "step": 0.3354910871321604,
+            "z_if_no_move": -4.900645601386428,
+            "z_if_cut": -0.6755410208187494,
+            "cut_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "MLI",
+            "cut_arm": true,
+            "step": 0.27397828410859126,
+            "z_if_no_move": -5.809494965010632,
+            "z_if_cut": -1.584390384442954,
+            "cut_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "MSN",
+            "cut_arm": false,
+            "step": 0.892593492721267,
+            "z_if_no_move": -0.5098438837835237,
+            "z_if_cut": 3.7152606967841546,
+            "cut_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "MSP",
+            "cut_arm": true,
+            "step": 0.48993892795508265,
+            "z_if_no_move": -3.2014413502637677,
+            "z_if_cut": 1.0236632303039106,
+            "cut_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "PIA",
+            "cut_arm": true,
+            "step": 0.4054276536752634,
+            "z_if_no_move": -4.05102383717418,
+            "z_if_cut": 0.17408074339349844,
+            "cut_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "RFD",
+            "cut_arm": false,
+            "step": 0.9224251218846115,
+            "z_if_no_move": -0.36233028103599707,
+            "z_if_cut": 3.862774299531681,
+            "cut_seen": false,
+            "in_cell": true
+          },
+          {
+            "market": "RST",
+            "cut_arm": true,
+            "step": 0.3446015104661335,
+            "z_if_no_move": -4.780420940693943,
+            "z_if_cut": -0.5553163601262648,
+            "cut_seen": true,
+            "in_cell": true
+          },
+          {
+            "market": "TOL",
+            "cut_arm": true,
+            "step": 0.2754524584883669,
+            "z_if_no_move": -5.785416210699066,
+            "z_if_cut": -1.560311630131388,
+            "cut_seen": true,
+            "in_cell": true
+          }
+        ],
+        "all_in_cell": false
+      },
+      "assigned_moves_seen": true,
+      "drifted": [
+        "DLH"
+      ],
+      "all_in_cell": true
+    },
+    "cells_first_check": {
+      "grow_line_per_size_week": 1250.0,
+      "cut_line": 0.6950000000000001,
+      "markets": [
+        {
+          "market": "CAK",
+          "grow_arm": true,
+          "cut_arm": false,
+          "grow_channel_median_weekly_per_size": 3380.86,
+          "grow_move_seen": true,
+          "cut_spend_ratio": 0.8876516553946464,
+          "cut_move_seen": false,
+          "in_cell": true
+        },
+        {
+          "market": "CHI",
+          "grow_arm": false,
+          "cut_arm": false,
+          "grow_channel_median_weekly_per_size": 587.2969852941176,
+          "grow_move_seen": false,
+          "cut_spend_ratio": 1.314486324118996,
+          "cut_move_seen": false,
+          "in_cell": true
+        },
+        {
+          "market": "CID",
+          "grow_arm": true,
+          "cut_arm": true,
+          "grow_channel_median_weekly_per_size": 3028.2105,
+          "grow_move_seen": true,
+          "cut_spend_ratio": 0.49037997616160756,
+          "cut_move_seen": true,
+          "in_cell": true
+        },
+        {
+          "market": "CLE",
+          "grow_arm": false,
+          "cut_arm": true,
+          "grow_channel_median_weekly_per_size": 319.37689655172414,
+          "grow_move_seen": false,
+          "cut_spend_ratio": 0.342573640616663,
+          "cut_move_seen": true,
+          "in_cell": true
+        },
+        {
+          "market": "CMH",
+          "grow_arm": true,
+          "cut_arm": false,
+          "grow_channel_median_weekly_per_size": 2950.437931034482,
+          "grow_move_seen": true,
+          "cut_spend_ratio": 0.8472696893343253,
+          "cut_move_seen": false,
+          "in_cell": true
+        },
+        {
+          "market": "CVG",
+          "grow_arm": true,
+          "cut_arm": true,
+          "grow_channel_median_weekly_per_size": 3514.2989655172414,
+          "grow_move_seen": true,
+          "cut_spend_ratio": 0.38358475392238656,
+          "cut_move_seen": true,
+          "in_cell": true
+        },
+        {
+          "market": "DAY",
+          "grow_arm": false,
+          "cut_arm": false,
+          "grow_channel_median_weekly_per_size": 351.139,
+          "grow_move_seen": false,
+          "cut_spend_ratio": 1.2189896216766887,
+          "cut_move_seen": false,
+          "in_cell": true
+        },
+        {
+          "market": "DLH",
+          "grow_arm": false,
+          "cut_arm": false,
+          "grow_channel_median_weekly_per_size": 501.84277777777777,
+          "grow_move_seen": false,
+          "cut_spend_ratio": 0.6108820945704849,
+          "cut_move_seen": true,
+          "in_cell": false
+        },
+        {
+          "market": "DSM",
+          "grow_arm": false,
+          "cut_arm": false,
+          "grow_channel_median_weekly_per_size": 378.753125,
+          "grow_move_seen": false,
+          "cut_spend_ratio": 0.7828966970668005,
+          "cut_move_seen": false,
+          "in_cell": true
+        },
+        {
+          "market": "FAR",
+          "grow_arm": false,
+          "cut_arm": true,
+          "grow_channel_median_weekly_per_size": 841.9744444444445,
+          "grow_move_seen": false,
+          "cut_spend_ratio": 0.30492853154112703,
+          "cut_move_seen": true,
+          "in_cell": true
+        },
+        {
+          "market": "FSD",
+          "grow_arm": true,
+          "cut_arm": false,
+          "grow_channel_median_weekly_per_size": 3015.226111111111,
+          "grow_move_seen": true,
+          "cut_spend_ratio": 1.3243329969585886,
+          "cut_move_seen": false,
+          "in_cell": true
+        },
+        {
+          "market": "GRB",
+          "grow_arm": false,
+          "cut_arm": false,
+          "grow_channel_median_weekly_per_size": 359.52750000000003,
+          "grow_move_seen": false,
+          "cut_spend_ratio": 0.8296572367057269,
+          "cut_move_seen": false,
+          "in_cell": true
+        },
+        {
+          "market": "MKE",
+          "grow_arm": true,
+          "cut_arm": true,
+          "grow_channel_median_weekly_per_size": 2843.0725999999995,
+          "grow_move_seen": true,
+          "cut_spend_ratio": 0.39303093207764955,
+          "cut_move_seen": true,
+          "in_cell": true
+        },
+        {
+          "market": "MLI",
+          "grow_arm": true,
+          "cut_arm": true,
+          "grow_channel_median_weekly_per_size": 3020.936666666667,
+          "grow_move_seen": true,
+          "cut_spend_ratio": 0.3881456122238141,
+          "cut_move_seen": true,
+          "in_cell": true
+        },
+        {
+          "market": "MSN",
+          "grow_arm": true,
+          "cut_arm": false,
+          "grow_channel_median_weekly_per_size": 2933.688214285715,
+          "grow_move_seen": true,
+          "cut_spend_ratio": 0.5628158868324519,
+          "cut_move_seen": true,
+          "in_cell": false
+        },
+        {
+          "market": "MSP",
+          "grow_arm": false,
+          "cut_arm": true,
+          "grow_channel_median_weekly_per_size": 330.334,
+          "grow_move_seen": false,
+          "cut_spend_ratio": 0.3494500176915182,
+          "cut_move_seen": true,
+          "in_cell": true
+        },
+        {
+          "market": "PIA",
+          "grow_arm": false,
+          "cut_arm": true,
+          "grow_channel_median_weekly_per_size": 748.5568181818182,
+          "grow_move_seen": false,
+          "cut_spend_ratio": 0.3852888598682851,
+          "cut_move_seen": true,
+          "in_cell": true
+        },
+        {
+          "market": "RFD",
+          "grow_arm": true,
+          "cut_arm": false,
+          "grow_channel_median_weekly_per_size": 3233.661818181818,
+          "grow_move_seen": true,
+          "cut_spend_ratio": 1.2296887552755627,
+          "cut_move_seen": false,
+          "in_cell": true
+        },
+        {
+          "market": "RST",
+          "grow_arm": true,
+          "cut_arm": true,
+          "grow_channel_median_weekly_per_size": 3167.216875,
+          "grow_move_seen": true,
+          "cut_spend_ratio": 0.3508824445330334,
+          "cut_move_seen": true,
+          "in_cell": true
+        },
+        {
+          "market": "TOL",
+          "grow_arm": false,
+          "cut_arm": true,
+          "grow_channel_median_weekly_per_size": 557.6792307692308,
+          "grow_move_seen": false,
+          "cut_spend_ratio": 0.4029407208371854,
+          "cut_move_seen": true,
+          "in_cell": true
+        }
+      ],
+      "all_in_cell": false,
+      "out_of_cell": [
+        "DLH",
+        "MSN"
+      ]
+    },
+    "valid": true,
+    "max_spend_miss": 0.2
+  },
+  "secondary": {
+    "grow": {
+      "channel_spend_added": 252631.5789473684,
+      "brand_search_spend_change": 22652.169328286895,
+      "extra_spend": 275283.7482756553,
+      "cost_per_extra_deal": 2115.5895909781757,
+      "cost_per_extra_deal_range": [
+        1323.3936356384236,
+        5270.651405610842
+      ],
+      "mmm_marginal_cpa": 2253.3018639754578,
+      "forecast_cost_per_extra_deal": 2123.4182695575
+    },
+    "cut": {
+      "spend_saved": 537106.5484615384,
+      "saved_per_deal_lost": 14342.826086159486,
+      "saved_per_deal_lost_range": null,
+      "mmm_marginal_cpa": {
+        "paid_search_nonbrand": 6834.8891080484755
+      }
+    },
+    "blended_cost_per_deal_in_window": {
+      "grow": {
+        "arm_markets": 1607.638767967146,
+        "other_markets": 1574.4016364634815
+      },
+      "cut": {
+        "arm_markets": 1365.1789807333748,
+        "other_markets": 1804.6459294680217
+      }
+    }
+  },
+  "exploratory": {
+    "drifted_markets_dropped": {
+      "note": "lifts without the markets whose spend drifted outside their arm, with the registered sd",
+      "dropped": [
+        "DLH"
+      ],
+      "lift": {
+        "grow": 143.8716920467639,
+        "cut": -17.05132970984148
+      },
+      "interval_90": {
+        "grow": [
+          65.97971441585983,
+          221.763669677668
+        ],
+        "cut": [
+          -106.40419809529996,
+          72.301538675617
+        ]
+      },
+      "same_decision": true
+    },
+    "realized_doses": {
+      "note": "search doses from the 2026 test weeks' spend instead of last year's same weeks",
+      "lift": {
+        "grow": 130.20559666283887,
+        "cut": -37.45277162930316
+      }
+    },
+    "placebo_mean_removed": {
+      "note": "lift minus the placebo windows' mean error; the registered interval is centered on the raw lift",
+      "placebo_mean": {
+        "grow": 17.004125856964308,
+        "cut": -1.9987793715407796
+      },
+      "lift": {
+        "grow": 113.11740123391802,
+        "cut": -35.448969435776526
+      }
+    }
+  },
+  "mmm_lift_tests": {
+    "units": "dollars and deals per week per size unit (market value / size index), the MMM's own units",
+    "x": "spend level without the move: grow = observed minus the planned add; search = observed / multiplier",
+    "delta_y": "lift in window / (test weeks x window share x size units)",
+    "rows": [
+      {
+        "arm": "grow",
+        "channel": "youtube",
+        "x": 1078.4491145833335,
+        "delta_x": 2500.0,
+        "delta_y": 1.4301254555349057,
+        "sigma": 0.5204637171652821,
+        "size_units": 8.421052631578947,
+        "test_weeks": 12,
+        "window_share": 0.9003832077714956,
+        "lift_in_window": 130.12152709088232
+      },
+      {
+        "arm": "cut",
+        "channel": "paid_search_nonbrand",
+        "x": 7495.317307692308,
+        "delta_x": -4572.143557692308,
+        "delta_y": -0.32086926455935155,
+        "sigma": 0.46546137252604647,
+        "size_units": 9.789473684210526,
+        "test_weeks": 12,
+        "window_share": 0.9934751461053319,
+        "lift_in_window": -37.4477488073173
+      }
+    ]
+  }
+}
