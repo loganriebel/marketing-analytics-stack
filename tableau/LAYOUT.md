@@ -61,8 +61,8 @@ Okabe-Ito based, safe for color-blind readers. Assign `Marketing Role` in each o
 
 | Marketing Role | Hex | Channels |
 |---|---|---|
-| performance | `#0072B2` | Paid Search Brand, Paid Search Non-Brand, LinkedIn, Display Retargeting, Affiliates and Partners |
-| brand | `#E69F00` | Meta, YouTube, Connected TV |
+| performance | `#0072B2` | Paid Search Brand, Paid Search Non-Brand, Display Retargeting, Affiliates and Partners |
+| brand | `#E69F00` | Meta, YouTube, Connected TV, LinkedIn |
 | events | `#CC79A7` | Webinars |
 | owned | `#009E73` | Email |
 | unpaid | `#999999` | Organic Search, Direct, Referral |
@@ -88,7 +88,7 @@ Fonts: Tableau Book and Tableau Semibold render on Public without substitution.
 | `p.Weeks` | Integer | List: 1 = "This week", 4 = "Last 4 weeks", 13 = "Last 13 weeks" | 1 |
 | `p.Trend Measure` | String | Spend, Leads, CPL, Won deals, CPA, Pipeline | Won deals |
 
-2025-12-15 is the last full week before Christmas; the 2025-12-22 week runs at about half spend. The latest weeks also undercount deals, because their leads have not had time to close.
+2025-12-15 is the last full week before Christmas; the 2025-12-22 week runs at reduced holiday spend. The latest weeks also undercount deals, because their leads have not had time to close.
 
 ## Shared calcs (Weekly source)
 
@@ -273,8 +273,8 @@ Static text, rewritten each week. Starting draft, grounded in the MMM's uncertai
 
 > **What to test next**
 >
-> 1. **Non-brand search budget test.** It is a third of paid spend and always on, so the MMM can only bound its CPA between $1.8k and $6.8k. Run 4 matched markets at 60% of plan for 8 weeks in February and March, outside the busy season, and read deals against the other 16 markets.
-> 2. **Meta seasonal hold.** Meta pushes into every busy season in every market, so the season curve absorbs most of its effect (MMM CPA $1.1k to $25.8k). Hold Meta flat in 3 markets through the May to June switchover.
+> 1. **Non-brand search budget test.** It is half of paid spend, always on, and went from $3.4M in 2023 to $8.4M in 2025, so the MMM can only bound its cost per extra deal between $4.1k and $11.3k. Run 10 matched markets at its 2023 pace for 12 weeks from February, and read deals against the other 10 (the pre-registered test in `geotest/PREREGISTRATION.md`).
+> 2. **YouTube heavy-up.** The MMM's cheapest next dollar ($2.3k per extra deal), but it has never run at the level the model recommends. Push it in a crossing 10 markets in the same test.
 > 3. **Refit with both reads as lift tests.** On the development seed, planned tests put brand search on target; without them it came out 54% low.
 
 ## Dashboard 2: three views of the same spend
@@ -340,7 +340,7 @@ Turning it off shows what a real team has: three views that disagree.
 - **Filters:** `Grain` = channel, `View Id` != truth. Hide this sheet when `p.Show Answer Key` is False (dynamic zone visibility on the parameter).
 - **Color:** diverging, not role. Role stays on the dot plot's header.
 
-**Caption (draft):** "No view gets both the level and the ranking right. Platform-reported ranks closest (0.81) but claims twice the deals. Last touch lands near the true total but splits it badly (0.14) and gives CTV nothing. The MMM is tight where spend was flighted (CTV within 6%) and wide where it is always on, so its ranking (0.00) rests on priors. It still picks the right next dollar: YouTube."
+**Caption (draft):** "No view gets both the level and the ranking right. Platform-reported ranks closest (0.79) but claims more than twice the deals. Last touch lands near the true total but splits it badly (0.10) and gives CTV nothing. The MMM ranks better than last touch (0.48), picks the right best and worst next dollar (YouTube and display), and lands non-brand search's average cost within 7%, but still gives paid media too little credit."
 
 ## Dashboard 3: where the next dollar goes
 
@@ -399,7 +399,7 @@ Layout: plan BANs across the top; response curves as small multiples (full width
   ```
 - **Filters:** `Grain` = channel.
 
-**Caption (draft):** "At the same total spend, the plan moves money from LinkedIn, display and affiliates to YouTube, CTV, Meta and non-brand search. The MMM expects +499 deals (90% HDI 30 to 1,001); the answer key gives +582. Three of seven levers sit at the ±50% bound, so the plan goes as far as the bounds allow, not as far as the curves would."
+**Caption (draft):** "At the same total spend, the plan moves money from display, affiliates, LinkedIn and a little non-brand search to YouTube, CTV and Meta. The MMM expects +654 deals (90% HDI 363 to 932); the answer key gives +1,045. YouTube, CTV and display sit at the ±50% bound, so the plan goes as far as the bounds allow, not as far as the curves would."
 
 ## Check values
 
@@ -407,22 +407,22 @@ With the defaults (report week 2025-12-15, 1 week, no filters):
 
 | KPI | Current | vs prior week | vs year ago |
 |---|---:|---:|---:|
-| Spend | $255,005 | +2.9% | +24.7% |
-| Leads | 4,054 | -9.5% | +11.3% |
-| CPL | $62.90 | +13.7% | +12.1% |
-| Won deals | 223 | +11.5% | +3.7% |
-| CPA | $1,144 | -7.7% | +20.2% |
-| Pipeline | $1,826,970 | +8.5% | +11.8% |
+| Spend | $274,153 | -18.3% | +19.9% |
+| Leads | 3,992 | -8.7% | -1.4% |
+| CPL | $68.68 | -10.5% | +21.6% |
+| Won deals | 233 | +14.8% | +18.3% |
+| CPA | $1,177 | -28.8% | +1.3% |
+| Pipeline | $1,638,570 | -2.0% | +0.9% |
 
-With `p.Weeks` = 4: spend $1,012,779, leads 17,545, won deals 876, CPA $1,156.
+With `p.Weeks` = 4: spend $1,253,829, leads 17,893, won deals 877, CPA $1,430.
 
-Funnel, same week: MQL rate 54.6%, SQL rate 41.1%, opportunity rate 70.8%, win rate 33.1%. Channel table: Paid Search Non-Brand $113,171 spend, CPL $144.54; Chicago has the most won deals (33).
+Funnel, same week: MQL rate 53.5%, SQL rate 38.6%, opportunity rate 70.4%, win rate 34.7%. Channel table: Paid Search Non-Brand $147,779 spend, CPL $159.59; Chicago has the most won deals (49).
 
-Full years: 2025 spend $14,345,811, leads 231,238, won deals 9,999 (the governed metrics give the same). 2024: $13,923,581, 234,455, 11,197.
+Full years: 2025 spend $17,230,000, leads 244,894, won deals 9,713 (the governed metrics give the same). 2024: $14,850,000, 242,658, 11,008.
 
-Dashboard 2, paid-media CPA: CRM $2,454, platform $1,203, MMM $4,178 ($3,127 to $5,309), answer key $2,479. Rank correlation: CRM 0.14, platform 0.81, MMM 0.00.
+Dashboard 2, paid-media CPA: CRM $2,832, platform $1,305, MMM $3,925 ($2,987 to $4,916), answer key $2,821. Rank correlation: CRM 0.10, platform 0.79, MMM 0.48.
 
-Dashboard 3: plan +499 deals mean (median 513, HDI 30 to 1,001), P(gain) 94.5%, answer key +582. YouTube and CTV +50% (cap), Meta +24%, non-brand +8%, LinkedIn -42%, display -40%, affiliates -50% (cap). Brand search +$208,143.
+Dashboard 3: plan +654 deals mean (median 667, HDI 363 to 932), P(gain) 99.95%, answer key +1,045. YouTube and CTV +50% (cap), Meta +7%, non-brand -3%, LinkedIn -6%, display -50% (cap), affiliates -20%. Brand search +$188,623.
 
 ## Publish to Tableau Public
 
