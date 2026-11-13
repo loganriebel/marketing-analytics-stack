@@ -322,6 +322,87 @@ def to_markdown(g: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def compare(before: dict, after: dict) -> dict:
+    """Two grades of the same window side by side: per-channel error and 90% HDI coverage,
+    the marginal-CPA calls, paid-media totals and the optimizer's plan."""
+    rows = {}
+    for ch in C.CHANNELS:
+        b, a = before["model"]["channels"][ch], after["model"]["channels"][ch]
+        rows[ch] = {k: {"true": a[k]["true"], "before": b[k]["median"], "after": a[k]["median"],
+                        "pct_error_before": b[k]["pct_error"], "pct_error_after": a[k]["pct_error"],
+                        "covered_before": b[k]["covered"], "covered_after": a[k]["covered"]}
+                    for k in METRICS}
+    bm, am = before["model"], after["model"]
+
+    def calls(m):
+        return {"best": m["marginal_cpa_rank"]["best"], "best_right": m["best_marginal_cpa_right"],
+                "worst": m["marginal_cpa_rank"]["worst"], "worst_right": m["worst_marginal_cpa_right"],
+                "marginal_cpa_rank_spearman": m["marginal_cpa_rank"]["spearman"],
+                "cpa_rank_spearman": m["cpa_rank"]["spearman"]}
+
+    out = {"before": before["fit"], "after": after["fit"], "channels": rows,
+           "hdi_coverage": {"before": bm["hdi_coverage"], "after": am["hdi_coverage"]},
+           "median_abs_pct_error": {"before": bm["median_abs_pct_error"], "after": am["median_abs_pct_error"]},
+           "marginal_cpa_calls": {"true_best": am["true_best_marginal"], "true_worst": am["true_worst_marginal"],
+                                  "before": calls(bm), "after": calls(am)},
+           "totals": {k: {"before": bm["totals"][k], "after": am["totals"][k]} for k in am["totals"]}}
+    if "optimizer" in before and "optimizer" in after:
+        out["optimizer"] = {"before": before["optimizer"], "after": after["optimizer"]}
+    return out
+
+
+def compare_markdown(c: dict) -> str:
+    def err(v):
+        return "n/a" if v is None else f"{v:+.0f}%"
+
+    def cov(v):
+        return "yes" if v else "no"
+
+    b, a = c["before"], c["after"]
+    lines = [f"# MMM grade: {b} fit against {a} fit", "",
+             "Same window (2023 to 2025), same answer key. Error is the posterior median against the truth; "
+             "covered means the 90% HDI holds the truth.", "",
+             "| Channel | CPA err | mCPA err | Deals err | CPA covered | mCPA covered | Deals covered |",
+             "|---|---:|---:|---:|---|---|---|"]
+    for ch, r in c["channels"].items():
+        cells = [f"{err(r[k]['pct_error_before'])} to {err(r[k]['pct_error_after'])}"
+                 for k in ("cpa", "marginal_cpa", "incremental_deals")]
+        cells += [f"{cov(r[k]['covered_before'])} to {cov(r[k]['covered_after'])}"
+                  for k in ("cpa", "marginal_cpa", "incremental_deals")]
+        lines.append(f"| {ch} | " + " | ".join(cells) + " |")
+    hb, ha = c["hdi_coverage"]["before"], c["hdi_coverage"]["after"]
+    mb, ma = c["median_abs_pct_error"]["before"], c["median_abs_pct_error"]["after"]
+    k = c["marginal_cpa_calls"]
+    lines += ["", f"90% HDI coverage, all 4 metrics x 8 channels: {hb['covered']} of {hb['of']} to "
+              f"{ha['covered']} of {ha['of']}.",
+              f"Median absolute error: CPA {mb['cpa']:.0f}% to {ma['cpa']:.0f}%; marginal CPA "
+              f"{mb['marginal_cpa']:.0f}% to {ma['marginal_cpa']:.0f}%; deals {mb['incremental_deals']:.0f}% to "
+              f"{ma['incremental_deals']:.0f}%.", "",
+              f"| Marginal CPA call | {b} | {a} |", "|---|---|---|",
+              f"| Best next dollar (true: {k['true_best']}) | {k['before']['best']} ({'right' if k['before']['best_right'] else 'wrong'}) "
+              f"| {k['after']['best']} ({'right' if k['after']['best_right'] else 'wrong'}) |",
+              f"| Worst next dollar (true: {k['true_worst']}) | {k['before']['worst']} "
+              f"({'right' if k['before']['worst_right'] else 'wrong'}) | {k['after']['worst']} "
+              f"({'right' if k['after']['worst_right'] else 'wrong'}) |",
+              f"| Marginal CPA rank correlation | {k['before']['marginal_cpa_rank_spearman']:.2f} | "
+              f"{k['after']['marginal_cpa_rank_spearman']:.2f} |",
+              f"| CPA rank correlation | {k['before']['cpa_rank_spearman']:.2f} | {k['after']['cpa_rank_spearman']:.2f} |",
+              "", f"| Total paid media | True | {b} (90% HDI) | {a} (90% HDI) |", "|---|---:|---:|---:|"]
+    for name, v in c["totals"].items():
+        vb, va = v["before"], v["after"]
+        lines.append(f"| {name} | {_fmt(va['true'])} | {_fmt(vb['median'])} ({_fmt(vb['hdi_90'][0])} to "
+                     f"{_fmt(vb['hdi_90'][1])}){'' if vb['covered'] else ' (miss)'} | {_fmt(va['median'])} "
+                     f"({_fmt(va['hdi_90'][0])} to {_fmt(va['hdi_90'][1])}){'' if va['covered'] else ' (miss)'} |")
+    if "optimizer" in c:
+        ob, oa = c["optimizer"]["before"], c["optimizer"]["after"]
+        lines += ["", "| Optimizer plan, same total spend | Model (90% HDI) | True | Inside |", "|---|---:|---:|---|"]
+        for name, o in ((b, ob), (a, oa)):
+            lines.append(f"| {name} | {_fmt(o['model_deal_change'])} ({_fmt(o['model_hdi_90'][0])} to "
+                         f"{_fmt(o['model_hdi_90'][1])}) | {_fmt(o['true_deal_change'])} | "
+                         f"{'yes' if o['true_inside_hdi'] else 'no'} |")
+    return "\n".join(lines) + "\n"
+
+
 def grade(outputs: Path = C.OUTPUT_DIR, truth_path: Path = TRUTH_PATH, memo_dir: Path = MEMO_DIR) -> dict:
     """Grade the media channels. Webinars are a control in the MMM, so they are not graded."""
     truth = json.loads(truth_path.read_text(encoding="utf-8"))
@@ -356,6 +437,7 @@ def main(argv=None) -> int:
                     help="answer key of the world the outputs came from (a dev seed's own file)")
     ap.add_argument("--grade-dir", type=Path, default=GRADE_DIR)
     ap.add_argument("--memo-dir", type=Path, default=MEMO_DIR, help="step 5 memo outputs; skipped if absent")
+    ap.add_argument("--compare", type=Path, help="an earlier grade (JSON) of the same window to set beside this one")
     args = ap.parse_args(argv)
     g = grade(args.outputs, args.truth, args.memo_dir)
     args.grade_dir.mkdir(parents=True, exist_ok=True)
@@ -364,6 +446,14 @@ def main(argv=None) -> int:
     md = to_markdown(g)
     (args.grade_dir / f"{stem}.md").write_text(md, encoding="utf-8")
     print(md)
+    if args.compare:
+        before = json.loads(args.compare.read_text(encoding="utf-8"))
+        c = compare(before, g)
+        cstem = f"compare_{before['fit']}_{g['fit']}"
+        (args.grade_dir / f"{cstem}.json").write_text(json.dumps(c, indent=2) + "\n", encoding="utf-8")
+        cmd = compare_markdown(c)
+        (args.grade_dir / f"{cstem}.md").write_text(cmd, encoding="utf-8")
+        print(cmd)
     return 0
 
 
