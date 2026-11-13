@@ -20,6 +20,8 @@ from . import config as C
 
 TRUTH_PATH = C.REPO_ROOT / "sim" / "truth" / "truth.json"
 GRADE_DIR = C.REPO_ROOT / "mmm" / "grading"
+# Step 5's funding memo: its facts pack names the moves it recommends.
+MEMO_DIR = C.REPO_ROOT / "memo" / "outputs"
 METRICS = ["incremental_deals", "cpa", "marginal_cpa", "roi_revenue"]
 # Upper funnel through brand search; graded where both the answer key and the outputs have them.
 MEDIATED = ["incremental_deals_via_brand_search", "incremental_deals_total", "cpa_total",
@@ -197,6 +199,53 @@ def true_plan_gain(optimizer: dict, truth: dict) -> dict:
     }
 
 
+def _true_change(t: dict, multiplier: float, total: bool) -> float:
+    """True, noise-free deal change from scaling a channel's path, PCHIP as in true_plan_gain."""
+    rc = (_total_curve(t) if total else None) or t["response_curve"]
+    ys = rc.get("incremental_deals_total", rc.get("incremental_deals"))
+    f = interpolate.PchipInterpolator(rc["spend_multiplier"], ys)
+    return float(f(multiplier) - f(1.0))
+
+
+def grade_memo(memo_dir: Path, truth: dict) -> dict | None:
+    """Run each move the funding memo recommends through the true world.
+
+    The facts pack lists each variant's channel multipliers on the window spend path
+    and the fact holding its claimed extra deals a year. The memo's grounding output
+    says whether the memo stated that fact's 90% range.
+    """
+    facts_path = memo_dir / "facts.json"
+    if not facts_path.exists():
+        return None
+    pack = json.loads(facts_path.read_text(encoding="utf-8"))
+    facts = {f["id"]: f for f in pack["facts"]}
+    years = pack["meta"]["years_in_window"]
+    ground_path = memo_dir / "grounding.json"
+    stated = set()
+    if ground_path.exists():
+        for n in json.loads(ground_path.read_text(encoding="utf-8"))["numbers"]:
+            if n["kind"] == "range":
+                stated.update(n["matched"])
+    rows = {}
+    for name, v in pack["variants"].items():
+        by = [{"channel": mv["channel"], "multiplier": mv["multiplier"],
+               "true_deal_change_per_year": _true_change(truth["channels"][mv["channel"]], mv["multiplier"],
+                                                         mv["curve"] == "total") / years}
+              for mv in v["moves"]]
+        true = sum(r["true_deal_change_per_year"] for r in by)
+        claim = facts[v["deals_fact"]]
+        rows[name] = {
+            "claim_fact": v["deals_fact"], "claimed_per_year": claim["value"],
+            "claimed_hdi_90": [claim["low"], claim["high"]], "true_per_year": true,
+            "covered": bool(claim["low"] <= true <= claim["high"]),
+            "pct_error": _pct_err(claim["value"], true),
+            "memo_states_range": v["deals_fact"] in stated, "by_channel": by,
+        }
+    return {"method": "each variant's multipliers through the answer key's noise-free response curves "
+                      "(PCHIP; total curves for upper-funnel channels), per year = window / years_in_window",
+            "variants": rows}
+
+
 def _fmt(x, nd=0):
     if x is None or (isinstance(x, float) and not math.isfinite(x)):
         return "n/a"
@@ -261,10 +310,19 @@ def to_markdown(g: dict) -> str:
         lines += ["", f"Optimizer plan at the same total spend: model predicts {_fmt(o['model_deal_change'])} "
                   f"deals ({_fmt(o['model_hdi_90'][0])} to {_fmt(o['model_hdi_90'][1])}); the true world gives "
                   f"{_fmt(o['true_deal_change'])} ({'inside' if o['true_inside_hdi'] else 'outside'} the HDI)."]
+    if "memo" in g:
+        lines += ["", "Funding memo's recommended moves, extra deals a year:", "",
+                  "| Variant | Memo claims (90% range) | True | Error | Covered | Range in memo |",
+                  "|---|---:|---:|---:|---|---|"]
+        for name, r in g["memo"]["variants"].items():
+            lo, hi = r["claimed_hdi_90"]
+            lines.append(f"| {name} | {_fmt(r['claimed_per_year'])} ({_fmt(lo)} to {_fmt(hi)}) | "
+                         f"{_fmt(r['true_per_year'])} | {_fmt(r['pct_error'])}% | {'yes' if r['covered'] else 'no'} | "
+                         f"{'yes' if r['memo_states_range'] else 'no'} |")
     return "\n".join(lines) + "\n"
 
 
-def grade(outputs: Path = C.OUTPUT_DIR, truth_path: Path = TRUTH_PATH) -> dict:
+def grade(outputs: Path = C.OUTPUT_DIR, truth_path: Path = TRUTH_PATH, memo_dir: Path = MEMO_DIR) -> dict:
     """Grade the media channels. Webinars are a control in the MMM, so they are not graded."""
     truth = json.loads(truth_path.read_text(encoding="utf-8"))
     ch = json.loads((outputs / "channels.json").read_text(encoding="utf-8"))
@@ -285,6 +343,9 @@ def grade(outputs: Path = C.OUTPUT_DIR, truth_path: Path = TRUTH_PATH) -> dict:
     opt_path = outputs / "optimizer.json"
     if opt_path.exists():
         g["optimizer"] = true_plan_gain(json.loads(opt_path.read_text(encoding="utf-8")), truth)
+    memo = grade_memo(memo_dir, truth)
+    if memo:
+        g["memo"] = memo
     return g
 
 
@@ -294,8 +355,9 @@ def main(argv=None) -> int:
     ap.add_argument("--truth", type=Path, default=TRUTH_PATH,
                     help="answer key of the world the outputs came from (a dev seed's own file)")
     ap.add_argument("--grade-dir", type=Path, default=GRADE_DIR)
+    ap.add_argument("--memo-dir", type=Path, default=MEMO_DIR, help="step 5 memo outputs; skipped if absent")
     args = ap.parse_args(argv)
-    g = grade(args.outputs, args.truth)
+    g = grade(args.outputs, args.truth, args.memo_dir)
     args.grade_dir.mkdir(parents=True, exist_ok=True)
     stem = f"grade_{g['fit']}" + ("" if g["seed"] == 2026 else f"_seed{g['seed']}")
     (args.grade_dir / f"{stem}.json").write_text(json.dumps(g, indent=2) + "\n", encoding="utf-8")
