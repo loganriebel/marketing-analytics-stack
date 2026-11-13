@@ -1,0 +1,73 @@
+channel_id,channel_name,channel_group,marketing_role,channel_sort,is_lever,curve_basis,spend_multiplier,spend,deals_mean,deals_hdi_low,deals_hdi_high,deals_direct_mean,deals_direct_hdi_low,deals_direct_hdi_high,deals_via_brand_search_mean
+paid_search_brand,Paid Search Brand,search,performance,1,0,direct,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,
+paid_search_brand,Paid Search Brand,search,performance,1,0,direct,0.25,1847202.3,326.2588,0.3816,756.1695,326.2588,0.3816,756.1695,
+paid_search_brand,Paid Search Brand,search,performance,1,0,direct,0.5,3694404.59,500.0101,0.7388,1117.6356,500.0101,0.7388,1117.6356,
+paid_search_brand,Paid Search Brand,search,performance,1,0,direct,0.75,5541606.88,627.3244,0.792,1373.0965,627.3244,0.792,1373.0965,
+paid_search_brand,Paid Search Brand,search,performance,1,0,direct,1.0,7388809.18,727.0328,0.8296,1571.9389,727.0328,0.8296,1571.9389,
+paid_search_brand,Paid Search Brand,search,performance,1,0,direct,1.25,9236011.48,808.0273,0.8586,1749.056,808.0273,0.8586,1749.056,
+paid_search_brand,Paid Search Brand,search,performance,1,0,direct,1.5,11083213.77,875.4551,0.8821,1875.0885,875.4551,0.8821,1875.0885,
+paid_search_brand,Paid Search Brand,search,performance,1,0,direct,2.0,14777618.36,981.7984,0.9188,2122.7466,981.7984,0.9188,2122.7466,
+paid_search_brand,Paid Search Brand,search,performance,1,0,direct,3.0,22166427.54,1125.426,0.9693,2429.6488,1125.426,0.9693,2429.6488,
+paid_search_nonbrand,Paid Search Non-Brand,search,performance,2,1,direct,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,
+paid_search_nonbrand,Paid Search Non-Brand,search,performance,2,1,direct,0.25,3349199.72,1345.6031,207.1252,2477.1099,1345.6031,207.1252,2477.1099,
+paid_search_nonbrand,Paid Search Non-Brand,search,performance,2,1,direct,0.5,6698399.44,2319.4229,727.9094,4016.3153,2319.4229,727.9094,4016.3153,
+paid_search_nonbrand,Paid Search Non-Brand,search,performance,2,1,direct,0.75,10047599.16,3076.4798,1146.3162,5057.0624,3076.4798,1146.3162,5057.0624,
+paid_search_nonbrand,Paid Search Non-Brand,search,performance,2,1,direct,1.0,13396798.88,3678.5302,1457.7357,5863.8551,3678.5302,1457.7357,5863.8551,
+paid_search_nonbrand,Paid Search Non-Brand,search,performance,2,1,direct,1.25,16745998.6,4168.017,1764.007,6556.2508,4168.017,1764.007,6556.2508,
+paid_search_nonbrand,Paid Search Non-Brand,search,performance,2,1,direct,1.5,20095198.32,4573.8582,2066.0094,7158.9167,4573.8582,2066.0094,7158.9167,
+paid_search_nonbrand,Paid Search Non-Brand,search,performance,2,1,direct,2.0,26793597.76,5208.7086,2330.1028,7904.3431,5208.7086,2330.1028,7904.3431,
+paid_search_nonbrand,Paid Search Non-Brand,search,performance,2,1,direct,3.0,40190396.64,6053.7684,2905.325,9249.2077,6053.7684,2905.325,9249.2077,
+meta,Meta,paid_social,brand,3,1,direct plus via brand search,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+meta,Meta,paid_social,brand,3,1,direct plus via brand search,0.25,935205.79,225.428,1.4681,514.4418,223.9902,0.161,513.32,1.4379
+meta,Meta,paid_social,brand,3,1,direct plus via brand search,0.5,1870411.58,443.1583,4.6805,930.5129,440.2911,0.3844,925.6401,2.8672
+meta,Meta,paid_social,brand,3,1,direct plus via brand search,0.75,2805617.36,637.1907,3.6227,1317.4304,632.9026,0.7642,1314.8064,4.2882
+meta,Meta,paid_social,brand,3,1,direct plus via brand search,1.0,3740823.15,807.8797,5.5815,1620.9177,802.1788,1.1949,1614.9095,5.7009
+meta,Meta,paid_social,brand,3,1,direct plus via brand search,1.25,4676028.94,957.6158,11.6971,1903.0428,950.4958,4.181,1889.7474,7.1199
+meta,Meta,paid_social,brand,3,1,direct plus via brand search,1.5,5611234.72,1089.0511,16.2195,2123.9484,1080.5212,5.6377,2115.3887,8.5299
+meta,Meta,paid_social,brand,3,1,direct plus via brand search,2.0,7481646.3,1306.8734,21.2395,2493.8755,1295.5478,10.1922,2487.9954,11.3255
+meta,Meta,paid_social,brand,3,1,direct plus via brand search,3.0,11222469.45,1614.8197,27.9397,3110.7939,1597.9952,15.0912,3096.1118,16.8245
+linkedin,LinkedIn,paid_social,performance,4,1,direct,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,
+linkedin,LinkedIn,paid_social,performance,4,1,direct,0.25,961292.32,373.2685,0.0093,823.474,373.2685,0.0093,823.474,
+linkedin,LinkedIn,paid_social,performance,4,1,direct,0.5,1922584.64,565.7856,0.0299,1186.9378,565.7856,0.0299,1186.9378,
+linkedin,LinkedIn,paid_social,performance,4,1,direct,0.75,2883876.96,704.1975,0.0584,1437.7805,704.1975,0.0584,1437.7805,
+linkedin,LinkedIn,paid_social,performance,4,1,direct,1.0,3845169.28,811.4129,0.0932,1640.5486,811.4129,0.0932,1640.5486,
+linkedin,LinkedIn,paid_social,performance,4,1,direct,1.25,4806461.6,897.9953,0.1328,1824.5893,897.9953,0.1328,1824.5893,
+linkedin,LinkedIn,paid_social,performance,4,1,direct,1.5,5767753.92,969.8928,0.1691,1950.2046,969.8928,0.1691,1950.2046,
+linkedin,LinkedIn,paid_social,performance,4,1,direct,2.0,7690338.56,1083.3028,0.1913,2200.6639,1083.3028,0.1913,2200.6639,
+linkedin,LinkedIn,paid_social,performance,4,1,direct,3.0,11535507.84,1237.4563,0.2231,2509.4909,1237.4563,0.2231,2509.4909,
+youtube,YouTube,video,brand,5,1,direct plus via brand search,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+youtube,YouTube,video,brand,5,1,direct plus via brand search,0.25,503482.14,187.4533,42.64,339.794,185.8348,44.1987,341.5297,1.6185
+youtube,YouTube,video,brand,5,1,direct plus via brand search,0.5,1006964.28,481.1227,227.9466,771.9479,477.9001,228.7891,770.8853,3.2226
+youtube,YouTube,video,brand,5,1,direct plus via brand search,0.75,1510446.43,744.1362,410.1995,1121.5111,739.3235,398.4508,1110.1355,4.8127
+youtube,YouTube,video,brand,5,1,direct plus via brand search,1.0,2013928.57,969.9028,502.2203,1366.632,963.5137,496.8241,1364.0804,6.3892
+youtube,YouTube,video,brand,5,1,direct plus via brand search,1.25,2517410.71,1170.3463,616.9239,1628.0495,1162.3873,612.5355,1629.2487,7.959
+youtube,YouTube,video,brand,5,1,direct plus via brand search,1.5,3020892.86,1354.4255,737.7003,1890.2016,1344.9103,724.3035,1880.9621,9.5152
+youtube,YouTube,video,brand,5,1,direct plus via brand search,2.0,4027857.14,1690.1916,964.3313,2347.542,1677.6027,963.9946,2348.4394,12.5889
+youtube,YouTube,video,brand,5,1,direct plus via brand search,3.0,6041785.71,2262.9609,1462.9897,3194.2544,2244.37,1325.5319,3058.3192,18.5909
+ctv,Connected TV,ctv,brand,6,1,direct plus via brand search,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+ctv,Connected TV,ctv,brand,6,1,direct plus via brand search,0.25,747997.68,446.3722,243.9279,650.3055,443.6421,242.2515,649.6511,2.7301
+ctv,Connected TV,ctv,brand,6,1,direct plus via brand search,0.5,1495995.36,776.6635,548.9813,1030.4863,771.3204,543.0547,1022.9526,5.3431
+ctv,Connected TV,ctv,brand,6,1,direct plus via brand search,0.75,2243993.03,1037.6538,779.0407,1283.1652,1029.8038,768.6094,1273.2263,7.85
+ctv,Connected TV,ctv,brand,6,1,direct plus via brand search,1.0,2991990.71,1251.8399,994.5091,1513.7133,1241.5798,990.6577,1510.2708,10.26
+ctv,Connected TV,ctv,brand,6,1,direct plus via brand search,1.25,3739988.39,1432.5342,1147.7055,1691.459,1419.9449,1145.195,1687.2607,12.5893
+ctv,Connected TV,ctv,brand,6,1,direct plus via brand search,1.5,4487986.07,1588.1599,1291.5644,1872.5195,1573.324,1271.5556,1853.0389,14.8359
+ctv,Connected TV,ctv,brand,6,1,direct plus via brand search,2.0,5983981.42,1845.1465,1502.4049,2159.6158,1826.0413,1480.5147,2138.7217,19.1051
+ctv,Connected TV,ctv,brand,6,1,direct plus via brand search,3.0,8975972.13,2221.9735,1783.4625,2642.7031,2195.0953,1741.4097,2604.1531,26.8783
+display,Display Retargeting,display,performance,7,1,direct,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,
+display,Display Retargeting,display,performance,7,1,direct,0.25,1159878.06,436.0094,1.1841,950.7113,436.0094,1.1841,950.7113,
+display,Display Retargeting,display,performance,7,1,direct,0.5,2319756.12,669.8502,0.8832,1379.3722,669.8502,0.8832,1379.3722,
+display,Display Retargeting,display,performance,7,1,direct,0.75,3479634.19,841.3963,1.0061,1718.1719,841.3963,1.0061,1718.1719,
+display,Display Retargeting,display,performance,7,1,direct,1.0,4639512.25,975.9961,1.0902,1973.8134,975.9961,1.0902,1973.8134,
+display,Display Retargeting,display,performance,7,1,direct,1.25,5799390.31,1085.6318,1.1526,2189.4723,1085.6318,1.1526,2189.4723,
+display,Display Retargeting,display,performance,7,1,direct,1.5,6959268.38,1177.2127,7.4998,2367.1932,1177.2127,7.4998,2367.1932,
+display,Display Retargeting,display,performance,7,1,direct,2.0,9279024.5,1322.4641,9.6722,2645.5067,1322.4641,9.6722,2645.5067,
+display,Display Retargeting,display,performance,7,1,direct,3.0,13918536.75,1520.879,1.3642,3055.4376,1520.879,1.3642,3055.4376,
+affiliates,Affiliates and Partners,partners,performance,8,1,direct,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,
+affiliates,Affiliates and Partners,partners,performance,8,1,direct,0.25,501586.72,201.0737,0.2387,467.55,201.0737,0.2387,467.55,
+affiliates,Affiliates and Partners,partners,performance,8,1,direct,0.5,1003173.44,289.1792,0.3104,655.3987,289.1792,0.3104,655.3987,
+affiliates,Affiliates and Partners,partners,performance,8,1,direct,0.75,1504760.15,348.9465,0.6333,769.951,348.9465,0.6333,769.951,
+affiliates,Affiliates and Partners,partners,performance,8,1,direct,1.0,2006346.87,393.7449,0.3907,852.9353,393.7449,0.3907,852.9353,
+affiliates,Affiliates and Partners,partners,performance,8,1,direct,1.25,2507933.59,429.1964,1.3581,927.4126,429.1964,1.3581,927.4126,
+affiliates,Affiliates and Partners,partners,performance,8,1,direct,1.5,3009520.3,458.2591,0.4399,978.7526,458.2591,0.4399,978.7526,
+affiliates,Affiliates and Partners,partners,performance,8,1,direct,2.0,4012693.74,503.628,0.4751,1073.3993,503.628,0.4751,1073.3993,
+affiliates,Affiliates and Partners,partners,performance,8,1,direct,3.0,6019040.61,564.9173,0.5243,1196.1326,564.9173,0.5243,1196.1326,
