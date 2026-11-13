@@ -30,6 +30,10 @@ RESPONSE_MULTIPLIERS = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0]
 class SimResult:
     tables: dict[str, pd.DataFrame]
     truth: dict
+    # Internal arrays a later period needs to carry on from this one (sim/extend.py).
+    # Never written anywhere.
+    state: dict | None = None
+    truth_2026: dict | None = None
 
 
 # --- small helpers ------------------------------------------------------------
@@ -75,18 +79,27 @@ def _season_log(sp: dict, woy: np.ndarray, lat: np.ndarray) -> np.ndarray:
     return out
 
 
-def _brand_flighting(rng, f: dict, cal: dict, lat: np.ndarray, region_ok: np.ndarray) -> np.ndarray:
+def _brand_flighting(rng, f: dict, cal: dict, lat: np.ndarray, region_ok: np.ndarray,
+                     keep: dict | None = None, habits: dict | None = None) -> np.ndarray:
     """Spend shape (T, R) for a brand channel: a push ahead of and into each planned
-    busy season, a sustain level between pushes, and a soft level in slow weeks."""
+    busy season, a sustain level between pushes, and a soft level in slow weeks.
+
+    habits: a market-bought channel's per-market timing and size, carried over from an
+    earlier period instead of drawn. keep: receives them."""
     t_total, n_reg = cal["T"], lat.size
     m = np.repeat(np.where(cal["slow"], f["slow"], f["sustain"])[:, None], n_reg, axis=1)
     pl = C.PLANNING
     dlat = lat - pl["ref_latitude"]
     lo, hi = f["len"]
     if f["geo"] == "market":  # each market's own habit: some push early or big every year
-        market_shift = rng.normal(0.0, f["market_timing_sigma"], n_reg)
-        market_shift -= market_shift[region_ok].mean()  # markets differ around the plan, not all early
-        market_size = np.exp(rng.normal(0.0, f["market_mult_sigma"], n_reg))
+        if habits is None:
+            market_shift = rng.normal(0.0, f["market_timing_sigma"], n_reg)
+            market_shift -= market_shift[region_ok].mean()  # markets differ around the plan, not all early
+            market_size = np.exp(rng.normal(0.0, f["market_mult_sigma"], n_reg))
+        else:
+            market_shift, market_size = habits["market_shift"], habits["market_size"]
+        if keep is not None:
+            keep["habits"] = {"market_shift": market_shift, "market_size": market_size}
     for y in cal["iso_years"]:
         for season in ("spring", "fall"):
             if f["geo"] == "national":
@@ -185,22 +198,29 @@ def _draw_true_params(rng: np.random.Generator, n_reg: int) -> dict:
 # --- spend ------------------------------------------------------------------
 
 def _planned_spend(rng, ch: str, cal: dict, size: np.ndarray, region_ok: np.ndarray,
-                   lat: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """Actual spend (T, R) and the national plan it was bought against (T,)."""
+                   lat: np.ndarray, keep: dict | None = None) -> tuple[np.ndarray, np.ndarray]:
+    """Actual spend (T, R) and the national plan it was bought against (T,).
+
+    keep: receives the channel's buying habits (market split, noise state, quarter
+    draws) so a later period can carry on from them. It changes no draw."""
     p = C.SPEND[ch]
     t_total, n_reg = cal["T"], size.size
     yr = cal["year_idx"]
-    year_noise = np.exp(rng.normal(0.0, C.YEAR_PLAN_SIGMA, yr.max() - yr.min() + 1))[yr - yr.min()]
-    q_mult = np.exp(rng.normal(0.0, p["quarter_sigma"], cal["quarter"].max() + 1))[cal["quarter"]]
+    year_draw = np.exp(rng.normal(0.0, C.YEAR_PLAN_SIGMA, yr.max() - yr.min() + 1))
+    year_noise = year_draw[yr - yr.min()]
+    q_draw = np.exp(rng.normal(0.0, p["quarter_sigma"], cal["quarter"].max() + 1))
+    q_mult = q_draw[cal["quarter"]]
     plan = p["weekly_budget"] * np.exp(p["yearly_drift"] * yr) * cal["event_mult"][ch] * cal["holiday_cut"]
     national = plan * year_noise * q_mult * np.exp(rng.normal(0.0, p["weekly_sigma"], t_total))
     tilt = np.exp(rng.normal(0.0, p["tilt_sigma"], n_reg))
     alloc = size * tilt * region_ok
     alloc = alloc / alloc.sum()
-    noise = np.exp(_ar1(rng, t_total, n_reg, p["region_sigma"], 0.6))
+    log_noise = _ar1(rng, t_total, n_reg, p["region_sigma"], 0.6)
+    noise = np.exp(log_noise)
 
+    resplit = None
     if p["flight"] == "seasonal_push":
-        shape = _brand_flighting(rng, p["push"], cal, lat, region_ok)
+        shape = _brand_flighting(rng, p["push"], cal, lat, region_ok, keep)
     else:
         n_q = cal["quarter"].max() + 1
         resplit = np.exp(rng.normal(0.0, p["quarter_region_sigma"], (n_q, n_reg)))
@@ -210,12 +230,19 @@ def _planned_spend(rng, ch: str, cal: dict, size: np.ndarray, region_ok: np.ndar
     shape = shape / (shape[cal["win"]] * alloc).sum(axis=1).mean()
     x = np.round(national[:, None] * alloc[None, :] * shape * noise, 2)
     x[x < 10.0] = 0.0  # platforms do not serve tiny budgets
+    if keep is not None:
+        keep.update(alloc=alloc, log_noise_last=log_noise[-1].copy(), year_noise_last=float(year_draw[-1]),
+                    q_mult_last=float(q_draw[-1]), resplit_last=None if resplit is None else resplit[-1].copy(),
+                    plan_last=float(p["weekly_budget"] * np.exp(p["yearly_drift"] * yr[-1]) * cal["event_mult"][ch][-1]))
     return x, plan
 
 
 # --- simulation ---------------------------------------------------------------
 
-def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
+def simulate(seed: int = C.DEFAULT_SEED, keep_state: bool = False) -> SimResult:
+    """The 2023 to 2025 world. keep_state also returns the internal arrays that
+    sim/extend.py needs to run the world on into 2026; the tables and truth are the
+    same either way."""
     # Two child streams: one draws the hidden true parameters, one draws the data.
     truth_seq, data_seq = np.random.SeedSequence(seed).spawn(2)
     tp = _draw_true_params(np.random.default_rng(truth_seq), len(C.REGIONS))
@@ -268,10 +295,12 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
     # --- planned spend and webinars -------------------------------------------
     spend: dict[str, np.ndarray] = {}
     plans: dict[str, np.ndarray] = {}
+    habits: dict[str, dict] = {ch: {} for ch in C.PLANNED_CHANNELS}
     all_regions = np.ones(n_reg, dtype=bool)
     ctv_regions = np.isin(codes, C.CTV_REGIONS)
     for ch in C.PLANNED_CHANNELS:
-        spend[ch], plans[ch] = _planned_spend(rng, ch, cal, size, ctv_regions if ch == "ctv" else all_regions, lat)
+        spend[ch], plans[ch] = _planned_spend(rng, ch, cal, size, ctv_regions if ch == "ctv" else all_regions, lat,
+                                              keep=habits[ch])
 
     w_cfg = C.WEBINARS
     ev_rate = w_cfg["events_per_week_national"] * size / n_reg
@@ -305,7 +334,7 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
                     for m in range(n_months)]
     region_eff = rng.normal(0.0, s_cfg["region_sigma"], n_reg)
     area_off = np.array([s_cfg["area_offset"][a] for a in areas])
-    counts_by_role, mult_by_role = {}, {}
+    counts_by_role, mult_by_role, cov_last = {}, {}, {}
     for role in ("sdr", "ae"):
         path = np.zeros(n_months)
         cov = s_cfg["start_coverage"]
@@ -316,6 +345,7 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
                 if ms.month in s_cfg["hiring_months"] and not frozen:
                     cov += s_cfg["hiring_gain_per_month"]
             path[m] = cov
+        cov_last[role] = cov
         target = s_cfg[f"{role}_per_1k_accounts"] * accounts / 1000
         noise = rng.normal(0.0, s_cfg["month_sigma"], (n_months, n_reg))
         cov_r = path[:, None] * np.exp(area_off[None, :] + region_eff[None, :] + noise)
@@ -877,17 +907,40 @@ def simulate(seed: int = C.DEFAULT_SEED) -> SimResult:
         "region_size_index": {c: _r(s, 6) for c, s in zip(codes, size)},
         "ctv_regions": C.CTV_REGIONS,
     }
-    return SimResult(tables=tables, truth=truth)
+    state = None
+    if keep_state:
+        state = {
+            "seed": seed, "tp": tp, "codes": codes, "names": names, "areas": areas, "accounts": accounts,
+            "lat": lat, "size": size, "area_lead": area_lead, "area_amount": area_amount, "t0": t0,
+            "weeks": weeks, "week_d": week_d, "t_total": t_total, "snapshot": snapshot,
+            "spend": spend, "habits": habits, "eta": eta, "sends": sends, "beta_email": beta_email,
+            "betas": betas, "gamma": gamma, "cost_per_search": cost_per_search, "fp": fp,
+            "month_starts": month_starts, "counts_by_role": counts_by_role, "cov_last": cov_last,
+            "region_eff": region_eff, "area_off": area_off, "attr": attr, "vprob": vprob,
+            "vsrc": vsrc, "vmed": vmed, "vcamp": vcamp,
+            "leads": {"t": lt, "r": lr, "o": lo_, "created": created, "rec": rec, "var": var,
+                      "is_mql": is_mql, "is_sql": is_sql, "is_opp": is_opp, "is_won": is_won,
+                      "mql_date": mql_date, "sql_date": sql_date, "opp_date": opp_date,
+                      "close_date": close_date, "amount": amount, "order": order, "lead_ids": lead_ids,
+                      "lead_id_of": lead_id_of, "n_opps": int(opp_rows.size)},
+            "n_events": int(keep.sum()),
+        }
+    return SimResult(tables=tables, truth=truth, state=state)
 
 
 def write_outputs(result: SimResult, raw_dir: Path = DEFAULT_RAW_DIR,
-                  truth_path: Path = DEFAULT_TRUTH_PATH) -> None:
+                  truth_path: Path = DEFAULT_TRUTH_PATH, truth_2026_path: Path | None = None) -> None:
     raw_dir = Path(raw_dir)
     truth_path = Path(truth_path)
     raw_dir.mkdir(parents=True, exist_ok=True)
     truth_path.parent.mkdir(parents=True, exist_ok=True)
     for name, df in result.tables.items():
         df.to_csv(raw_dir / f"{name}.csv", index=False, lineterminator="\n", float_format="%.2f")
-    with open(truth_path, "w", encoding="utf-8", newline="\n") as fh:
-        json.dump(result.truth, fh, indent=2)
-        fh.write("\n")
+    keys = [(result.truth, truth_path)]
+    if result.truth_2026 is not None:
+        keys.append((result.truth_2026, Path(truth_2026_path or truth_path.with_name("truth_2026.json"))))
+    for obj, path in keys:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="utf-8", newline="\n") as fh:
+            json.dump(obj, fh, indent=2)
+            fh.write("\n")
