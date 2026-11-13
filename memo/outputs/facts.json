@@ -1,0 +1,1350 @@
+{
+  "meta": {
+    "built_by": "memo/facts.py",
+    "reads": [
+      "mmm/outputs/channels.json",
+      "mmm/outputs/diagnostics_holdout.json",
+      "mmm/outputs/optimizer.json",
+      "mmm/outputs/response_curves_total.csv"
+    ],
+    "fit": "holdout",
+    "window": [
+      "2023-01-02",
+      "2025-12-22"
+    ],
+    "years_in_window": 3.0,
+    "a_year_means": "the average year of the window, at 2023 to 2025 spend",
+    "hdi_prob": 0.9,
+    "units": "USD; deals; percent (already x100); weeks; months; markets; channels; years; multiplier"
+  },
+  "channel_names": {
+    "paid_search_brand": "brand search",
+    "paid_search_nonbrand": "non-brand search",
+    "meta": "Meta",
+    "linkedin": "LinkedIn",
+    "youtube": "YouTube",
+    "ctv": "connected TV (CTV)",
+    "display": "display retargeting",
+    "affiliates": "affiliates and partners"
+  },
+  "facts": [
+    {
+      "id": "markets",
+      "value": 20.0,
+      "unit": "markets",
+      "kind": "input",
+      "source": "mmm/outputs/channels.json",
+      "field": "meta.regions",
+      "desc": "Markets in the model"
+    },
+    {
+      "id": "window_weeks",
+      "value": 156.0,
+      "unit": "weeks",
+      "kind": "input",
+      "source": "mmm/outputs/channels.json",
+      "field": "meta.train_weeks + meta.holdout_weeks",
+      "desc": "Weeks of data the model covers"
+    },
+    {
+      "id": "window_years",
+      "value": 3.0,
+      "unit": "years",
+      "kind": "derived",
+      "source": "mmm/outputs/channels.json",
+      "field": "meta",
+      "desc": "Years of data the model covers",
+      "how": "156 weeks / 52"
+    },
+    {
+      "id": "hdi_prob",
+      "value": 90.0,
+      "unit": "percent",
+      "kind": "input",
+      "source": "mmm/outputs/channels.json",
+      "field": "meta.hdi_prob",
+      "desc": "Every range is a 90% range: the model gives 90% odds the true value is inside"
+    },
+    {
+      "id": "holdout_weeks",
+      "value": 13.0,
+      "unit": "weeks",
+      "kind": "input",
+      "source": "mmm/outputs/diagnostics_holdout.json",
+      "field": "diagnostics.holdout.weeks",
+      "desc": "Final weeks hidden from the model to test its predictions"
+    },
+    {
+      "id": "holdout_weekly_error",
+      "value": 5.6439,
+      "unit": "percent",
+      "kind": "estimate",
+      "source": "mmm/outputs/diagnostics_holdout.json",
+      "field": "diagnostics.holdout.national_weekly_mape",
+      "desc": "Average miss on weekly national deals in the hidden weeks"
+    },
+    {
+      "id": "paid_spend_per_year",
+      "value": 13341126.2967,
+      "unit": "USD",
+      "kind": "input",
+      "source": "mmm/outputs/channels.json",
+      "field": "summary.paid_spend",
+      "desc": "Paid media spend a year, 8 channels",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "observed_deals_per_year",
+      "value": 10708.6667,
+      "unit": "deals",
+      "kind": "input",
+      "source": "mmm/outputs/channels.json",
+      "field": "summary.observed_deals_in_window",
+      "desc": "All closed-won deals a year, from every cause",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "blended_cpa",
+      "value": 1245.8252,
+      "unit": "USD",
+      "kind": "input",
+      "source": "mmm/outputs/channels.json",
+      "field": "summary.blended_cpa",
+      "desc": "Paid spend / all deals. Counts deals marketing did not cause"
+    },
+    {
+      "id": "paid_deals_per_year",
+      "value": 3192.8691,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "summary.incremental_deals_paid_media",
+      "desc": "Deals a year that paid media causes",
+      "low": 2395.0997,
+      "high": 4068.1339,
+      "stat": "median",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "paid_cpa",
+      "value": 4178.4133,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "summary.incremental_cpa_paid_media",
+      "desc": "Paid media cost per deal it causes (incremental CPA)",
+      "low": 3127.2613,
+      "high": 5308.9418,
+      "stat": "median"
+    },
+    {
+      "id": "paid_share_of_deals",
+      "value": 29.8157,
+      "unit": "percent",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "summary.paid_media_share_of_deals",
+      "desc": "Share of all deals that paid media causes",
+      "low": 22.366,
+      "high": 37.9892,
+      "stat": "median"
+    },
+    {
+      "id": "revenue_per_deal",
+      "value": 2840.69,
+      "unit": "USD",
+      "kind": "derived",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.*.roi_revenue, spend, incremental_deals",
+      "desc": "First-year revenue per deal. The MMM values each deal at its market's average won-deal revenue",
+      "how": "sum(roi_revenue.mean * spend) / sum(incremental_deals.mean) over the 8 channels"
+    },
+    {
+      "id": "paid_search_brand_spend_per_year",
+      "value": 2462936.3933,
+      "unit": "USD",
+      "kind": "input",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.paid_search_brand.spend",
+      "desc": "brand search: spend a year",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "paid_search_brand_deals_per_year",
+      "value": 184.1637,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.paid_search_brand.incremental_deals",
+      "desc": "brand search: deals a year it causes",
+      "low": 0.2765,
+      "high": 523.9796,
+      "stat": "median",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "paid_search_brand_cpa",
+      "value": 13373.6525,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.paid_search_brand.cpa",
+      "desc": "brand search: cost per deal (CPA)",
+      "low": 1622.8795,
+      "high": 78054.5288,
+      "stat": "median"
+    },
+    {
+      "id": "paid_search_brand_mcpa",
+      "value": 28914.4757,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.paid_search_brand.marginal_cpa",
+      "desc": "brand search: cost per extra deal from the next dollar (marginal CPA)",
+      "low": 2761.5907,
+      "high": 176618.0756,
+      "stat": "median"
+    },
+    {
+      "id": "paid_search_nonbrand_spend_per_year",
+      "value": 4465599.6267,
+      "unit": "USD",
+      "kind": "input",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.paid_search_nonbrand.spend",
+      "desc": "non-brand search: spend a year",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "paid_search_nonbrand_deals_per_year",
+      "value": 1195.3588,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.paid_search_nonbrand.incremental_deals",
+      "desc": "non-brand search: deals a year it causes",
+      "low": 485.9119,
+      "high": 1954.6184,
+      "stat": "median",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "paid_search_nonbrand_cpa",
+      "value": 3735.7818,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.paid_search_nonbrand.cpa",
+      "desc": "non-brand search: cost per deal (CPA)",
+      "low": 1762.8131,
+      "high": 6777.2131,
+      "stat": "median"
+    },
+    {
+      "id": "paid_search_nonbrand_mcpa",
+      "value": 6197.5584,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.paid_search_nonbrand.marginal_cpa",
+      "desc": "non-brand search: cost per extra deal from the next dollar (marginal CPA)",
+      "low": 3454.5265,
+      "high": 11382.3696,
+      "stat": "median"
+    },
+    {
+      "id": "meta_spend_per_year",
+      "value": 1246941.05,
+      "unit": "USD",
+      "kind": "input",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.meta.spend",
+      "desc": "Meta: spend a year",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "meta_deals_per_year",
+      "value": 225.2196,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.meta.incremental_deals_total",
+      "desc": "Meta: deals a year it causes",
+      "low": 1.8605,
+      "high": 540.3059,
+      "stat": "median",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "meta_cpa",
+      "value": 5536.5578,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.meta.cpa_total",
+      "desc": "Meta: cost per deal (CPA)",
+      "low": 776.873,
+      "high": 24591.7875,
+      "stat": "median"
+    },
+    {
+      "id": "meta_mcpa",
+      "value": 6750.0516,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.meta.marginal_cpa_total",
+      "desc": "Meta: cost per extra deal from the next dollar (marginal CPA)",
+      "low": 1522.12,
+      "high": 30395.2553,
+      "stat": "median"
+    },
+    {
+      "id": "linkedin_spend_per_year",
+      "value": 1281723.0933,
+      "unit": "USD",
+      "kind": "input",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.linkedin.spend",
+      "desc": "LinkedIn: spend a year",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "linkedin_deals_per_year",
+      "value": 229.8807,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.linkedin.incremental_deals",
+      "desc": "LinkedIn: deals a year it causes",
+      "low": 0.0311,
+      "high": 546.8495,
+      "stat": "median",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "linkedin_cpa",
+      "value": 5575.6248,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.linkedin.cpa",
+      "desc": "LinkedIn: cost per deal (CPA)",
+      "low": 1056.8498,
+      "high": 29511.6327,
+      "stat": "median"
+    },
+    {
+      "id": "linkedin_mcpa",
+      "value": 12109.2304,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.linkedin.marginal_cpa",
+      "desc": "LinkedIn: cost per extra deal from the next dollar (marginal CPA)",
+      "low": 1869.2519,
+      "high": 65330.5121,
+      "stat": "median"
+    },
+    {
+      "id": "youtube_spend_per_year",
+      "value": 671309.5233,
+      "unit": "USD",
+      "kind": "input",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.youtube.spend",
+      "desc": "YouTube: spend a year",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "youtube_deals_per_year",
+      "value": 310.7733,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.youtube.incremental_deals_total",
+      "desc": "YouTube: deals a year it causes",
+      "low": 167.4068,
+      "high": 455.544,
+      "stat": "median",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "youtube_cpa",
+      "value": 2160.1265,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.youtube.cpa_total",
+      "desc": "YouTube: cost per deal (CPA)",
+      "low": 1208.698,
+      "high": 3200.3505,
+      "stat": "median"
+    },
+    {
+      "id": "youtube_mcpa",
+      "value": 2427.957,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.youtube.marginal_cpa_total",
+      "desc": "YouTube: cost per extra deal from the next dollar (marginal CPA)",
+      "low": 1542.289,
+      "high": 3441.2589,
+      "stat": "median"
+    },
+    {
+      "id": "ctv_spend_per_year",
+      "value": 997330.2367,
+      "unit": "USD",
+      "kind": "input",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.ctv.spend",
+      "desc": "connected TV (CTV): spend a year",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "ctv_deals_per_year",
+      "value": 417.2368,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.ctv.incremental_deals_total",
+      "desc": "connected TV (CTV): deals a year it causes",
+      "low": 331.503,
+      "high": 504.5711,
+      "stat": "median",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "ctv_cpa",
+      "value": 2390.3218,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.ctv.cpa_total",
+      "desc": "connected TV (CTV): cost per deal (CPA)",
+      "low": 1945.8435,
+      "high": 2960.0278,
+      "stat": "median"
+    },
+    {
+      "id": "ctv_mcpa",
+      "value": 3837.5973,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.ctv.marginal_cpa_total",
+      "desc": "connected TV (CTV): cost per extra deal from the next dollar (marginal CPA)",
+      "low": 2901.8679,
+      "high": 4892.2242,
+      "stat": "median"
+    },
+    {
+      "id": "display_spend_per_year",
+      "value": 1546504.0833,
+      "unit": "USD",
+      "kind": "input",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.display.spend",
+      "desc": "display retargeting: spend a year",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "display_deals_per_year",
+      "value": 277.7485,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.display.incremental_deals",
+      "desc": "display retargeting: deals a year it causes",
+      "low": 0.3634,
+      "high": 657.9378,
+      "stat": "median",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "display_cpa",
+      "value": 5568.0101,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.display.cpa",
+      "desc": "display retargeting: cost per deal (CPA)",
+      "low": 987.5831,
+      "high": 28891.4823,
+      "stat": "median"
+    },
+    {
+      "id": "display_mcpa",
+      "value": 11666.8038,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.display.marginal_cpa",
+      "desc": "display retargeting: cost per extra deal from the next dollar (marginal CPA)",
+      "low": 1731.3148,
+      "high": 73732.3288,
+      "stat": "median"
+    },
+    {
+      "id": "affiliates_spend_per_year",
+      "value": 668782.29,
+      "unit": "USD",
+      "kind": "input",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.affiliates.spend",
+      "desc": "affiliates and partners: spend a year",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "affiliates_deals_per_year",
+      "value": 100.3036,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.affiliates.incremental_deals",
+      "desc": "affiliates and partners: deals a year it causes",
+      "low": 0.1302,
+      "high": 284.3118,
+      "stat": "median",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "affiliates_cpa",
+      "value": 6667.5815,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.affiliates.cpa",
+      "desc": "affiliates and partners: cost per deal (CPA)",
+      "low": 887.16,
+      "high": 36352.6797,
+      "stat": "median"
+    },
+    {
+      "id": "affiliates_mcpa",
+      "value": 16408.8272,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels.affiliates.marginal_cpa",
+      "desc": "affiliates and partners: cost per extra deal from the next dollar (marginal CPA)",
+      "low": 2564.8314,
+      "high": 85375.6149,
+      "stat": "median"
+    },
+    {
+      "id": "realloc_budget_per_year",
+      "value": 10878189.9033,
+      "unit": "USD",
+      "kind": "input",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "total_spend",
+      "desc": "Budget a year on the channels the plan can move (all but brand search). Stays the same",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "realloc_moved_per_year",
+      "value": 1491622.5926,
+      "unit": "USD",
+      "kind": "derived",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[].spend_change",
+      "desc": "Spend moved a year from the cut channels to the grown ones",
+      "how": "sum of positive spend_change / window years"
+    },
+    {
+      "id": "realloc_deals_per_year",
+      "value": 166.325,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "deal_change",
+      "desc": "Extra deals a year from the reallocation",
+      "low": 10.139,
+      "high": 333.6804,
+      "stat": "mean",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "realloc_deals_pct_of_paid",
+      "value": 5.3955,
+      "unit": "percent",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "deal_change_pct_of_paid_incremental",
+      "desc": "Extra deals as a share of the deals paid media causes today",
+      "low": -0.385,
+      "high": 10.7464,
+      "stat": "mean"
+    },
+    {
+      "id": "realloc_prob_gain",
+      "value": 94.45,
+      "unit": "percent",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "prob_gain_positive",
+      "desc": "Odds the reallocation adds deals at all"
+    },
+    {
+      "id": "realloc_revenue_per_year",
+      "value": 472477.7679,
+      "unit": "USD",
+      "kind": "derived",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "deal_change",
+      "desc": "Extra first-year revenue a year",
+      "low": 28801.7561,
+      "high": 947882.5828,
+      "how": "realloc_deals_per_year (and its range) x revenue_per_deal"
+    },
+    {
+      "id": "realloc_brand_search_per_year",
+      "value": 69380.9877,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "brand_search_spend_change",
+      "desc": "Extra brand-search spend a year: more people search for Fernhook by name after more upper-funnel ads, and brand search is always on, so its spend follows",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "realloc_payback_months",
+      "value": 1.7621,
+      "unit": "months",
+      "kind": "derived",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "brand_search_spend_change, deal_change",
+      "desc": "Months of extra revenue to cover the only new cost, the extra brand-search spend",
+      "low": 0.8783,
+      "high": 28.907,
+      "how": "12 x realloc_brand_search_per_year / realloc_revenue_per_year; range from the revenue range"
+    },
+    {
+      "id": "realloc_paid_search_nonbrand_spend_change_per_year",
+      "value": 362788.5558,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[paid_search_nonbrand].spend_change",
+      "desc": "non-brand search: spend change a year (negative = cut)",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "realloc_paid_search_nonbrand_change_pct",
+      "value": 8.1241,
+      "unit": "percent",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[paid_search_nonbrand].multiplier",
+      "desc": "non-brand search: spend change in percent (negative = cut)",
+      "how": "100 x (multiplier - 1)"
+    },
+    {
+      "id": "realloc_paid_search_nonbrand_deals_per_year",
+      "value": 56.5954,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[paid_search_nonbrand].deal_change",
+      "desc": "non-brand search: deal change a year from its move (negative = lost)",
+      "low": 23.7123,
+      "high": 89.7386,
+      "stat": "mean",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "realloc_meta_spend_change_per_year",
+      "value": 294514.1564,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[meta].spend_change",
+      "desc": "Meta: spend change a year (negative = cut)",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "realloc_meta_change_pct",
+      "value": 23.6189,
+      "unit": "percent",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[meta].multiplier",
+      "desc": "Meta: spend change in percent (negative = cut)",
+      "how": "100 x (multiplier - 1)"
+    },
+    {
+      "id": "realloc_meta_deals_per_year",
+      "value": 47.322,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[meta].deal_change",
+      "desc": "Meta: deal change a year from its move (negative = lost)",
+      "low": 0.6284,
+      "high": 95.4118,
+      "stat": "mean",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "realloc_linkedin_spend_change_per_year",
+      "value": -540098.1908,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[linkedin].spend_change",
+      "desc": "LinkedIn: spend change a year (negative = cut)",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "realloc_linkedin_change_pct",
+      "value": -42.1384,
+      "unit": "percent",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[linkedin].multiplier",
+      "desc": "LinkedIn: spend change in percent (negative = cut)",
+      "how": "100 x (multiplier - 1)"
+    },
+    {
+      "id": "realloc_linkedin_deals_per_year",
+      "value": -65.9205,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[linkedin].deal_change",
+      "desc": "LinkedIn: deal change a year from its move (negative = lost)",
+      "low": -132.8776,
+      "high": -0.0119,
+      "stat": "mean",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "realloc_youtube_spend_change_per_year",
+      "value": 335654.7618,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[youtube].spend_change",
+      "desc": "YouTube: spend change a year (negative = cut)",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "realloc_youtube_change_pct",
+      "value": 50.0,
+      "unit": "percent",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[youtube].multiplier",
+      "desc": "YouTube: spend change in percent (negative = cut)",
+      "how": "100 x (multiplier - 1)"
+    },
+    {
+      "id": "realloc_youtube_deals_per_year",
+      "value": 128.1742,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[youtube].deal_change",
+      "desc": "YouTube: deal change a year from its move (negative = lost)",
+      "low": 75.1975,
+      "high": 172.4647,
+      "stat": "mean",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "realloc_ctv_spend_change_per_year",
+      "value": 498665.1186,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[ctv].spend_change",
+      "desc": "connected TV (CTV): spend change a year (negative = cut)",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "realloc_ctv_change_pct",
+      "value": 50.0,
+      "unit": "percent",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[ctv].multiplier",
+      "desc": "connected TV (CTV): spend change in percent (negative = cut)",
+      "how": "100 x (multiplier - 1)"
+    },
+    {
+      "id": "realloc_ctv_deals_per_year",
+      "value": 112.1067,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[ctv].deal_change",
+      "desc": "connected TV (CTV): deal change a year from its move (negative = lost)",
+      "low": 80.0778,
+      "high": 144.546,
+      "stat": "mean",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "realloc_display_spend_change_per_year",
+      "value": -617133.2569,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[display].spend_change",
+      "desc": "display retargeting: spend change a year (negative = cut)",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "realloc_display_change_pct",
+      "value": -39.9051,
+      "unit": "percent",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[display].multiplier",
+      "desc": "display retargeting: spend change in percent (negative = cut)",
+      "how": "100 x (multiplier - 1)"
+    },
+    {
+      "id": "realloc_display_deals_per_year",
+      "value": -77.0976,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[display].deal_change",
+      "desc": "display retargeting: deal change a year from its move (negative = lost)",
+      "low": -160.8419,
+      "high": -0.2845,
+      "stat": "mean",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "realloc_affiliates_spend_change_per_year",
+      "value": -334391.1449,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[affiliates].spend_change",
+      "desc": "affiliates and partners: spend change a year (negative = cut)",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "realloc_affiliates_change_pct",
+      "value": -50.0,
+      "unit": "percent",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[affiliates].multiplier",
+      "desc": "affiliates and partners: spend change in percent (negative = cut)",
+      "how": "100 x (multiplier - 1)"
+    },
+    {
+      "id": "realloc_affiliates_deals_per_year",
+      "value": -34.8552,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[affiliates].deal_change",
+      "desc": "affiliates and partners: deal change a year from its move (negative = lost)",
+      "low": -74.5792,
+      "high": -0.0753,
+      "stat": "mean",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "channels",
+      "value": 8.0,
+      "unit": "channels",
+      "kind": "input",
+      "source": "mmm/outputs/channels.json",
+      "field": "channels",
+      "desc": "Paid media channels in the model"
+    },
+    {
+      "id": "realloc_cut_channels",
+      "value": 3.0,
+      "unit": "channels",
+      "kind": "derived",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[].spend_change",
+      "desc": "Channels the plan cuts"
+    },
+    {
+      "id": "realloc_grow_channels",
+      "value": 4.0,
+      "unit": "channels",
+      "kind": "derived",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[].spend_change",
+      "desc": "Channels the plan grows"
+    },
+    {
+      "id": "realloc_cut_levels",
+      "value": null,
+      "unit": "percent",
+      "kind": "derived",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[].multiplier",
+      "desc": "The cut channels run at this share of today's spend",
+      "low": 50.0,
+      "high": 60.0949,
+      "how": "lowest and highest 100 x multiplier among the cut channels"
+    },
+    {
+      "id": "realloc_cut_loss_per_year",
+      "value": 177.8733,
+      "unit": "deals",
+      "kind": "derived",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[].deal_change",
+      "desc": "Deals a year the model expects the cuts to cost",
+      "stat": "mean",
+      "how": "minus the sum of the cut channels' deal_change.mean / window years"
+    },
+    {
+      "id": "realloc_gain_flighted_per_year",
+      "value": 240.2809,
+      "unit": "deals",
+      "kind": "derived",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[].deal_change",
+      "desc": "Deals a year the plan gains on YouTube and CTV, the channels with on and off flights the model can measure",
+      "stat": "mean",
+      "how": "sum of youtube and ctv deal_change.mean / window years"
+    },
+    {
+      "id": "ask_spend_per_year",
+      "value": 335654.7618,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[youtube].spend_change",
+      "desc": "Extra YouTube budget a year, on top of today's mix",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "ask_change_pct",
+      "value": 50.0,
+      "unit": "percent",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[youtube].multiplier",
+      "desc": "YouTube spend increase in percent",
+      "how": "100 x (multiplier - 1)"
+    },
+    {
+      "id": "ask_share_of_paid_budget",
+      "value": 2.5159,
+      "unit": "percent",
+      "kind": "derived",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[youtube].spend_change, channels.json summary.paid_spend",
+      "desc": "The ask as a share of paid media spend",
+      "how": "100 x ask_spend_per_year / paid_spend_per_year"
+    },
+    {
+      "id": "ask_spend_after_per_year",
+      "value": 1006964.2852,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[youtube].spend_plan",
+      "desc": "YouTube spend a year after the ask",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "ask_brand_search_per_year",
+      "value": 22074.9595,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[youtube].brand_search_spend_change",
+      "desc": "Extra brand-search spend a year that follows the extra searches",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "ask_deals_per_year",
+      "value": 128.1742,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[youtube].deal_change",
+      "desc": "Extra deals a year from the YouTube ask",
+      "low": 75.1975,
+      "high": 172.4647,
+      "stat": "mean",
+      "how": "window total / 3 years; the optimizer scored this exact multiplier on every draw"
+    },
+    {
+      "id": "ask_revenue_per_year",
+      "value": 364103.171,
+      "unit": "USD",
+      "kind": "derived",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[youtube].deal_change",
+      "desc": "Extra first-year revenue a year from the ask",
+      "low": 213612.7879,
+      "high": 489918.7524,
+      "how": "ask_deals_per_year (and its range) x revenue_per_deal"
+    },
+    {
+      "id": "ask_cost_per_deal",
+      "value": 2790.9651,
+      "unit": "USD",
+      "kind": "derived",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[youtube]",
+      "desc": "Cost per extra deal from the ask, counting the extra brand-search spend",
+      "low": 2074.2199,
+      "high": 4757.2023,
+      "how": "(ask_spend_per_year + ask_brand_search_per_year) / ask_deals_per_year; range from the deal range"
+    },
+    {
+      "id": "ask_payback_months",
+      "value": 11.7899,
+      "unit": "months",
+      "kind": "derived",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[youtube]",
+      "desc": "Months of first-year revenue from the extra deals to repay the ask",
+      "low": 8.7622,
+      "high": 20.096,
+      "how": "12 x ask_cost_per_deal / revenue_per_deal; range from the deal range"
+    },
+    {
+      "id": "ask_step1_spend_per_year",
+      "value": 167827.3808,
+      "unit": "USD",
+      "kind": "derived",
+      "source": "mmm/outputs/response_curves_total.csv",
+      "field": "youtube x1 to x1.25",
+      "desc": "YouTube response curve, step 1: added spend a year from 1x to 1.25x today's",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "ask_step1_deals_per_year",
+      "value": 66.8145,
+      "unit": "deals",
+      "kind": "derived",
+      "source": "mmm/outputs/response_curves_total.csv",
+      "field": "youtube x1 to x1.25",
+      "desc": "YouTube response curve, step 1: added deals a year",
+      "stat": "mean",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "ask_step1_cost_per_deal",
+      "value": 2677.0366,
+      "unit": "USD",
+      "kind": "derived",
+      "source": "mmm/outputs/response_curves_total.csv",
+      "field": "youtube x1 to x1.25; channels.json youtube.brand_search_spend_created",
+      "desc": "YouTube response curve, step 1: cost per added deal, counting extra brand-search spend",
+      "how": "(step spend + brand_search_spend_created x step) / step deals"
+    },
+    {
+      "id": "ask_step2_spend_per_year",
+      "value": 167827.3808,
+      "unit": "USD",
+      "kind": "derived",
+      "source": "mmm/outputs/response_curves_total.csv",
+      "field": "youtube x1.25 to x1.5",
+      "desc": "YouTube response curve, step 2: added spend a year from 1.25x to 1.5x today's",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "ask_step2_deals_per_year",
+      "value": 61.3597,
+      "unit": "deals",
+      "kind": "derived",
+      "source": "mmm/outputs/response_curves_total.csv",
+      "field": "youtube x1.25 to x1.5",
+      "desc": "YouTube response curve, step 2: added deals a year",
+      "stat": "mean",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "ask_step2_cost_per_deal",
+      "value": 2915.0202,
+      "unit": "USD",
+      "kind": "derived",
+      "source": "mmm/outputs/response_curves_total.csv",
+      "field": "youtube x1.25 to x1.5; channels.json youtube.brand_search_spend_created",
+      "desc": "YouTube response curve, step 2: cost per added deal, counting extra brand-search spend",
+      "how": "(step spend + brand_search_spend_created x step) / step deals"
+    },
+    {
+      "id": "ask_step3_spend_per_year",
+      "value": 335654.7617,
+      "unit": "USD",
+      "kind": "derived",
+      "source": "mmm/outputs/response_curves_total.csv",
+      "field": "youtube x1.5 to x2",
+      "desc": "YouTube response curve, step 3: added spend a year from 1.5x to 2x today's",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "ask_step3_deals_per_year",
+      "value": 111.922,
+      "unit": "deals",
+      "kind": "derived",
+      "source": "mmm/outputs/response_curves_total.csv",
+      "field": "youtube x1.5 to x2",
+      "desc": "YouTube response curve, step 3: added deals a year",
+      "stat": "mean",
+      "how": "window total / 3 years"
+    },
+    {
+      "id": "ask_step3_cost_per_deal",
+      "value": 3196.2404,
+      "unit": "USD",
+      "kind": "derived",
+      "source": "mmm/outputs/response_curves_total.csv",
+      "field": "youtube x1.5 to x2; channels.json youtube.brand_search_spend_created",
+      "desc": "YouTube response curve, step 3: cost per added deal, counting extra brand-search spend. Past the optimizer's limit",
+      "how": "(step spend + brand_search_spend_created x step) / step deals"
+    },
+    {
+      "id": "test_markets",
+      "value": 4.0,
+      "unit": "markets",
+      "kind": "design",
+      "source": "docs/mmm/README.md",
+      "field": "Limits and next steps",
+      "desc": "Markets that run the cuts in the test"
+    },
+    {
+      "id": "test_control_markets",
+      "value": 16.0,
+      "unit": "markets",
+      "kind": "design",
+      "source": "docs/mmm/README.md",
+      "field": "Limits and next steps",
+      "desc": "Markets that stay at today's spend, to compare against"
+    },
+    {
+      "id": "test_weeks",
+      "value": 8.0,
+      "unit": "weeks",
+      "kind": "design",
+      "source": "docs/mmm/README.md",
+      "field": "Limits and next steps",
+      "desc": "Test length"
+    },
+    {
+      "id": "test_weeks_range",
+      "value": null,
+      "unit": "weeks",
+      "kind": "design",
+      "source": "docs/mmm/README.md",
+      "field": "Limits and next steps",
+      "desc": "Test length the MMM's limits call for",
+      "low": 6.0,
+      "high": 8.0
+    },
+    {
+      "id": "test_spend_held_back",
+      "value": 45896.0798,
+      "unit": "USD",
+      "kind": "derived",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[].spend_change",
+      "desc": "Spend not spent in the test markets during the test (average-size markets)",
+      "how": "cut channels' spend cut x 4/20 markets x 8/156 weeks"
+    },
+    {
+      "id": "test_market_deals",
+      "value": 329.4974,
+      "unit": "deals",
+      "kind": "derived",
+      "source": "mmm/outputs/channels.json",
+      "field": "summary.observed_deals_in_window",
+      "desc": "Deals the test markets close in the test weeks (average-size markets)",
+      "how": "observed deals x 4/20 x 8/156"
+    },
+    {
+      "id": "test_expected_drop",
+      "value": 5.473,
+      "unit": "deals",
+      "kind": "derived",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[].deal_change",
+      "desc": "Deals the model expects the cuts to cost in the test markets during the test",
+      "stat": "mean",
+      "how": "the cuts' window deal loss x the test's share of market-weeks (straight-line)"
+    },
+    {
+      "id": "test_expected_drop_pct",
+      "value": 1.661,
+      "unit": "percent",
+      "kind": "derived",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[].deal_change",
+      "desc": "That drop as a share of the test markets' deals",
+      "how": "100 x test_expected_drop / test_market_deals"
+    },
+    {
+      "id": "test_detectable_drop",
+      "value": 36.3041,
+      "unit": "deals",
+      "kind": "derived",
+      "source": "mmm/outputs/channels.json",
+      "field": "summary.observed_deals_in_window",
+      "desc": "Smallest drop the test can tell from chance: about 2 standard deviations of count noise in the test markets' deals. It leaves out noise in the matched markets, so the real bar is a little higher",
+      "how": "2 x sqrt(test_market_deals)"
+    },
+    {
+      "id": "test_detectable_multiple",
+      "value": 6.6333,
+      "unit": "multiplier",
+      "kind": "derived",
+      "source": "mmm/outputs/optimizer.json",
+      "field": "plan[].deal_change",
+      "desc": "How many times the model's expected drop the test needs to see before it can call the cuts costlier than the model thinks",
+      "how": "test_detectable_drop / test_expected_drop"
+    }
+  ],
+  "variants": {
+    "reallocation": {
+      "what": "Same total budget. Grow the channels the model rates best, cut the ones it rates worst.",
+      "grows": [
+        "paid_search_nonbrand",
+        "meta",
+        "youtube",
+        "ctv"
+      ],
+      "cuts": [
+        "linkedin",
+        "display",
+        "affiliates"
+      ],
+      "moves": [
+        {
+          "channel": "paid_search_nonbrand",
+          "multiplier": 1.0812,
+          "curve": "direct"
+        },
+        {
+          "channel": "meta",
+          "multiplier": 1.2362,
+          "curve": "total"
+        },
+        {
+          "channel": "linkedin",
+          "multiplier": 0.5786,
+          "curve": "direct"
+        },
+        {
+          "channel": "youtube",
+          "multiplier": 1.5,
+          "curve": "total"
+        },
+        {
+          "channel": "ctv",
+          "multiplier": 1.5,
+          "curve": "total"
+        },
+        {
+          "channel": "display",
+          "multiplier": 0.6009,
+          "curve": "direct"
+        },
+        {
+          "channel": "affiliates",
+          "multiplier": 0.5,
+          "curve": "direct"
+        }
+      ],
+      "deals_fact": "realloc_deals_per_year"
+    },
+    "youtube_ask": {
+      "what": "New money: grow YouTube, the channel with the lowest cost per extra deal, by the largest step the optimizer allows. Every other channel stays as it is.",
+      "channel": "youtube",
+      "moves": [
+        {
+          "channel": "youtube",
+          "multiplier": 1.5,
+          "curve": "total"
+        }
+      ],
+      "deals_fact": "ask_deals_per_year"
+    }
+  },
+  "risks": [
+    {
+      "id": "wide_ranges",
+      "text": "The ranges are wide. The plan's range runs from a small gain to a large one, and the always-on channels' costs per deal span a wide band.",
+      "facts": [
+        "realloc_deals_per_year",
+        "linkedin_cpa",
+        "display_cpa",
+        "affiliates_cpa"
+      ]
+    },
+    {
+      "id": "always_on_not_measured",
+      "text": "Non-brand search, LinkedIn, display and affiliates run every week in every market and never pause, so the data never show what happens without them. Their numbers lean on the model's starting assumptions. Every cut in the plan lands on these channels.",
+      "facts": [
+        "realloc_cut_loss_per_year",
+        "realloc_cut_levels"
+      ]
+    },
+    {
+      "id": "meta_season",
+      "text": "Meta pushes into the busy seasons in every market, the same weeks fleets shop anyway, so the model cannot tell Meta's effect from the season. Meta's range runs from almost nothing to a lot, and the plan grows Meta.",
+      "facts": [
+        "meta_deals_per_year",
+        "realloc_meta_change_pct"
+      ]
+    },
+    {
+      "id": "paid_under_credited",
+      "text": "Paid media is likely under-credited. On simulated worlds with a known answer, this kind of model gave always-on channels too little credit until a test anchored them. If so, the cuts cost more than shown, and the plan's gain is smaller.",
+      "facts": [
+        "paid_share_of_deals"
+      ]
+    },
+    {
+      "id": "fit_is_not_proof",
+      "text": "The model predicts weekly deals well on weeks it never saw, but a model can predict the total well and still split it wrongly between channels.",
+      "facts": [
+        "holdout_weeks",
+        "holdout_weekly_error"
+      ]
+    },
+    {
+      "id": "youtube_ask_scale",
+      "text": "The YouTube ask rests on YouTube's on and off flights, the best measured channel. Each step up buys fewer deals than the last, and the model has not seen YouTube much past the size of the ask.",
+      "facts": [
+        "ask_step1_cost_per_deal",
+        "ask_step2_cost_per_deal"
+      ]
+    }
+  ],
+  "test": {
+    "what": "Run the plan's cuts to LinkedIn, display and affiliates in a few markets first, against matched markets at today's spend. It costs no new budget and spends a little less.",
+    "decision_rule": "If deals in the test markets fall about as much as the model expects, make the full reallocation. If they fall clearly more, the model is giving these channels too little credit: stop the cuts and refit the model with the test as a lift test.",
+    "limits": "The test can catch a large miss, not a small one.",
+    "facts": [
+      "test_markets",
+      "test_control_markets",
+      "test_weeks",
+      "test_weeks_range",
+      "realloc_cut_levels",
+      "test_spend_held_back",
+      "test_market_deals",
+      "test_expected_drop",
+      "test_expected_drop_pct",
+      "test_detectable_drop",
+      "test_detectable_multiple"
+    ]
+  },
+  "recommendation": [
+    "Now: approve the market test of the cuts. No new budget.",
+    "After the test: if it holds up, approve the same-budget reallocation.",
+    "Alternative, if you would rather add budget than cut: the YouTube ask. It rests on the best measured channel, so it does not need the test, but it is new money."
+  ]
+}

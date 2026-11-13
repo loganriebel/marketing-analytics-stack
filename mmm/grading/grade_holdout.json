@@ -727,5 +727,78 @@
         "model_deal_change": -104.5657060456683
       }
     ]
+  },
+  "memo": {
+    "method": "each variant's multipliers through the answer key's noise-free response curves (PCHIP; total curves for upper-funnel channels), per year = window / years_in_window",
+    "variants": {
+      "reallocation": {
+        "claim_fact": "realloc_deals_per_year",
+        "claimed_per_year": 166.325,
+        "claimed_hdi_90": [
+          10.139,
+          333.6804
+        ],
+        "true_per_year": 193.81887579786925,
+        "covered": true,
+        "pct_error": -14.185344788885375,
+        "memo_states_range": true,
+        "by_channel": [
+          {
+            "channel": "paid_search_nonbrand",
+            "multiplier": 1.0812,
+            "true_deal_change_per_year": 67.46569758571543
+          },
+          {
+            "channel": "meta",
+            "multiplier": 1.2362,
+            "true_deal_change_per_year": 162.97833401005633
+          },
+          {
+            "channel": "linkedin",
+            "multiplier": 0.5786,
+            "true_deal_change_per_year": -164.64201513033166
+          },
+          {
+            "channel": "youtube",
+            "multiplier": 1.5,
+            "true_deal_change_per_year": 221.177
+          },
+          {
+            "channel": "ctv",
+            "multiplier": 1.5,
+            "true_deal_change_per_year": 137.21599999999998
+          },
+          {
+            "channel": "display",
+            "multiplier": 0.6009,
+            "true_deal_change_per_year": -7.7641406675708
+          },
+          {
+            "channel": "affiliates",
+            "multiplier": 0.5,
+            "true_deal_change_per_year": -222.612
+          }
+        ]
+      },
+      "youtube_ask": {
+        "claim_fact": "ask_deals_per_year",
+        "claimed_per_year": 128.1742,
+        "claimed_hdi_90": [
+          75.1975,
+          172.4647
+        ],
+        "true_per_year": 221.177,
+        "covered": false,
+        "pct_error": -42.04903764858009,
+        "memo_states_range": true,
+        "by_channel": [
+          {
+            "channel": "youtube",
+            "multiplier": 1.5,
+            "true_deal_change_per_year": 221.177
+          }
+        ]
+      }
+    }
   }
 }
