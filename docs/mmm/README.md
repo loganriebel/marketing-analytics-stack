@@ -22,7 +22,7 @@ py -3.11 -m venv .venv-mmm
 .venv-mmm\Scripts\python -m pip install -r requirements-mmm.txt
 .venv-mmm\Scripts\python -m mmm
 .venv-mmm\Scripts\python -m mmm.grade
-.venv-mmm\Scripts\python -m pytest tests/test_mmm_smoke.py tests/test_mmm_no_truth_leak.py -q
+.venv-mmm\Scripts\python -m pytest tests/test_mmm_smoke.py tests/test_mmm_no_truth_leak.py tests/test_mmm_market_lifts.py -q
 ```
 
 - `python -m mmm` fits stage 2 (the MMM) with the last 13 weeks held out, checks its gates, fits stage 1 (brand-search demand), checks its gates, and writes `mmm/outputs/` only when they pass. About 10 minutes. `--holdout 0` fits the full window.
@@ -151,7 +151,7 @@ Stage 2 has 96 parameters for 2,860 market-weeks. Every one is summarized in `mm
 
 **Controls.** Everything that acts on leads shows up in won deals after the lead-to-close delay, so these get the same fixed kernel: SDR and AE coverage (headcount per 1k accounts), email sends, log fleet activity index, the year-end promo, the July 2024 price increase and webinar cost. A linear trend, close-week dummies for weeks 52, 1, 2 and 3, and the latitude terms complete the baseline. On the graded seed, SDR and AE coverage, the fleet index and webinars carry clear positive effects; the price increase and the trend come out negative; the promo leans positive (87% of draws above zero) and email sits near zero.
 
-**Lift tests.** `mmm/lift_tests.py` turns any channel's planned regional pauses into a pooled lift test through `add_lift_test_measurements`: the deal deficit over the pause plus carryover, against the market's share of the other markets, with placebo windows for sigma. PyMC-Marketing compares absolute lifts, so pauses are pooled per channel, and a pooled test with the wrong sign enters as a zero drop. The current world has no pauses, so no lift test enters the fit.
+**Lift tests.** `mmm/lift_tests.py` turns any channel's planned regional pauses into a pooled lift test through `add_lift_test_measurements`: the deal deficit over the pause plus carryover, against the market's share of the other markets, with placebo windows for sigma. PyMC-Marketing compares absolute lifts, so pauses are pooled per channel, and a pooled test with the wrong sign enters as a zero drop. The current world has no pauses, so no pause test enters the fit. The 2026 market test's two arms enter the refit as lift tests (`--market-tests`, see [the refit](#the-refit)).
 
 ## Health gates
 
@@ -279,9 +279,97 @@ Each change was tested on a development seed and kept only if it held there. The
 
 The scenario changed twice during step 4, at Logan's direction: the business now sells only in seven Midwest states, and paid search is always on with the upper funnel creating brand searches. The original plan to turn brand-search pauses into lift tests still exists in code, but the current world has no pauses.
 
+## The 2026 market test and the refit
+
+Chapters 4 to 6 of the story: run the test, read it out, teach the model.
+
+### The readout (May 2026)
+
+The sim ran the world from January to May 2026 on the pre-registered plan (`plans/2026_test.yaml`). From February 2 to April 26, ten markets bought extra YouTube and a crossing ten ran non-brand search at 39% of plan. The true world decided what happened; nothing was typed in. The readout ([`geotest/READOUT.md`](../../geotest/READOUT.md), from `geotest/outputs/readout.json`) uses only the method, markets, windows and rules written down in January, on data through the May 31 snapshot.
+
+| Arm | Measured, extra deals in the window (90% interval) | MMM forecast in January (90% range) | Power |
+|---|---:|---:|---:|
+| YouTube up $2,500 a week per size unit | +130 (+52 to +208) | +119 (+88 to +154) | 81% |
+| Non-brand search at 39% of plan | -37 (-127 to +52) | -83 (-120 to -41) | 45% |
+
+- **YouTube works.** Its whole interval is above zero. Each extra deal cost $2,116, counting the brand search the extra searches pulled in. The model said $2,253.
+- **The search cut showed no clear drop.** That arm had 45% power and was set up as a guardrail, so this does not mean search does nothing. It rules out a big hidden loss (more than 127 deals over the window), not a small one. Pulling search back saved $537,107.
+- **Both arms agree with the model's forecast,** so neither guardrail trips, and the rollout follows the refit model (rule 3).
+- **The cross-check agrees.** A Bayesian synthetic control (CausalPy, `geotest/outputs/synthetic_control.json`) reads +126 (+74 to +180) and -7 (-77 to +56). It does not decide.
+- **The readout stands, with one judgment call.** Spend moved as planned in every test market (YouTube 14% under its planned dollars, search 8% over, inside the 20% limit). The first market check flagged Duluth and Madison, two markets outside the search arm, because their search budgets fell at the October and January budget re-splits, before the test began. A step test at the test start replaced it after the lifts were computed, and Duluth still looks borderline. The plan file gives it no move, so it is named as drift, not counted as leaving its cell. Without Duluth the lifts read +144 and -17, and no decision changes. All of this is disclosed in the readout.
+
+### The refit
+
+Both arms entered the MMM as lift tests through `add_lift_test_measurements`: YouTube from the grow arm, non-brand search from the search arm. PyMC-Marketing compares a lift with a steady weekly effect on the response curve, so the readout turns each window lift into extra deals per week per size unit (`mmm_lift_tests` in `readout.json`). The model, priors and gates did not change. The fit reads the May 31 cut and holds out the last 13 weeks as every fit does, so it trains through February 23 and the holdout is most of the test. Its estimands, optimizer and baselines are scored on 2023 to 2025, so the grade compares like with like ([`mmm/grading/compare_holdout_refit.md`](../../mmm/grading/compare_holdout_refit.md)).
+
+**Health:** every gate passes. Max r-hat 1.004, min bulk ESS 1,640, min tail ESS 770, 7 divergences in 8,000 (the limit is 8). Holdout weekly error 5.4% and 88% of holdout market-weeks inside the 90% interval, on weeks with the test's spend in them. Stage 1 passes its own gates.
+
+| Channel | CPA error, before to after | Next-dollar CPA error | 90% HDI covers true CPA / next-dollar CPA / deals |
+|---|---:|---:|---|
+| paid_search_brand | +105% to +96% | -28% to -31% | yes / yes / yes, unchanged |
+| paid_search_nonbrand | +7% to +35% | -39% to -20% | yes / yes / yes, unchanged |
+| meta | +340% to +225% | +287% to +116% | CPA lost, next dollar gained, deals still no |
+| linkedin | +80% to +146% | +146% to +253% | yes / yes / yes, unchanged |
+| youtube | +19% to +22% | +38% to +42% | next dollar lost |
+| ctv | +18% to +20% | +24% to +21% | yes / yes / yes, unchanged |
+| display | -73% to -73% | -76% to -76% | yes / yes / yes, unchanged |
+| affiliates | +238% to +221% | +411% to +370% | next dollar lost, deals still no |
+
+| | Before (December cut) | After the test | True |
+|---|---:|---:|---:|
+| Best next dollar | YouTube (right) | YouTube (right) | YouTube |
+| Worst next dollar | display (right) | display (right) | display |
+| Next-dollar CPA rank correlation | 0.69 | 0.83 | |
+| CPA rank correlation | 0.48 | 0.67 | |
+| Non-brand search next-dollar CPA | $6,835 | $8,889 | $11,116 |
+| Paid media deals (90% HDI) | 11,060 (8,515 to 13,937) | 10,016 (7,626 to 12,647) | 15,389 |
+| 90% HDI coverage | 27 of 32 | 24 of 32 | |
+| Optimizer plan: model (90% HDI) | +654 (363 to 932) | +925 (425 to 1,415) | |
+| Optimizer plan: true gain | +1,045 | +1,779 | |
+
+**Reading it.**
+
+- **Better where the budget is decided.** The refit ranks channels much better (0.69 to 0.83 on the next dollar) and keeps the best and worst calls right. Non-brand search's next dollar moves from $6,835 toward the true $11,116, so the model now sees search as more saturated.
+- **A better plan.** The refit's plan trims non-brand search to 87% of its path (from 97%), takes Meta to the 150% cap, and keeps YouTube and CTV up and display down. In the true world it gains 1,779 deals at the same spend, against 1,045 for the old plan. The model still undersells it.
+- **Worse on scale.** Paid media drops to 10,016 deals against 15,389 true. Non-brand search loses credit (4,107 deals against 5,551 true). Coverage falls from 27 to 24 of 32.
+- **YouTube barely moves.** The test agreed with the forecast, so it confirms the curve instead of moving it.
+
+**Exploratory: how much came from the test itself?** A second refit on the same cut, with no lift tests (`mmm/outputs/refit_data_only/`, [`compare_holdout_refit_data_only.md`](../../mmm/grading/compare_holdout_refit_data_only.md)), passes every gate too. It still trains on the test's first four weeks, so it is "more data", not "no test".
+
+| | Before | More data, no lift tests | More data plus lift tests | True |
+|---|---:|---:|---:|---:|
+| Next-dollar CPA rank correlation | 0.69 | 0.83 | 0.83 | |
+| CPA rank correlation | 0.48 | 0.55 | 0.67 | |
+| Non-brand search next-dollar CPA | $6,835 | $8,290 | $8,889 | $11,116 |
+| Non-brand search deals | 5,171 | 4,352 | 4,107 | 5,551 |
+| Paid media deals | 11,060 | 10,293 | 10,016 | 15,389 |
+| 90% HDI coverage | 27 of 32 | 26 of 32 | 24 of 32 | |
+| Optimizer plan: true gain | +1,045 | +1,676 | +1,779 | |
+
+- **Most of the change came from five more months of data.** The December fit trained through September 2025; the refits train through February 2026. Those weeks alone raise the ranking and the plan.
+- **The lift tests add a nudge, both ways.** They move search's next dollar closer to the truth, sharpen the average-cost ranking, and add about 100 true deals to the plan. They also take more credit from search and cost two more covered intervals.
+- **Why it is small:** the search arm had 45% power, so its lift test is wide (sigma 0.47 against a lift of 0.32 per week per size unit), and the YouTube arm matched what the model already believed. A test that agrees with the model mostly confirms it.
+
+**Run it** (after `python -m sim` and `dbt build` for the base world):
+
+```bash
+.venv\Scripts\python -m sim --through 2026-05-31 --plan plans/2026_test.yaml --out data/cut_2026-05-31
+cd data\cut_2026-05-31 && ..\..\.venv\Scripts\dbt build --project-dir ..\..\warehouse --profiles-dir ..\..\warehouse --no-partial-parse --target-path target && cd ..\..
+.venv\Scripts\python -m geotest.readout
+.venv-mmm\Scripts\python -m geotest.crosscheck
+.venv\Scripts\python -m geotest.readout
+set MMM_WAREHOUSE=data\cut_2026-05-31\data\warehouse.duckdb
+set MMM_OUTPUT_DIR=mmm\outputs\refit
+.venv-mmm\Scripts\python -m mmm --name refit --market-tests geotest\outputs\readout.json --estimands-through 2025-12-22
+.venv-mmm\Scripts\python -m mmm.grade --outputs mmm\outputs\refit --compare mmm\grading\grade_holdout.json
+```
+
+- dbt runs from the cut folder; `--no-partial-parse` stops it reusing a root build's seed paths.
+- The second readout run puts the cross-check into `READOUT.md`. The refit takes about 15 minutes.
+
 ## Limits and next steps
 
-- **Run the experiment.** On the dev seed, 15 planned brand-search pauses put brand search on target; without them it came out 54% low. The 2026 market test ([`geotest/PREREGISTRATION.md`](../../geotest/PREREGISTRATION.md)) pulls non-brand search back to its 2023 pace in 10 markets and pushes YouTube in a crossing 10, and both results enter the refit as lift tests.
+- **More tests.** The 2026 market test ran ([readout](../../geotest/READOUT.md), [refit](#the-refit)). Its search arm had 45% power, so its lift test is wide. A second, larger search test, or brand-search pauses (on the dev seed 15 of them put brand search on target), would pin the level as well as the margin.
 - **Seasonal brand pushes** need variation the season cannot explain. A test that holds Meta flat in a few markets through one busy season would separate the two.
 - **Stage 1** sees about a third of the searches the upper funnel creates (5.9% of brand searches against 16.7%). Its carryover is linear and its season shares the confound; a saturating search response is the next thing to try on a dev seed.
 - **Full-window fit:** these numbers come from the holdout fit's posterior applied to all 156 weeks. A `--holdout 0` fit uses the last 13 weeks too.
