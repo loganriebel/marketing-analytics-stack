@@ -81,54 +81,58 @@ ORIGINS = ["base", "email"] + PAID_CHANNELS  # what truly caused a lead
 CRM_CHANNELS = PAID_CHANNELS + ["email", "organic_search", "direct", "referral"]
 
 # --- Spend plan for planned channels ----------------------------------------
-# weekly_budget: national $/week at window start, averaged over the year.
-# yearly_drift: the log change in each January plan; every channel-year also gets
-# its own planning noise, so plans move in steps, not smooth curves. Mid-year
-# decisions are in BUDGET_EVENTS. tilt_sigma: how unevenly a channel is spread
+# annual_budget: what each planned channel spent in each year, weeks counted by their
+# Monday (the house week rule). The team paces every channel to its annual budget, so
+# the year totals land on these numbers; everything below shapes spend inside a year.
+# The plan tells the story: Fernhook pours money into non-brand search and pays for
+# part of it by trimming its brand channels (Meta, YouTube, CTV and LinkedIn). Paid
+# media splits about 60/40 between performance and brand in 2023, 70/30 in 2024 and
+# 80/20 in 2025, while total spend rises 10% and then 16%.
+# Mid-year decisions are in BUDGET_EVENTS. tilt_sigma: how unevenly a channel is spread
 # across markets beyond market size. region_sigma: week-to-week market noise.
 # quarter_region_sigma: how much each market's budget moves when always-on budgets
 # are re-split across markets every quarter.
 #
-# Performance channels are always on. Brand channels follow the brand team's
-# planning calendar (PLANNING): they push before and into each busy season and soften
-# in the slow weeks. push.lead: weeks before the planned peak a push starts.
-# push.geo: "market" buys each market on its own timing; "national" buys one flight
-# for the country and leaves a share of markets out of each flight.
+# Performance channels are always on, and so is LinkedIn. Meta, YouTube and CTV follow
+# the brand team's planning calendar (PLANNING): they push before and into each busy
+# season and soften in the slow weeks. push.lead: weeks before the planned peak a push
+# starts. push.geo: "market" buys each market on its own timing; "national" buys one
+# flight for the country and leaves a share of markets out of each flight.
 SPEND = {
     # Non-brand search is always on in every market and leans into busy seasons.
-    "paid_search_nonbrand": {"weekly_budget": 65_000, "yearly_drift": 0.14, "quarter_sigma": 0.10,
+    "paid_search_nonbrand": {"annual_budget": {2023: 3_380_000, 2024: 5_220_000, 2025: 8_430_000}, "quarter_sigma": 0.10,
                              "weekly_sigma": 0.08, "flight": "always_on", "season_follow": 0.3,
                              "tilt_sigma": 0.30, "region_sigma": 0.22, "quarter_region_sigma": 0.20},
     # Meta prospecting is always on and pushes into each busy season. Each market's
     # buy has its own timing and size, and each season's push gets its own budget.
-    "meta": {"weekly_budget": 30_000, "yearly_drift": -0.08, "quarter_sigma": 0.15,
+    "meta": {"annual_budget": {2023: 1_600_000, 2024: 1_450_000, 2025: 1_350_000}, "quarter_sigma": 0.15,
              "weekly_sigma": 0.10, "flight": "seasonal_push", "tilt_sigma": 0.40, "region_sigma": 0.15,
              "push": {"geo": "market", "lead": 3, "len": (4, 7), "mult": 1.35, "mult_sigma": 0.20,
                       "season_sigma": 0.40, "timing_sigma": 1.5, "market_timing_sigma": 1.5,
                       "market_mult_sigma": 0.25, "sustain": 1.0, "slow": 0.85}},
-    "linkedin": {"weekly_budget": 26_000, "yearly_drift": 0.04, "quarter_sigma": 0.12,
+    "linkedin": {"annual_budget": {2023: 1_220_000, 2024: 840_000, 2025: 500_000}, "quarter_sigma": 0.12,
                  "weekly_sigma": 0.10, "flight": "always_on", "season_follow": 0.0,
                  "tilt_sigma": 0.45, "region_sigma": 0.18, "quarter_region_sigma": 0.30},
     # YouTube flights are bought nationally and run ahead of the season, to build
     # awareness before fleets start shopping.
-    "youtube": {"weekly_budget": 22_000, "yearly_drift": -0.10, "quarter_sigma": 0.20,
+    "youtube": {"annual_budget": {2023: 1_000_000, 2024: 950_000, 2025: 850_000}, "quarter_sigma": 0.20,
                 "weekly_sigma": 0.10, "flight": "seasonal_push", "tilt_sigma": 0.35, "region_sigma": 0.15,
                 "push": {"geo": "national", "lead": 10, "len": (5, 8), "mult": 3.0, "mult_sigma": 0.20,
                          "timing_sigma": 1.5, "market_share": 0.75, "sustain": 0.35, "slow": 0.30}},
     # CTV is a market test: each test market runs its own flight ahead of each busy
     # season, on its own timing, and goes dark between flights.
-    "ctv": {"weekly_budget": 22_000, "yearly_drift": -0.08, "quarter_sigma": 0.15,
+    "ctv": {"annual_budget": {2023: 1_300_000, 2024: 1_000_000, 2025: 600_000}, "quarter_sigma": 0.15,
             "weekly_sigma": 0.05, "flight": "seasonal_push", "tilt_sigma": 0.25, "region_sigma": 0.08,
             "push": {"geo": "market", "lead": 6, "len": (6, 9), "mult": 1.0, "mult_sigma": 0.20,
                      "season_sigma": 0.15, "timing_sigma": 2.0, "market_timing_sigma": 3.5,
                      "market_mult_sigma": 0.25, "sustain": 0.0, "slow": 0.0}},
-    "display": {"weekly_budget": 22_000, "yearly_drift": 0.10, "quarter_sigma": 0.12,
+    "display": {"annual_budget": {2023: 1_300_000, 2024: 1_450_000, 2025: 1_600_000}, "quarter_sigma": 0.12,
                 "weekly_sigma": 0.20, "flight": "always_on", "season_follow": 0.0,
                 "tilt_sigma": 0.35, "region_sigma": 0.20, "quarter_region_sigma": 0.20},
     # Partner placement and sponsor fees with local resellers and fleet consultants,
     # set when each market's contracts renew every quarter. Per-deal commissions are
     # cost of sale and stay out of media spend.
-    "affiliates": {"weekly_budget": 12_000, "yearly_drift": 0.03, "quarter_sigma": 0.10,
+    "affiliates": {"annual_budget": {2023: 600_000, 2024: 750_000, 2025: 600_000}, "quarter_sigma": 0.10,
                    "weekly_sigma": 0.04, "flight": "always_on", "season_follow": 0.0,
                    "tilt_sigma": 0.50, "region_sigma": 0.05, "quarter_region_sigma": 0.35},
 }
@@ -146,7 +150,6 @@ PLANNING = {
     "slow_weeks": [(3, 9), (29, 37)],
 }
 
-YEAR_PLAN_SIGMA = 0.05
 # Decisions the team made between annual plans: (date, reason, {channel: change}).
 # Most follow last-touch readouts; a few do not.
 BUDGET_EVENTS = [
@@ -156,19 +159,20 @@ BUDGET_EVENTS = [
      {"display": 0.18, "meta": -0.12}),
     (date(2024, 4, 1), "Attribution review: video and CTV show few last-touch leads",
      {"youtube": -0.31, "ctv": -0.34, "paid_search_nonbrand": 0.12, "affiliates": 0.21}),
-    (date(2024, 8, 5), "Cost cut during the hiring freeze",
-     {"linkedin": -0.19, "meta": -0.17, "display": -0.15}),
+    (date(2024, 8, 5), "Hiring freeze: brand programs trimmed, search protected",
+     {"linkedin": -0.19, "meta": -0.17, "paid_search_nonbrand": 0.10}),
     (date(2024, 11, 4), "Two reseller contracts end", {"affiliates": -0.24}),
     (date(2025, 2, 3), "New fiscal year: more for what last touch rewards",
-     {"paid_search_nonbrand": 0.09, "display": 0.13}),
+     {"paid_search_nonbrand": 0.20, "display": 0.13, "linkedin": -0.15}),
     (date(2025, 6, 2), "Meta retest after a new creative agency",
      {"meta": 0.23, "youtube": -0.14}),
 ]
 
 # Brand search is always on in every market and bids on every search for "Fernhook",
-# so its spend follows brand searches (noise_sigma is the weekly cost-per-search
-# wobble). The plan sets it at about 35% of search, measured against the non-brand
-# plan; actual spend lands wherever searches take it.
+# so its spend follows brand searches week to week (noise_sigma is the weekly
+# cost-per-search wobble). Its yearly spend lands on annual_budget (about 3% more each
+# year): the cost per search is set once per year so the year adds up, and stays fixed
+# within the year, so more searches mean more spend.
 #
 # Brand searches come from baseline demand plus the searches Meta, YouTube and CTV
 # create. A channel's searches follow its reach in the market, with a short carryover
@@ -180,7 +184,7 @@ BUDGET_EVENTS = [
 # demand. Because spend follows searches, cutting one of these channels cuts brand
 # searches and brand-search spend with it.
 BRAND_SEARCH = {
-    "planned_share_of_search": 0.35,
+    "annual_budget": {2023: 2_400_000, 2024: 2_470_000, 2025: 2_550_000},
     "noise_sigma": 0.10,
     "created_by": {
         "meta": {"alpha": (0.10, 0.30), "reach_spend": (1_500, 3_000), "lift": (0.05, 0.10)},
@@ -191,6 +195,7 @@ BRAND_SEARCH = {
 
 # Webinars are regional field events, not an ad platform.
 WEBINARS = {
+    "annual_budget": {2023: 700_000, 2024: 720_000, 2025: 750_000},  # event costs are paced to these
     "events_per_week_national": 1.5,
     "cost_median": 9_000,
     "cost_sigma": 0.35,
@@ -214,13 +219,15 @@ HOLIDAY_SPEND_CUT = 0.7  # every planned channel trims spend in the last and fir
 # adstock is geometric and normalized (weights sum to 1) over L_MAX weeks.
 # K_c is in $/week of adstocked spend for an average-size region (size 1.0).
 # Each run draws alpha and S uniformly, K log-uniformly, and a cost per incremental
-# deal log-uniformly, then sets beta so in-window spend divided by the deals it
-# causes equals that draw. Ranges follow published incrementality work: brand
-# search and retargeting tend to show low lift, and one channel is near zero so
-# the MMM has a dud to find.
+# deal log-uniformly, then sets beta so 2023's spend divided by the deals it causes
+# equals that draw. Anchoring at 2023 matters for a channel whose budget moves a lot:
+# non-brand search sits near its half-saturation point at 2023 spend, so the money
+# poured in during 2024 and 2025 buys fewer and fewer deals. Ranges follow published
+# incrementality work: brand search and retargeting tend to show low lift, and one
+# channel is near zero so the MMM has a dud to find.
 EFFECT_RANGES = {
     "paid_search_brand": {"alpha": (0.05, 0.15), "K": (450, 800), "S": (0.9, 1.1), "cpa": (3_500, 9_000)},
-    "paid_search_nonbrand": {"alpha": (0.20, 0.30), "K": (1_500, 2_200), "S": (1.3, 1.5), "cpa": (1_300, 2_100)},
+    "paid_search_nonbrand": {"alpha": (0.20, 0.30), "K": (2_400, 3_400), "S": (1.3, 1.5), "cpa": (1_300, 2_100)},
     "meta": {"alpha": (0.38, 0.52), "K": (2_500, 3_600), "S": (1.1, 1.3), "cpa": (1_100, 1_900)},
     "linkedin": {"alpha": (0.33, 0.47), "K": (1_050, 1_600), "S": (1.1, 1.3), "cpa": (2_000, 3_400)},
     "youtube": {"alpha": (0.62, 0.78), "K": (2_500, 3_600), "S": (1.2, 1.4), "cpa": (1_100, 2_000)},
@@ -327,6 +334,13 @@ FUNNEL = {
     "webinars": {"p_mql": 0.70, "p_sql": 0.40, "p_opp": 0.65, "p_won": 0.34, "amount_mult": 1.10},
 }
 FUNNEL_JITTER = {"rate_sigma": 0.06, "amount_sigma": 0.04}
+# Buying deeper into non-brand search reaches broader, lower-intent keywords. In a week
+# when a market's non-brand spend per unit of size is above ref_spend, its non-brand
+# leads fit the profile and close less often:
+#   quality = 1 / (1 + slope * max(spend / (size * ref_spend) - 1, 0))
+# and both the MQL rate and the win rate are multiplied by sqrt(quality). The slope is
+# drawn per run.
+NONBRAND_QUALITY = {"ref_spend": 3_000.0, "slope_range": (0.10, 0.20)}
 AMOUNT_MEDIAN = 2_400.0  # first-year contract value at list price, USD
 AMOUNT_SIGMA = 0.45
 # Stage lags in days, gamma(shape, scale) floored to whole days. Lead to close
@@ -406,7 +420,9 @@ DISPLAY_POST_VIEW_SHARE = 0.85
 # CPM in $ and click-through rate per impression (None = not reported).
 MEDIA = {
     "paid_search_brand": {"cpm": 450.0, "ctr": 0.22},
-    "paid_search_nonbrand": {"cpm": 250.0, "ctr": 0.035},
+    # Deeper search buying wins pricier auctions: cost per thousand impressions rises with
+    # non-brand spend per unit of market size, relative to depth_ref.
+    "paid_search_nonbrand": {"cpm": 250.0, "ctr": 0.035, "depth_ref": 3_000.0, "depth_elasticity": 0.35},
     "meta": {"cpm": 12.0, "ctr": 0.010},
     "linkedin": {"cpm": 45.0, "ctr": 0.006},
     "youtube": {"cpm": 10.0, "ctr": 0.002},

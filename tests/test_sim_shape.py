@@ -1,8 +1,8 @@
 """Guards that keep the sim true to its scenario: enough spend variation for an MMM,
-seasonal brand pushes a model can still separate from demand, always-on performance
-channels that pause only in planned tests, the planned search split, one near-zero
-channel, platforms that over-claim, CTV that last touch never sees, and the README
-story on more than one seed."""
+seasonal brand pushes a model can still separate from demand, always-on channels
+that never pause, budgets that drift from brand to non-brand search, search that
+saturates, one near-zero channel, platforms that over-claim, CTV that last touch never
+sees, and the README story on more than one seed."""
 
 import numpy as np
 import pandas as pd
@@ -13,6 +13,8 @@ from sim import simulate
 from sim.generate import _adstock, _hill
 
 BRAND_PUSH = ["meta", "youtube", "ctv"]
+PERFORMANCE = ["paid_search_brand", "paid_search_nonbrand", "display", "affiliates"]
+BRAND = ["meta", "youtube", "ctv", "linkedin"]
 OTHER_SEEDS = [C.DEFAULT_SEED + i for i in (1, 2, 3)]
 
 
@@ -75,8 +77,15 @@ def test_grid_size(sim):
     assert set(regions.state) == {"IL", "IA", "MN", "ND", "OH", "SD", "WI"}
 
 
-def test_channel_spend_is_not_collinear(sim):
-    corr = _national(sim.tables).corr().to_numpy()
+def test_channel_spend_moves_apart_within_each_year(sim):
+    # Budgets drift on purpose (search up, brand down), so yearly levels move together.
+    # Inside each year, week-to-week spend on the planned channels still moves apart, or
+    # no model could tell them apart. Brand search follows demand and the upper funnel;
+    # the lockstep test below covers it.
+    nat = _national(sim.tables)[C.PLANNED_CHANNELS + ["webinars"]]
+    yr = pd.to_datetime(pd.Series(nat.index, index=nat.index)).dt.year
+    dev = nat / nat.groupby(yr).transform("mean")
+    corr = dev.corr().to_numpy()
     assert np.abs(corr[~np.eye(len(corr), dtype=bool)]).max() < 0.6
 
 
@@ -168,7 +177,7 @@ def test_market_seasonality_separates_brand_pushes_from_demand(sim):
         assert abs(seasonal[ch]) < 0.2, ch
 
 
-def test_performance_channels_never_go_dark(sim):
+def test_always_on_channels_never_go_dark(sim):
     # Paid search, LinkedIn, display and affiliates run every week in every market.
     for ch in ("paid_search_brand", "paid_search_nonbrand", "linkedin", "display", "affiliates"):
         assert (_grid(sim.tables, ch).to_numpy() > 0).all(), ch
@@ -194,31 +203,63 @@ def test_upper_funnel_creates_brand_searches(sim, other_seeds):
             assert total_curve[at_one] == pytest.approx(v["incremental_deals_total"], abs=0.01)
 
 
+def _yearly(t):
+    sl = _spend_long(t).assign(yr=lambda d: pd.to_datetime(d.week).dt.year)
+    return sl.pivot_table(index="yr", columns="ch", values="spend", aggfunc="sum").fillna(0.0)
+
+
+def test_budgets_land_on_plan(sim, other_seeds):
+    # Every channel is paced to its annual budget: performance against brand goes 60/40,
+    # 70/30, 80/20 and total spend rises 10% and then 16%, on every seed.
+    for seed, result in {C.DEFAULT_SEED: sim, **other_seeds}.items():
+        by = _yearly(result.tables)
+        perf = by[PERFORMANCE].sum(axis=1) / by[PERFORMANCE + BRAND].sum(axis=1)
+        for y, share in ((2023, 0.60), (2024, 0.70), (2025, 0.80)):
+            assert perf[y] == pytest.approx(share, abs=0.005), (seed, y)
+        total = by.sum(axis=1)
+        assert total[2024] / total[2023] - 1 == pytest.approx(0.10, abs=0.005), seed
+        assert total[2025] / total[2024] - 1 == pytest.approx(0.16, abs=0.005), seed
+        for ch in C.PLANNED_CHANNELS:
+            for y, b in C.SPEND[ch]["annual_budget"].items():
+                assert by.loc[y, ch] == pytest.approx(b, rel=0.001), (seed, ch, y)
+        for y, b in C.BRAND_SEARCH["annual_budget"].items():
+            assert by.loc[y, "paid_search_brand"] == pytest.approx(b, rel=0.001), (seed, y)
+
+
 def test_readme_story_holds_on_several_seeds(sim, other_seeds):
-    # The mix drifts to performance, last-touch search cost per lead rises, and
-    # closed-won deals fall in 2025.
-    performance = ["paid_search_brand", "paid_search_nonbrand", "linkedin", "display", "affiliates"]
+    # Spend climbs while non-brand search runs out of steam: its cost per click and cost
+    # per lead rise every year, its leads close less often, closed-won deals fall in
+    # 2025, and the blended cost per deal jumps.
     for seed, result in {C.DEFAULT_SEED: sim, **other_seeds}.items():
         t = result.tables
-        sl = _spend_long(t).assign(yr=lambda d: pd.to_datetime(d.week).dt.year)
-        by = sl.pivot_table(index="yr", columns="ch", values="spend", aggfunc="sum")
-        perf = by[performance].sum(axis=1) / by.sum(axis=1)
-        assert perf[2025] > perf[2023] + 0.05, seed
-        leads = t["crm_leads"].assign(week=lambda d: _week(d.created_date))
-        leads = leads[leads.week >= str(C.WINDOW_START)]
-        sem = leads[leads.utm_campaign.isin(["search_brand", "search_nonbrand"])]
-        sem_leads = sem.groupby(pd.to_datetime(sem.week).dt.year).size()
-        cpl = (by["paid_search_brand"] + by["paid_search_nonbrand"]) / sem_leads
-        assert cpl[2025] > cpl[2023], seed
-        opps = t["crm_opportunities"]
-        won = opps[opps.stage == "Closed Won"]
+        by = _yearly(t)
+        leads = t["crm_leads"].assign(yr=lambda d: pd.to_datetime(_week(d.created_date)).dt.year)
+        nb = leads[leads.utm_campaign == "search_nonbrand"]
+        cpl = by["paid_search_nonbrand"] / nb.groupby("yr").size()
+        g = t["ads_google_weekly"]
+        g = g[g.campaign_name == "FH_Search_NonBrand"].assign(yr=lambda d: pd.to_datetime(d.week_start_date).dt.year)
+        cpc = g.groupby("yr").cost_micros.sum() / 1e6 / g.groupby("yr").clicks.sum()
+        opps = t["crm_opportunities"].merge(nb[["lead_id", "yr"]], on="lead_id")
+        closed = opps[opps.stage != "Open"]
+        win_rate = (closed.stage == "Closed Won").groupby(closed.yr).mean()
+        for a, b in ((2023, 2024), (2024, 2025)):
+            assert cpl[b] > cpl[a] and cpc[b] > cpc[a] and win_rate[b] < win_rate[a], (seed, a, b)
+        won = t["crm_opportunities"].query("stage == 'Closed Won'")
         won_year = pd.to_datetime(_week(won.close_date)).dt.year.value_counts()
         assert won_year[2025] < won_year[2024], seed
+        cpa = by.sum(axis=1) / won_year
+        assert cpa[2025] > 1.15 * cpa[2024] and cpa[2025] > 1.15 * cpa[2023], seed
 
 
-def test_nonbrand_is_about_65_percent_of_search(sim):
-    # Brand spend follows demand, so the split lands near the 65/35 plan, not on it.
-    assert sim.truth["summary"]["nonbrand_share_of_search_spend"] == pytest.approx(0.65, abs=0.03)
+def test_nonbrand_search_saturates(sim, other_seeds):
+    # Each channel's true cost per deal is anchored at its 2023 spend. Non-brand search
+    # starts near half-saturation, so its true cost per deal climbs every year.
+    for seed, result in {C.DEFAULT_SEED: sim, **other_seeds}.items():
+        ch = result.truth["channels"]["paid_search_nonbrand"]
+        by = ch["by_year"]
+        assert by["2023"]["cpa"] == pytest.approx(ch["cpa_2023_reference"], rel=0.25), seed
+        assert by["2023"]["cpa"] < by["2024"]["cpa"] < by["2025"]["cpa"], seed
+        assert by["2025"]["cpa"] > 1.5 * by["2023"]["cpa"], seed
 
 
 def test_display_is_the_near_zero_channel(sim):

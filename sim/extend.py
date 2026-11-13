@@ -33,8 +33,8 @@ import numpy as np
 import pandas as pd
 
 from . import config as C
-from .generate import (SimResult, _adstock, _brand_flighting, _categorical, _date_str, _hill,
-                       _monday_of_iso_week, _r, _season_log, simulate)
+from .generate import (SimResult, _adstock, _brand_flighting, _categorical, _date_str, _depth_price, _hill,
+                       _monday_of_iso_week, _nonbrand_quality, _r, _season_log, simulate)
 from .plans import Plan, load_all
 
 EXT_START = C.WINDOW_START + timedelta(weeks=C.N_WEEKS)   # 2025-12-29, ISO 2026-W01
@@ -98,7 +98,7 @@ def _exogenous(st: dict, cal: dict, seed: int) -> dict:
     bau, add_noise = {}, {}
     for ch in C.PLANNED_CHANNELS:
         p, h, r = C.SPEND[ch], st["habits"][ch], rngs[ch]
-        level = h["plan_last"] * h["year_noise_last"]  # the 2025 plan as it was bought
+        level = h["weekly_level_last"]  # 2025's budget, at its weekly pace
         q_draw = np.exp(r.normal(0.0, p["quarter_sigma"], 4))
         q_mult = np.where(cal["quarter"] < 0, h["q_mult_last"], q_draw[np.maximum(cal["quarter"], 0)])
         national = level * cal["holiday_cut"] * q_mult * np.exp(r.normal(0.0, p["weekly_sigma"], T))
@@ -174,7 +174,8 @@ def _exogenous(st: dict, cal: dict, seed: int) -> dict:
     ev_t, ev_r = np.repeat(nz_t, reps), np.repeat(nz_r, reps)
     n_ev = ev_t.size
     ev = {"t": ev_t, "r": ev_r,
-          "cost": np.round(w_cfg["cost_median"] * np.exp(r.normal(0.0, w_cfg["cost_sigma"], n_ev)), 2),
+          "cost": np.round(w_cfg["cost_median"] * np.exp(r.normal(0.0, w_cfg["cost_sigma"], n_ev))
+                           * st["webinar_factor_last"], 2),
           "day": r.integers(1, 4, n_ev), "topic": r.integers(0, len(w_cfg["topics"]), n_ev)}
     ev["regs"] = r.poisson(ev["cost"] / w_cfg["cost_per_registrant"])
     ev["attend"] = r.binomial(ev["regs"], w_cfg["attend_rate"])
@@ -255,15 +256,21 @@ def _media_response(st: dict, ex: dict, planned: dict) -> dict:
     return {"brand": brand, "searches": searches, "mu": mu, "webinars": ex["webinars"]}
 
 
-def _funnel(st: dict, ex: dict, cal: dict) -> dict:
+def _funnel(st: dict, ex: dict, cal: dict, nonbrand: np.ndarray) -> dict:
+    """Conversion rates by origin, week and market. Non-brand leads lose quality when a
+    market's non-brand spend runs deep, as in 2023 to 2025."""
     tp, fp, p_cfg = st["tp"], st["fp"], C.PROMO
     win_time = np.where(ex["is_year_end"], tp["year_end_win_mult"], 1.0) * tp["price_win_mult"]
     amount_time = (np.where(ex["is_year_end"], 1 - p_cfg["year_end_discount_pct"] / 100, 1.0)
                    * (1 + p_cfg["price_change_pct"] / 100))
+    q_half = np.ones((len(C.ORIGINS),) + nonbrand.shape)
+    q_half[C.ORIGINS.index("paid_search_nonbrand")] = np.sqrt(
+        _nonbrand_quality(nonbrand, st["size"], tp["nonbrand_quality_slope"]))
+    p_mql = fp["p_mql"][:, None, None] * q_half
     p_sql = np.minimum(fp["p_sql"][:, None, None] * ex["sdr_mult"][None], 0.95)
-    p_won = np.minimum(fp["p_won"][:, None, None] * ex["ae_mult"][None] * win_time[None, :, None], 0.95)
-    p_opp_lead = fp["p_mql"][:, None, None] * p_sql * fp["p_opp"][:, None, None]
-    return {"p_sql": p_sql, "p_won": p_won, "p_deal": p_opp_lead * p_won, "p_opp_lead": p_opp_lead,
+    p_won = np.minimum(fp["p_won"][:, None, None] * ex["ae_mult"][None] * win_time[None, :, None], 0.95) * q_half
+    p_opp_lead = p_mql * p_sql * fp["p_opp"][:, None, None]
+    return {"p_mql": p_mql, "p_sql": p_sql, "p_won": p_won, "p_deal": p_opp_lead * p_won, "p_opp_lead": p_opp_lead,
             "amount_time": amount_time,
             "amount_mean": (C.AMOUNT_MEDIAN * np.exp(C.AMOUNT_SIGMA**2 / 2) * fp["amount_mult"][:, None, None]
                             * amount_time[None, :, None] * st["area_amount"][None, None, :])}
@@ -285,7 +292,7 @@ def _week_outcomes(w: int, seed: int, st: dict, cal: dict, mu_w: np.ndarray, fun
     rec = _categorical(rng, st["attr"], lo_)
     var = _categorical(rng, st["vprob"], rec)
     u = rng.random((4, n))
-    is_mql = u[0] < fp["p_mql"][lo_]
+    is_mql = u[0] < fun["p_mql"][lo_, w, lr]
     is_sql = is_mql & (u[1] < fun["p_sql"][lo_, w, lr])
     is_opp = is_sql & (u[2] < fp["p_opp"][lo_])
     is_won = is_opp & (u[3] < fun["p_won"][lo_, w, lr])
@@ -323,7 +330,8 @@ def _week_outcomes(w: int, seed: int, st: dict, cal: dict, mu_w: np.ndarray, fun
     delivery = {}
     for ch in ("paid_search_brand", "paid_search_nonbrand", "meta", "linkedin", "youtube", "display"):
         m = C.MEDIA[ch]
-        cpm = m["cpm"] * (1 + C.Q4_CPM_LIFT * cal["is_q4"][w]) * ex["cpm_noise"][ch][w]
+        cpm = (m["cpm"] * (1 + C.Q4_CPM_LIFT * cal["is_q4"][w]) * ex["cpm_noise"][ch][w]
+               * np.ravel(_depth_price(m, spend_w[ch][None, :], size)))
         impressions = np.round(spend_w[ch] / cpm * 1000).astype(np.int64)
         ctr = np.clip(m["ctr"] * ex["ctr_noise"][ch][w], 0, 1)
         delivery[ch] = {"impressions": impressions, "clicks": rng.binomial(impressions, ctr)}
@@ -350,9 +358,10 @@ def _close_lag_pmf(seed: int) -> np.ndarray:
     return np.bincount(weeks, minlength=LAG_TAIL_WEEKS + 1) / n
 
 
-def _expected_deals(st: dict, ex: dict, fun: dict, planned: dict) -> dict:
+def _expected_deals(st: dict, ex: dict, cal: dict, planned: dict) -> dict:
     """Expected deals (T, R) by lead-created week per origin, and spend, for 2026 paths."""
     resp = _media_response(st, ex, planned)
+    fun = _funnel(st, ex, cal, planned["paid_search_nonbrand"])
     o_index = {o: i for i, o in enumerate(C.ORIGINS)}
     mu = {"base": ex["mu_base"], "email": ex["mu_email"], **resp["mu"]}
     deals = {o: mu[o] * fun["p_deal"][o_index[o]] for o in C.ORIGINS}
@@ -370,7 +379,7 @@ def _by_close_week(x: np.ndarray, pmf: np.ndarray) -> np.ndarray:
 def _truth_2026(seed, st, ex, cal, fun, plans, planned, moves_log, through_idx) -> dict:
     pmf = _close_lag_pmf(seed)
     codes = st["codes"]
-    actual = _expected_deals(st, ex, fun, planned)
+    actual = _expected_deals(st, ex, cal, planned)
     week_str = list(_date_str(cal["week_d"]))
     paid = [c for c in C.PAID_CHANNELS if c != "webinars"]
 
@@ -400,7 +409,7 @@ def _truth_2026(seed, st, ex, cal, fun, plans, planned, moves_log, through_idx) 
                 cf_paths = {ch: x.copy() for ch, x in planned.items()}
                 for m in logs:
                     cf_paths[m["channel"]] = cf_paths[m["channel"]] - m["spend_change"]
-                cf = _expected_deals(st, ex, fun, cf_paths)
+                cf = _expected_deals(st, ex, cal, cf_paths)
                 mask_r = np.isin(codes, arm.markets)
                 eff = summarize_effect(cf, mask_r, f"{plan.test.id} arm {arm.id}")
                 eff.update({
@@ -416,11 +425,11 @@ def _truth_2026(seed, st, ex, cal, fun, plans, planned, moves_log, through_idx) 
             cf_paths = {ch: x.copy() for ch, x in planned.items()}
             for m in logs:
                 cf_paths[m["channel"]] = cf_paths[m["channel"]] - m["spend_change"]
-            cf = _expected_deals(st, ex, fun, cf_paths)
+            cf = _expected_deals(st, ex, cal, cf_paths)
             eff = summarize_effect(cf, np.ones(len(codes), bool), f"{plan.name} national moves")
             eff["spend_change_by_channel"] = {m["channel"]: _r(m["spend_change"].sum(), 2) for m in logs}
             out["national_moves"][plan.name] = eff
-    bau = _expected_deals(st, ex, fun, ex["bau"])
+    bau = _expected_deals(st, ex, cal, ex["bau"])
     gen = slice(0, through_idx)
     out["year"] = {
         "weeks_generated": through_idx,
@@ -460,7 +469,7 @@ def simulate_through(seed: int, through: date, plan_paths=()) -> SimResult:
     planned, moves_log = _apply_plans(plans, ex, cal, st)
     resp = _media_response(st, ex, planned)
     spend = {**planned, "paid_search_brand": resp["brand"], "webinars": ex["webinars"]}
-    fun = _funnel(st, ex, cal)
+    fun = _funnel(st, ex, cal, planned["paid_search_nonbrand"])
     mu_origin = {"base": ex["mu_base"], "email": ex["mu_email"], **resp["mu"]}
     mu = np.stack([mu_origin[o] for o in C.ORIGINS], axis=2)  # (T, R, O)
 
