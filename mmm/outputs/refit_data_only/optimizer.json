@@ -1,0 +1,174 @@
+{
+  "meta": {
+    "fit": "refit_data_only",
+    "window": [
+      "2023-01-02",
+      "2026-05-25"
+    ],
+    "train_weeks": 165,
+    "holdout_weeks": 13,
+    "regions": 20,
+    "subset": {
+      "regions": null,
+      "n_weeks": null
+    },
+    "sampler": {
+      "chains": 4,
+      "draws": 2000,
+      "tune": 1500,
+      "target_accept": 0.95,
+      "random_seed": 4
+    },
+    "estimand_draws": 2000,
+    "sampling_seconds": 611,
+    "hdi_prob": 0.9,
+    "estimands_cover": "the first 156 weeks' spend path (2023-01-02 to 2025-12-22) with this fit's posterior",
+    "estimands_through": "2025-12-22"
+  },
+  "objective": "max posterior-mean incremental deals at the same total spend on the levers",
+  "levers": [
+    "paid_search_nonbrand",
+    "meta",
+    "linkedin",
+    "youtube",
+    "ctv",
+    "display",
+    "affiliates"
+  ],
+  "bounds": [
+    0.5,
+    1.5
+  ],
+  "converged": false,
+  "solver_message": "Positive directional derivative for linesearch",
+  "total_spend": 35990000.47999999,
+  "plan": [
+    {
+      "channel": "paid_search_nonbrand",
+      "spend_now": 17030000.299999997,
+      "multiplier": 0.8838113099018515,
+      "spend_plan": 15051306.872771922,
+      "spend_change": -1978693.4272280752,
+      "deal_change": {
+        "mean": -258.8523225871948,
+        "median": -255.97444726429467,
+        "hdi_90": [
+          -377.74495886966906,
+          -123.26493446828499
+        ]
+      }
+    },
+    {
+      "channel": "meta",
+      "spend_now": 4399999.9,
+      "multiplier": 1.4999999994950555,
+      "spend_plan": 6599999.847778245,
+      "spend_change": 2199999.9477782445,
+      "deal_change": {
+        "mean": 522.14643056095,
+        "median": 516.0281568518375,
+        "hdi_90": [
+          149.99176774332636,
+          881.7502238260344
+        ]
+      },
+      "brand_search_spend_change": 66448.43281382867
+    },
+    {
+      "channel": "linkedin",
+      "spend_now": 2560000.06,
+      "multiplier": 0.7580690108101859,
+      "spend_plan": 1940656.7131582166,
+      "spend_change": -619343.3468417836,
+      "deal_change": {
+        "mean": -76.93806789912557,
+        "median": -62.79136990171022,
+        "hdi_90": [
+          -159.41440109426742,
+          -0.0783344770334049
+        ]
+      }
+    },
+    {
+      "channel": "youtube",
+      "spend_now": 2800000.15,
+      "multiplier": 1.4999999988298895,
+      "spend_plan": 4200000.221723691,
+      "spend_change": 1400000.0717236905,
+      "deal_change": {
+        "mean": 540.0887799841908,
+        "median": 537.6277903670318,
+        "hdi_90": [
+          355.8547472293971,
+          712.7824378894754
+        ]
+      },
+      "brand_search_spend_change": 52196.60364010652
+    },
+    {
+      "channel": "ctv",
+      "spend_now": 2900000.0,
+      "multiplier": 1.500000000028362,
+      "spend_plan": 4350000.00008225,
+      "spend_change": 1450000.0000822498,
+      "deal_change": {
+        "mean": 339.5902657862566,
+        "median": 339.42194142581764,
+        "hdi_90": [
+          255.90946693468584,
+          428.216926427428
+        ]
+      },
+      "brand_search_spend_change": 130503.2064421719
+    },
+    {
+      "channel": "display",
+      "spend_now": 4350000.16,
+      "multiplier": 0.5000000003347213,
+      "spend_plan": 2175000.0814560377,
+      "spend_change": -2175000.0785439624,
+      "deal_change": {
+        "mean": -142.73562207762888,
+        "median": -107.08718744813918,
+        "hdi_90": [
+          -321.96851266758756,
+          -0.2206222946680758
+        ]
+      }
+    },
+    {
+      "channel": "affiliates",
+      "spend_now": 1949999.91,
+      "multiplier": 0.8579676001265171,
+      "spend_plan": 1673036.7430296242,
+      "spend_change": -276963.1669703757,
+      "deal_change": {
+        "mean": -36.12160871819497,
+        "median": -29.901457986760164,
+        "hdi_90": [
+          -74.53983457012703,
+          -0.04446589842262316
+        ]
+      }
+    }
+  ],
+  "deal_change": {
+    "mean": 887.1778550492533,
+    "median": 890.9859897786079,
+    "hdi_90": [
+      410.1659227395743,
+      1390.145693788317
+    ]
+  },
+  "deal_change_pct_of_paid_incremental": {
+    "mean": 8.854229553619426,
+    "median": 8.68406420866056,
+    "hdi_90": [
+      3.3346123117213646,
+      14.32148691424499
+    ]
+  },
+  "prob_gain_positive": 0.999,
+  "brand_search": "not a lever: always on, spend follows searches; the plan's upper-funnel moves change it by brand_search_spend_change",
+  "brand_search_spend_change": 249148.24289610708
+}

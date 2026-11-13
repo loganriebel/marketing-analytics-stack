@@ -1,0 +1,101 @@
+{
+  "lead_to_won_rate": 0.043455821491420264,
+  "channels": {
+    "paid_search_brand": {
+      "spend": 7420000.11,
+      "crm_last_touch": {
+        "deals": 6073.0,
+        "cpa": 1221.8014342170263
+      },
+      "platform_reported": {
+        "conversions": 127362.97000000003,
+        "deals": 5534.662488937116,
+        "cpa": 1340.6418412742178
+      }
+    },
+    "paid_search_nonbrand": {
+      "spend": 17030000.3,
+      "crm_last_touch": {
+        "deals": 4673.0,
+        "cpa": 3644.3398887224484
+      },
+      "platform_reported": {
+        "conversions": 168911.23000000019,
+        "deals": 7340.17625877624,
+        "cpa": 2320.1078148005204
+      }
+    },
+    "meta": {
+      "spend": 4399999.9,
+      "crm_last_touch": {
+        "deals": 1456.0,
+        "cpa": 3021.9779532967036
+      },
+      "platform_reported": {
+        "conversions": 219287.0,
+        "deals": 9529.296727389075,
+        "cpa": 461.7339585358418
+      }
+    },
+    "linkedin": {
+      "spend": 2560000.06,
+      "crm_last_touch": {
+        "deals": 733.0,
+        "cpa": 3492.496671214188
+      },
+      "platform_reported": {
+        "conversions": 29895.0,
+        "deals": 1299.1117834860088,
+        "cpa": 1970.5771993927656
+      }
+    },
+    "youtube": {
+      "spend": 2800000.15,
+      "crm_last_touch": {
+        "deals": 190.0,
+        "cpa": 14736.842894736841
+      },
+      "platform_reported": {
+        "conversions": 74241.71999999975,
+        "deals": 3226.2349315359947,
+        "cpa": 867.8847664286287
+      }
+    },
+    "ctv": {
+      "spend": 2900000.0,
+      "crm_last_touch": {
+        "deals": 0.0,
+        "cpa": null
+      },
+      "platform_reported": {
+        "conversions": 42749.0,
+        "deals": 1857.692912936725,
+        "cpa": 1561.0760959493293
+      }
+    },
+    "display": {
+      "spend": 4350000.16,
+      "crm_last_touch": {
+        "deals": 841.0,
+        "cpa": 5172.413983353151
+      },
+      "platform_reported": {
+        "conversions": 46405.0,
+        "deals": 2016.5673963093573,
+        "cpa": 2157.1310574400836
+      }
+    },
+    "affiliates": {
+      "spend": 1949999.91,
+      "crm_last_touch": {
+        "deals": 1364.0,
+        "cpa": 1429.618702346041
+      },
+      "platform_reported": {
+        "conversions": 56556.0,
+        "deals": 2457.6874402687645,
+        "cpa": 793.4287648012534
+      }
+    }
+  }
+}
