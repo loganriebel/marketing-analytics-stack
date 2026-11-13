@@ -230,7 +230,8 @@ def mmm_channel_views(dims: pd.DataFrame, mmm: dict, baselines: dict, grade: dic
     # next dollar by average CPA; the MMM by marginal CPA.
     def score(g: dict, rank_key: str, err: float) -> dict:
         return {"cpa_rank_corr_vs_truth": g["cpa_rank"]["spearman"], "median_abs_cpa_error_pct": err,
-                "best_next_dollar": g[rank_key]["best"], "best_next_dollar_right": int(g["best_marginal_cpa_right"])}
+                "best_next_dollar": dims.loc[g[rank_key]["best"], "channel_name"],
+                "best_next_dollar_right": int(g["best_marginal_cpa_right"])}
 
     for vid in ("crm_last_touch", "platform_reported"):
         deals = sum(baselines["channels"][ch][vid]["deals"] for ch in channels)
@@ -244,7 +245,7 @@ def mmm_channel_views(dims: pd.DataFrame, mmm: dict, baselines: dict, grade: dic
                  "note": "Total incremental deals, posterior median with 90% HDI."})
     t = grade["model"]["totals"]
     rows.append({**total, **_view("truth"), **empty_post, "deals": _true(t, "incremental_deals_paid_media"),
-                 "cpa": _true(t, "incremental_cpa_paid_media"), "best_next_dollar": grade["model"]["true_best_marginal"],
+                 "cpa": _true(t, "incremental_cpa_paid_media"), "best_next_dollar": dims.loc[grade["model"]["true_best_marginal"], "channel_name"],
                  "note": ANSWER_KEY_NOTE})
 
     df = pd.DataFrame(rows)
