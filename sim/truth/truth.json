@@ -44,34 +44,34 @@
   },
   "channels": {
     "paid_search_brand": {
-      "spend": 7420000.11,
-      "incremental_leads": 15708.03,
-      "incremental_deals": 1211.77,
-      "incremental_revenue": 3392115.03,
-      "incremental_pipeline": 9048565.32,
-      "cpa": 6123.3,
+      "spend": 18549999.83,
+      "incremental_leads": 38416.09,
+      "incremental_deals": 3017.06,
+      "incremental_revenue": 8446982.04,
+      "incremental_pipeline": 22345204.83,
+      "cpa": 6148.38,
       "cpa_2023_reference": 5755.72,
       "by_year": {
         "2023": {
-          "spend": 2400000.0,
-          "incremental_deals": 415.18,
-          "cpa": 5780.66
+          "spend": 5999999.87,
+          "incremental_deals": 1037.73,
+          "cpa": 5781.83
         },
         "2024": {
-          "spend": 2469999.97,
-          "incremental_deals": 416.18,
-          "cpa": 5934.96
+          "spend": 6174999.99,
+          "incremental_deals": 1032.32,
+          "cpa": 5981.65
         },
         "2025": {
-          "spend": 2550000.14,
-          "incremental_deals": 376.99,
-          "cpa": 6764.07
+          "spend": 6374999.97,
+          "incremental_deals": 937.97,
+          "cpa": 6796.6
         }
       },
-      "marginal_cpa": 37735.36,
-      "roi_revenue": 0.4572,
-      "roi_pipeline": 1.2195,
-      "cost_per_incremental_lead": 472.37,
+      "marginal_cpa": 38301.67,
+      "roi_revenue": 0.4554,
+      "roi_pipeline": 1.2046,
+      "cost_per_incremental_lead": 482.87,
       "adstock": {
         "type": "geometric",
         "alpha": 0.088,
@@ -80,11 +80,11 @@
       },
       "saturation": {
         "type": "hill",
-        "half_saturation": 460.0,
+        "half_saturation": 1140.0,
         "slope": 1.086,
         "input": "adstocked weekly spend / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 5.919226,
+      "beta_leads_per_week_per_size_unit": 14.444057,
       "lead_quality": {
         "p_mql": 0.6126,
         "p_sql": 0.4948,
@@ -100,7 +100,7 @@
       "platform_reporting": {
         "claim_mult": 1.1,
         "halo": 0.2,
-        "reach_spend": 800,
+        "reach_spend": 2000,
         "halo_from": {
           "ctv": 0.45,
           "youtube": 0.4,
@@ -122,57 +122,57 @@
         ],
         "spend": [
           0.0,
-          1855000.03,
-          3710000.05,
-          5565000.08,
-          7420000.11,
-          9275000.14,
-          11130000.16,
-          14840000.22,
-          22260000.33
+          4637499.96,
+          9274999.91,
+          13912499.87,
+          18549999.83,
+          23187499.79,
+          27824999.74,
+          37099999.66,
+          55649999.49
         ],
         "incremental_deals": [
           0.0,
-          800.118,
-          1038.963,
-          1149.025,
-          1211.766,
-          1252.131,
-          1280.213,
-          1316.646,
-          1354.542
+          1998.569,
+          2590.586,
+          2862.409,
+          3017.057,
+          3116.429,
+          3185.507,
+          3275.051,
+          3368.105
         ]
       }
     },
     "paid_search_nonbrand": {
-      "spend": 17030000.3,
-      "incremental_leads": 136007.84,
-      "incremental_deals": 5550.62,
-      "incremental_revenue": 16158900.5,
-      "incremental_pipeline": 57985016.6,
-      "cpa": 3068.13,
+      "spend": 42574999.64,
+      "incremental_leads": 333614.3,
+      "incremental_deals": 13850.71,
+      "incremental_revenue": 40325226.93,
+      "incremental_pipeline": 143556574.12,
+      "cpa": 3073.85,
       "cpa_2023_reference": 2066.88,
       "by_year": {
         "2023": {
-          "spend": 3380000.15,
-          "incremental_deals": 1633.48,
-          "cpa": 2069.21
+          "spend": 8449999.93,
+          "incremental_deals": 4083.66,
+          "cpa": 2069.22
         },
         "2024": {
-          "spend": 5220000.08,
-          "incremental_deals": 1979.37,
-          "cpa": 2637.21
+          "spend": 13049999.93,
+          "incremental_deals": 4929.53,
+          "cpa": 2647.31
         },
         "2025": {
-          "spend": 8430000.07,
-          "incremental_deals": 1931.33,
-          "cpa": 4364.88
+          "spend": 21074999.78,
+          "incremental_deals": 4821.29,
+          "cpa": 4371.24
         }
       },
-      "marginal_cpa": 11116.18,
-      "roi_revenue": 0.9488,
-      "roi_pipeline": 3.4049,
-      "cost_per_incremental_lead": 125.21,
+      "marginal_cpa": 11117.46,
+      "roi_revenue": 0.9472,
+      "roi_pipeline": 3.3719,
+      "cost_per_incremental_lead": 127.62,
       "adstock": {
         "type": "geometric",
         "alpha": 0.277,
@@ -181,11 +181,11 @@
       },
       "saturation": {
         "type": "hill",
-        "half_saturation": 3230.0,
+        "half_saturation": 8080.0,
         "slope": 1.426,
         "input": "adstocked weekly spend / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 70.983461,
+      "beta_leads_per_week_per_size_unit": 174.167529,
       "lead_quality": {
         "p_mql": 0.5922,
         "p_sql": 0.4064,
@@ -194,7 +194,7 @@
         "amount_mult": 1.0674
       },
       "lead_quality_depth": {
-        "ref_spend": 3000.0,
+        "ref_spend": 7500,
         "slope": 0.16
       },
       "crm_last_touch_recording": {
@@ -206,7 +206,7 @@
       "platform_reporting": {
         "claim_mult": 1.2,
         "halo": 0.03,
-        "reach_spend": 3000,
+        "reach_spend": 7500,
         "halo_from": {},
         "noise_sigma": 0.0
       },
@@ -224,57 +224,57 @@
         ],
         "spend": [
           0.0,
-          4257500.08,
-          8515000.15,
-          12772500.23,
-          17030000.3,
-          21287500.38,
-          25545000.45,
-          34060000.6,
-          51090000.9
+          10643749.91,
+          21287499.82,
+          31931249.73,
+          42574999.64,
+          53218749.55,
+          63862499.46,
+          85149999.28,
+          127724998.92
         ],
         "incremental_deals": [
           0.0,
-          2261.693,
-          4026.795,
-          5014.387,
-          5550.616,
-          5826.939,
-          5949.706,
-          5952.427,
-          5594.872
+          5641.722,
+          10045.803,
+          12510.957,
+          13850.71,
+          14541.768,
+          14849.575,
+          14858.979,
+          13970.692
         ]
       }
     },
     "meta": {
-      "spend": 4399999.9,
-      "incremental_leads": 130594.68,
-      "incremental_deals": 2968.81,
-      "incremental_revenue": 7084771.59,
-      "incremental_pipeline": 27168981.72,
-      "cpa": 1482.08,
+      "spend": 10999999.96,
+      "incremental_leads": 318153.18,
+      "incremental_deals": 7392.08,
+      "incremental_revenue": 17643210.99,
+      "incremental_pipeline": 66915949.61,
+      "cpa": 1488.08,
       "cpa_2023_reference": 1440.56,
       "by_year": {
         "2023": {
-          "spend": 1599999.84,
-          "incremental_deals": 1111.16,
-          "cpa": 1439.93
+          "spend": 3999999.97,
+          "incremental_deals": 2777.83,
+          "cpa": 1439.97
         },
         "2024": {
-          "spend": 1449999.96,
-          "incremental_deals": 986.63,
-          "cpa": 1469.64
+          "spend": 3624999.96,
+          "incremental_deals": 2452.16,
+          "cpa": 1478.29
         },
         "2025": {
-          "spend": 1350000.1,
-          "incremental_deals": 872.29,
-          "cpa": 1547.66
+          "spend": 3375000.03,
+          "incremental_deals": 2165.11,
+          "cpa": 1558.81
         }
       },
-      "marginal_cpa": 1833.63,
-      "roi_revenue": 1.6102,
-      "roi_pipeline": 6.1748,
-      "cost_per_incremental_lead": 33.69,
+      "marginal_cpa": 1844.43,
+      "roi_revenue": 1.6039,
+      "roi_pipeline": 6.0833,
+      "cost_per_incremental_lead": 34.57,
       "adstock": {
         "type": "geometric",
         "alpha": 0.409,
@@ -283,11 +283,11 @@
       },
       "saturation": {
         "type": "hill",
-        "half_saturation": 2790.0,
+        "half_saturation": 6980.0,
         "slope": 1.212,
         "input": "adstocked weekly spend / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 149.328055,
+      "beta_leads_per_week_per_size_unit": 364.001144,
       "lead_quality": {
         "p_mql": 0.4462,
         "p_sql": 0.3377,
@@ -305,7 +305,7 @@
       "platform_reporting": {
         "claim_mult": 1.6,
         "halo": 0.08,
-        "reach_spend": 2000,
+        "reach_spend": 5000,
         "halo_from": {},
         "noise_sigma": 0.0
       },
@@ -323,39 +323,39 @@
         ],
         "spend": [
           0.0,
-          1099999.98,
-          2199999.95,
-          3299999.93,
-          4399999.9,
-          5499999.88,
-          6599999.85,
-          8799999.8,
-          13199999.7
+          2749999.99,
+          5499999.98,
+          8249999.97,
+          10999999.96,
+          13749999.95,
+          16499999.94,
+          21999999.92,
+          32999999.88
         ],
         "incremental_deals": [
           0.0,
-          788.359,
-          1601.475,
-          2328.598,
-          2968.808,
-          3532.127,
-          4029.447,
-          4863.584,
-          6077.834
+          1965.876,
+          3991.118,
+          5800.366,
+          7392.075,
+          8791.712,
+          10026.725,
+          12096.933,
+          15108.097
         ]
       },
-      "brand_searches_created": 25881.27,
-      "incremental_deals_via_brand_search": 17.59,
-      "incremental_deals_total": 2986.4,
-      "cpa_total": 1473.35,
-      "marginal_cpa_total": 1825.46,
+      "brand_searches_created": 65033.11,
+      "incremental_deals_via_brand_search": 43.33,
+      "incremental_deals_total": 7435.41,
+      "cpa_total": 1479.41,
+      "marginal_cpa_total": 1836.34,
       "brand_search_creation": {
         "type": "reach",
         "alpha": 0.162,
         "l_max": 12,
-        "reach_spend": 1840.0,
+        "reach_spend": 4590.0,
         "lift_over_baseline_searches": 0.0966,
-        "gamma": 17.049296
+        "gamma": 42.781235
       },
       "response_curve_total": {
         "spend_multiplier": [
@@ -371,57 +371,57 @@
         ],
         "spend": [
           0.0,
-          1099999.98,
-          2199999.95,
-          3299999.93,
-          4399999.9,
-          5499999.88,
-          6599999.85,
-          8799999.8,
-          13199999.7
+          2749999.99,
+          5499999.98,
+          8249999.97,
+          10999999.96,
+          13749999.95,
+          16499999.94,
+          21999999.92,
+          32999999.88
         ],
         "incremental_deals": [
           0.0,
-          794.587,
-          1612.397,
-          2343.213,
-          2986.4,
-          3552.157,
-          4051.5,
-          4888.76,
-          6106.917
+          1981.275,
+          4018.082,
+          5836.402,
+          7435.407,
+          8841.011,
+          10080.964,
+          12158.786,
+          15179.444
         ]
       }
     },
     "linkedin": {
-      "spend": 2560000.06,
-      "incremental_leads": 18852.69,
-      "incremental_deals": 1004.01,
-      "incremental_revenue": 3371628.84,
-      "incremental_pipeline": 11452623.72,
-      "cpa": 2549.78,
+      "spend": 6400000.24,
+      "incremental_leads": 46243.68,
+      "incremental_deals": 2504.15,
+      "incremental_revenue": 8408980.05,
+      "incremental_pipeline": 28375592.77,
+      "cpa": 2555.76,
       "cpa_2023_reference": 2670.33,
       "by_year": {
         "2023": {
-          "spend": 1220000.15,
-          "incremental_deals": 456.05,
-          "cpa": 2675.13
+          "spend": 3050000.04,
+          "incremental_deals": 1140.12,
+          "cpa": 2675.15
         },
         "2024": {
-          "spend": 839999.82,
-          "incremental_deals": 343.87,
-          "cpa": 2442.81
+          "spend": 2100000.11,
+          "incremental_deals": 855.6,
+          "cpa": 2454.43
         },
         "2025": {
-          "spend": 500000.09,
-          "incremental_deals": 203.49,
-          "cpa": 2457.1
+          "spend": 1250000.09,
+          "incremental_deals": 506.89,
+          "cpa": 2466.01
         }
       },
-      "marginal_cpa": 3293.89,
-      "roi_revenue": 1.317,
-      "roi_pipeline": 4.4737,
-      "cost_per_incremental_lead": 135.79,
+      "marginal_cpa": 3300.95,
+      "roi_revenue": 1.3139,
+      "roi_pipeline": 4.4337,
+      "cost_per_incremental_lead": 138.4,
       "adstock": {
         "type": "geometric",
         "alpha": 0.448,
@@ -430,11 +430,11 @@
       },
       "saturation": {
         "type": "hill",
-        "half_saturation": 1390.0,
+        "half_saturation": 3470.0,
         "slope": 1.286,
         "input": "adstocked weekly spend / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 20.081268,
+      "beta_leads_per_week_per_size_unit": 49.202161,
       "lead_quality": {
         "p_mql": 0.6694,
         "p_sql": 0.4227,
@@ -451,7 +451,7 @@
       "platform_reporting": {
         "claim_mult": 1.3,
         "halo": 0.05,
-        "reach_spend": 1500,
+        "reach_spend": 3750,
         "halo_from": {},
         "noise_sigma": 0.0
       },
@@ -469,57 +469,57 @@
         ],
         "spend": [
           0.0,
-          640000.02,
-          1280000.03,
-          1920000.04,
-          2560000.06,
-          3200000.08,
-          3840000.09,
-          5120000.12,
-          7680000.18
+          1600000.06,
+          3200000.12,
+          4800000.18,
+          6400000.24,
+          8000000.3,
+          9600000.36,
+          12800000.48,
+          19200000.72
         ],
         "incremental_deals": [
           0.0,
-          266.902,
-          548.62,
-          793.949,
-          1004.009,
-          1184.481,
-          1340.733,
-          1597.188,
-          1960.595
+          665.54,
+          1368.197,
+          1980.145,
+          2504.151,
+          2954.382,
+          3344.218,
+          3984.113,
+          4890.998
         ]
       }
     },
     "youtube": {
-      "spend": 2800000.15,
-      "incremental_leads": 39158.1,
-      "incremental_deals": 1815.41,
-      "incremental_revenue": 5175140.78,
-      "incremental_pipeline": 17593035.46,
-      "cpa": 1542.35,
+      "spend": 7000000.05,
+      "incremental_leads": 96395.38,
+      "incremental_deals": 4524.86,
+      "incremental_revenue": 12901969.84,
+      "incremental_pipeline": 43633950.33,
+      "cpa": 1547.01,
       "cpa_2023_reference": 1515.96,
       "by_year": {
         "2023": {
-          "spend": 1000000.12,
-          "incremental_deals": 662.19,
-          "cpa": 1510.13
+          "spend": 2500000.12,
+          "incremental_deals": 1655.47,
+          "cpa": 1510.14
         },
         "2024": {
-          "spend": 950000.05,
-          "incremental_deals": 644.61,
-          "cpa": 1473.76
+          "spend": 2375000.02,
+          "incremental_deals": 1600.59,
+          "cpa": 1483.83
         },
         "2025": {
-          "spend": 849999.98,
-          "incremental_deals": 513.49,
-          "cpa": 1655.33
+          "spend": 2124999.91,
+          "incremental_deals": 1281.0,
+          "cpa": 1658.86
         }
       },
-      "marginal_cpa": 1637.07,
-      "roi_revenue": 1.8483,
-      "roi_pipeline": 6.2832,
-      "cost_per_incremental_lead": 71.51,
+      "marginal_cpa": 1638.94,
+      "roi_revenue": 1.8431,
+      "roi_pipeline": 6.2334,
+      "cost_per_incremental_lead": 72.62,
       "adstock": {
         "type": "geometric",
         "alpha": 0.639,
@@ -528,11 +528,11 @@
       },
       "saturation": {
         "type": "hill",
-        "half_saturation": 3290.0,
+        "half_saturation": 8220.0,
         "slope": 1.4,
         "input": "adstocked weekly spend / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 96.5971,
+      "beta_leads_per_week_per_size_unit": 237.656053,
       "lead_quality": {
         "p_mql": 0.561,
         "p_sql": 0.4096,
@@ -550,6 +550,394 @@
       "platform_reporting": {
         "claim_mult": 1.8,
         "halo": 0.04,
+        "reach_spend": 3750,
+        "halo_from": {},
+        "noise_sigma": 0.0
+      },
+      "response_curve": {
+        "spend_multiplier": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0,
+          1.25,
+          1.5,
+          2.0,
+          3.0
+        ],
+        "spend": [
+          0.0,
+          1750000.01,
+          3500000.03,
+          5250000.04,
+          7000000.05,
+          8750000.06,
+          10500000.08,
+          14000000.1,
+          21000000.15
+        ],
+        "incremental_deals": [
+          0.0,
+          961.462,
+          2205.814,
+          3410.314,
+          4524.859,
+          5548.377,
+          6490.756,
+          8175.404,
+          10966.515
+        ]
+      },
+      "brand_searches_created": 36488.56,
+      "incremental_deals_via_brand_search": 23.61,
+      "incremental_deals_total": 4548.47,
+      "cpa_total": 1538.98,
+      "marginal_cpa_total": 1634.22,
+      "brand_search_creation": {
+        "type": "reach",
+        "alpha": 0.326,
+        "l_max": 12,
+        "reach_spend": 2570.0,
+        "lift_over_baseline_searches": 0.0542,
+        "gamma": 28.668959
+      },
+      "response_curve_total": {
+        "spend_multiplier": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0,
+          1.25,
+          1.5,
+          2.0,
+          3.0
+        ],
+        "spend": [
+          0.0,
+          1750000.01,
+          3500000.02,
+          5250000.04,
+          7000000.05,
+          8750000.06,
+          10500000.07,
+          14000000.1,
+          21000000.15
+        ],
+        "incremental_deals": [
+          0.0,
+          971.387,
+          2221.721,
+          3430.521,
+          4548.467,
+          5574.826,
+          6519.656,
+          8208.384,
+          11005.509
+        ]
+      }
+    },
+    "ctv": {
+      "spend": 7250000.08,
+      "incremental_leads": 59804.33,
+      "incremental_deals": 2841.85,
+      "incremental_revenue": 7974085.94,
+      "incremental_pipeline": 26619245.54,
+      "cpa": 2551.16,
+      "cpa_2023_reference": 2577.52,
+      "by_year": {
+        "2023": {
+          "spend": 3250000.04,
+          "incremental_deals": 1260.9,
+          "cpa": 2577.52
+        },
+        "2024": {
+          "spend": 2500000.01,
+          "incremental_deals": 996.89,
+          "cpa": 2507.8
+        },
+        "2025": {
+          "spend": 1500000.03,
+          "incremental_deals": 584.06,
+          "cpa": 2568.24
+        }
+      },
+      "marginal_cpa": 3134.43,
+      "roi_revenue": 1.0999,
+      "roi_pipeline": 3.6716,
+      "cost_per_incremental_lead": 121.23,
+      "adstock": {
+        "type": "geometric",
+        "alpha": 0.78,
+        "l_max": 12,
+        "normalized": true
+      },
+      "saturation": {
+        "type": "hill",
+        "half_saturation": 13120.0,
+        "slope": 1.478,
+        "input": "adstocked weekly spend / region size index"
+      },
+      "beta_leads_per_week_per_size_unit": 239.329407,
+      "lead_quality": {
+        "p_mql": 0.5578,
+        "p_sql": 0.3933,
+        "p_opp": 0.7366,
+        "p_won": 0.3122,
+        "amount_mult": 1.0393
+      },
+      "crm_last_touch_recording": {
+        "paid_search_brand": 0.45,
+        "direct": 0.35,
+        "organic_search": 0.18,
+        "display": 0.02
+      },
+      "platform_reporting": {
+        "claim_mult": 2.4,
+        "halo": 0.05,
+        "reach_spend": 10000,
+        "halo_from": {},
+        "noise_sigma": 0.3
+      },
+      "response_curve": {
+        "spend_multiplier": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0,
+          1.25,
+          1.5,
+          2.0,
+          3.0
+        ],
+        "spend": [
+          0.0,
+          1812500.02,
+          3625000.04,
+          5437500.06,
+          7250000.08,
+          9062500.1,
+          10875000.12,
+          14500000.16,
+          21750000.24
+        ],
+        "incremental_deals": [
+          0.0,
+          670.21,
+          1489.554,
+          2217.027,
+          2841.849,
+          3379.244,
+          3845.317,
+          4613.844,
+          5719.672
+        ]
+      },
+      "brand_searches_created": 33593.71,
+      "incremental_deals_via_brand_search": 16.25,
+      "incremental_deals_total": 2858.1,
+      "cpa_total": 2536.65,
+      "marginal_cpa_total": 3124.08,
+      "brand_search_creation": {
+        "type": "reach",
+        "alpha": 0.489,
+        "l_max": 12,
+        "reach_spend": 12500.0,
+        "lift_over_baseline_searches": 0.0499,
+        "gamma": 105.467265
+      },
+      "response_curve_total": {
+        "spend_multiplier": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0,
+          1.25,
+          1.5,
+          2.0,
+          3.0
+        ],
+        "spend": [
+          0.0,
+          1812500.02,
+          3625000.04,
+          5437500.06,
+          7250000.08,
+          9062500.1,
+          10875000.12,
+          14500000.16,
+          21750000.24
+        ],
+        "incremental_deals": [
+          0.0,
+          677.039,
+          1500.644,
+          2231.082,
+          2858.101,
+          3397.197,
+          3864.631,
+          4635.21,
+          5743.66
+        ]
+      }
+    },
+    "display": {
+      "spend": 10874999.88,
+      "incremental_leads": 16173.69,
+      "incremental_deals": 257.35,
+      "incremental_revenue": 601304.22,
+      "incremental_pipeline": 2356993.12,
+      "cpa": 42257.13,
+      "cpa_2023_reference": 37653.8,
+      "by_year": {
+        "2023": {
+          "spend": 3250000.08,
+          "incremental_deals": 85.39,
+          "cpa": 38060.34
+        },
+        "2024": {
+          "spend": 3624999.98,
+          "incremental_deals": 87.06,
+          "cpa": 41636.05
+        },
+        "2025": {
+          "spend": 3999999.82,
+          "incremental_deals": 83.23,
+          "cpa": 48058.29
+        }
+      },
+      "marginal_cpa": 113390.23,
+      "roi_revenue": 0.0553,
+      "roi_pipeline": 0.2167,
+      "cost_per_incremental_lead": 672.39,
+      "adstock": {
+        "type": "geometric",
+        "alpha": 0.286,
+        "l_max": 12,
+        "normalized": true
+      },
+      "saturation": {
+        "type": "hill",
+        "half_saturation": 2170.0,
+        "slope": 0.924,
+        "input": "adstocked weekly spend / region size index"
+      },
+      "beta_leads_per_week_per_size_unit": 8.839864,
+      "lead_quality": {
+        "p_mql": 0.3688,
+        "p_sql": 0.3041,
+        "p_opp": 0.5675,
+        "p_won": 0.2693,
+        "amount_mult": 0.8583
+      },
+      "crm_last_touch_recording": {
+        "display": 0.4,
+        "direct": 0.35,
+        "paid_search_brand": 0.25
+      },
+      "platform_reporting": {
+        "claim_mult": 2.0,
+        "halo": 0.2,
+        "reach_spend": 3250,
+        "halo_from": {},
+        "noise_sigma": 0.0
+      },
+      "response_curve": {
+        "spend_multiplier": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0,
+          1.25,
+          1.5,
+          2.0,
+          3.0
+        ],
+        "spend": [
+          0.0,
+          2718749.97,
+          5437499.94,
+          8156249.91,
+          10874999.88,
+          13593749.85,
+          16312499.82,
+          21749999.76,
+          32624999.64
+        ],
+        "incremental_deals": [
+          0.0,
+          127.299,
+          189.645,
+          229.347,
+          257.353,
+          278.36,
+          294.791,
+          318.986,
+          348.822
+        ]
+      }
+    },
+    "affiliates": {
+      "spend": 4875000.0,
+      "incremental_leads": 67917.75,
+      "incremental_deals": 3937.35,
+      "incremental_revenue": 12234232.61,
+      "incremental_pipeline": 38160293.23,
+      "cpa": 1238.14,
+      "cpa_2023_reference": 1159.7,
+      "by_year": {
+        "2023": {
+          "spend": 1500000.06,
+          "incremental_deals": 1277.39,
+          "cpa": 1174.27
+        },
+        "2024": {
+          "spend": 1874999.91,
+          "incremental_deals": 1446.71,
+          "cpa": 1296.05
+        },
+        "2025": {
+          "spend": 1500000.03,
+          "incremental_deals": 1185.45,
+          "cpa": 1265.34
+        }
+      },
+      "marginal_cpa": 1996.92,
+      "roi_revenue": 2.5096,
+      "roi_pipeline": 7.8278,
+      "cost_per_incremental_lead": 71.78,
+      "adstock": {
+        "type": "geometric",
+        "alpha": 0.574,
+        "l_max": 12,
+        "normalized": true
+      },
+      "saturation": {
+        "type": "hill",
+        "half_saturation": 2020.0,
+        "slope": 1.122,
+        "input": "adstocked weekly spend / region size index"
+      },
+      "beta_leads_per_week_per_size_unit": 55.821372,
+      "lead_quality": {
+        "p_mql": 0.592,
+        "p_sql": 0.4554,
+        "p_opp": 0.686,
+        "p_won": 0.3386,
+        "amount_mult": 1.1423
+      },
+      "crm_last_touch_recording": {
+        "affiliates": 0.7,
+        "paid_search_brand": 0.15,
+        "direct": 0.15
+      },
+      "platform_reporting": {
+        "claim_mult": 1.8,
+        "halo": 0.04,
         "reach_spend": 1500,
         "halo_from": {},
         "noise_sigma": 0.0
@@ -568,445 +956,57 @@
         ],
         "spend": [
           0.0,
-          700000.04,
-          1400000.08,
-          2100000.11,
-          2800000.15,
-          3500000.19,
-          4200000.23,
-          5600000.3,
-          8400000.45
+          1218750.0,
+          2437500.0,
+          3656250.0,
+          4875000.0,
+          6093750.0,
+          7312500.0,
+          9750000.0,
+          14625000.0
         ],
         "incremental_deals": [
           0.0,
-          386.554,
-          886.06,
-          1368.95,
-          1815.409,
-          2225.206,
-          2602.417,
-          3276.633,
-          4393.649
-        ]
-      },
-      "brand_searches_created": 14521.37,
-      "incremental_deals_via_brand_search": 9.73,
-      "incremental_deals_total": 1825.14,
-      "cpa_total": 1534.13,
-      "marginal_cpa_total": 1632.25,
-      "brand_search_creation": {
-        "type": "reach",
-        "alpha": 0.326,
-        "l_max": 12,
-        "reach_spend": 1030.0,
-        "lift_over_baseline_searches": 0.0542,
-        "gamma": 11.421369
-      },
-      "response_curve_total": {
-        "spend_multiplier": [
-          0.0,
-          0.25,
-          0.5,
-          0.75,
-          1.0,
-          1.25,
-          1.5,
-          2.0,
-          3.0
-        ],
-        "spend": [
-          0.0,
-          700000.04,
-          1400000.07,
-          2100000.11,
-          2800000.15,
-          3500000.19,
-          4200000.22,
-          5600000.3,
-          8400000.45
-        ],
-        "incremental_deals": [
-          0.0,
-          390.661,
-          892.63,
-          1377.285,
-          1825.137,
-          2236.097,
-          2614.309,
-          3290.191,
-          4409.662
-        ]
-      }
-    },
-    "ctv": {
-      "spend": 2900000.0,
-      "incremental_leads": 24810.2,
-      "incremental_deals": 1152.74,
-      "incremental_revenue": 3235464.65,
-      "incremental_pipeline": 10914002.41,
-      "cpa": 2515.74,
-      "cpa_2023_reference": 2577.52,
-      "by_year": {
-        "2023": {
-          "spend": 1300000.02,
-          "incremental_deals": 504.36,
-          "cpa": 2577.52
-        },
-        "2024": {
-          "spend": 999999.97,
-          "incremental_deals": 411.39,
-          "cpa": 2430.81
-        },
-        "2025": {
-          "spend": 600000.01,
-          "incremental_deals": 237.0,
-          "cpa": 2531.69
-        }
-      },
-      "marginal_cpa": 3096.03,
-      "roi_revenue": 1.1157,
-      "roi_pipeline": 3.7634,
-      "cost_per_incremental_lead": 116.89,
-      "adstock": {
-        "type": "geometric",
-        "alpha": 0.78,
-        "l_max": 12,
-        "normalized": true
-      },
-      "saturation": {
-        "type": "hill",
-        "half_saturation": 5250.0,
-        "slope": 1.478,
-        "input": "adstocked weekly spend / region size index"
-      },
-      "beta_leads_per_week_per_size_unit": 99.318306,
-      "lead_quality": {
-        "p_mql": 0.5578,
-        "p_sql": 0.3933,
-        "p_opp": 0.7366,
-        "p_won": 0.3122,
-        "amount_mult": 1.0393
-      },
-      "crm_last_touch_recording": {
-        "paid_search_brand": 0.45,
-        "direct": 0.35,
-        "organic_search": 0.18,
-        "display": 0.02
-      },
-      "platform_reporting": {
-        "claim_mult": 2.4,
-        "halo": 0.05,
-        "reach_spend": 4000,
-        "halo_from": {},
-        "noise_sigma": 0.3
-      },
-      "response_curve": {
-        "spend_multiplier": [
-          0.0,
-          0.25,
-          0.5,
-          0.75,
-          1.0,
-          1.25,
-          1.5,
-          2.0,
-          3.0
-        ],
-        "spend": [
-          0.0,
-          725000.0,
-          1450000.0,
-          2175000.0,
-          2900000.0,
-          3625000.0,
-          4350000.0,
-          5800000.0,
-          8700000.0
-        ],
-        "incremental_deals": [
-          0.0,
-          272.391,
-          604.85,
-          899.673,
-          1152.742,
-          1370.353,
-          1559.084,
-          1870.357,
-          2318.566
-        ]
-      },
-      "brand_searches_created": 13369.31,
-      "incremental_deals_via_brand_search": 6.48,
-      "incremental_deals_total": 1159.23,
-      "cpa_total": 2501.67,
-      "marginal_cpa_total": 3085.96,
-      "brand_search_creation": {
-        "type": "reach",
-        "alpha": 0.489,
-        "l_max": 12,
-        "reach_spend": 5000.0,
-        "lift_over_baseline_searches": 0.0499,
-        "gamma": 41.972874
-      },
-      "response_curve_total": {
-        "spend_multiplier": [
-          0.0,
-          0.25,
-          0.5,
-          0.75,
-          1.0,
-          1.25,
-          1.5,
-          2.0,
-          3.0
-        ],
-        "spend": [
-          0.0,
-          725000.0,
-          1450000.0,
-          2175000.0,
-          2900000.0,
-          3625000.0,
-          4350000.0,
-          5800000.0,
-          8700000.0
-        ],
-        "incremental_deals": [
-          0.0,
-          275.119,
-          609.277,
-          905.28,
-          1159.226,
-          1377.516,
-          1566.79,
-          1878.884,
-          2328.146
-        ]
-      }
-    },
-    "display": {
-      "spend": 4350000.16,
-      "incremental_leads": 6590.79,
-      "incremental_deals": 103.27,
-      "incremental_revenue": 241268.07,
-      "incremental_pipeline": 952955.28,
-      "cpa": 42123.4,
-      "cpa_2023_reference": 37653.8,
-      "by_year": {
-        "2023": {
-          "spend": 1299999.91,
-          "incremental_deals": 34.16,
-          "cpa": 38058.86
-        },
-        "2024": {
-          "spend": 1450000.24,
-          "incremental_deals": 35.01,
-          "cpa": 41420.34
-        },
-        "2025": {
-          "spend": 1600000.01,
-          "incremental_deals": 33.44,
-          "cpa": 47849.43
-        }
-      },
-      "marginal_cpa": 113255.34,
-      "roi_revenue": 0.0555,
-      "roi_pipeline": 0.2191,
-      "cost_per_incremental_lead": 660.01,
-      "adstock": {
-        "type": "geometric",
-        "alpha": 0.286,
-        "l_max": 12,
-        "normalized": true
-      },
-      "saturation": {
-        "type": "hill",
-        "half_saturation": 870.0,
-        "slope": 0.924,
-        "input": "adstocked weekly spend / region size index"
-      },
-      "beta_leads_per_week_per_size_unit": 3.605324,
-      "lead_quality": {
-        "p_mql": 0.3688,
-        "p_sql": 0.3041,
-        "p_opp": 0.5675,
-        "p_won": 0.2693,
-        "amount_mult": 0.8583
-      },
-      "crm_last_touch_recording": {
-        "display": 0.4,
-        "direct": 0.35,
-        "paid_search_brand": 0.25
-      },
-      "platform_reporting": {
-        "claim_mult": 2.0,
-        "halo": 0.2,
-        "reach_spend": 1300,
-        "halo_from": {},
-        "noise_sigma": 0.0
-      },
-      "response_curve": {
-        "spend_multiplier": [
-          0.0,
-          0.25,
-          0.5,
-          0.75,
-          1.0,
-          1.25,
-          1.5,
-          2.0,
-          3.0
-        ],
-        "spend": [
-          0.0,
-          1087500.04,
-          2175000.08,
-          3262500.12,
-          4350000.16,
-          5437500.2,
-          6525000.24,
-          8700000.32,
-          13050000.48
-        ],
-        "incremental_deals": [
-          0.0,
-          51.131,
-          76.138,
-          92.05,
-          103.268,
-          111.679,
-          118.257,
-          127.938,
-          139.872
-        ]
-      }
-    },
-    "affiliates": {
-      "spend": 1949999.91,
-      "incremental_leads": 27828.36,
-      "incremental_deals": 1582.52,
-      "incremental_revenue": 4917442.82,
-      "incremental_pipeline": 15419643.18,
-      "cpa": 1232.21,
-      "cpa_2023_reference": 1159.7,
-      "by_year": {
-        "2023": {
-          "spend": 600000.13,
-          "incremental_deals": 511.07,
-          "cpa": 1174.0
-        },
-        "2024": {
-          "spend": 749999.89,
-          "incremental_deals": 582.92,
-          "cpa": 1286.63
-        },
-        "2025": {
-          "spend": 599999.89,
-          "incremental_deals": 477.59,
-          "cpa": 1256.3
-        }
-      },
-      "marginal_cpa": 1981.6,
-      "roi_revenue": 2.5218,
-      "roi_pipeline": 7.9075,
-      "cost_per_incremental_lead": 70.07,
-      "adstock": {
-        "type": "geometric",
-        "alpha": 0.574,
-        "l_max": 12,
-        "normalized": true
-      },
-      "saturation": {
-        "type": "hill",
-        "half_saturation": 810.0,
-        "slope": 1.122,
-        "input": "adstocked weekly spend / region size index"
-      },
-      "beta_leads_per_week_per_size_unit": 22.906939,
-      "lead_quality": {
-        "p_mql": 0.592,
-        "p_sql": 0.4554,
-        "p_opp": 0.686,
-        "p_won": 0.3386,
-        "amount_mult": 1.1423
-      },
-      "crm_last_touch_recording": {
-        "affiliates": 0.7,
-        "paid_search_brand": 0.15,
-        "direct": 0.15
-      },
-      "platform_reporting": {
-        "claim_mult": 1.8,
-        "halo": 0.04,
-        "reach_spend": 600,
-        "halo_from": {},
-        "noise_sigma": 0.0
-      },
-      "response_curve": {
-        "spend_multiplier": [
-          0.0,
-          0.25,
-          0.5,
-          0.75,
-          1.0,
-          1.25,
-          1.5,
-          2.0,
-          3.0
-        ],
-        "spend": [
-          0.0,
-          487499.98,
-          974999.96,
-          1462499.93,
-          1949999.91,
-          2437499.89,
-          2924999.87,
-          3899999.82,
-          5849999.73
-        ],
-        "incremental_deals": [
-          0.0,
-          533.146,
-          968.678,
-          1309.456,
-          1582.518,
-          1806.469,
-          1993.762,
-          2290.083,
-          2691.287
+          1329.865,
+          2413.24,
+          3259.695,
+          3937.35,
+          4492.786,
+          4957.098,
+          5691.347,
+          6684.904
         ]
       }
     },
     "webinars": {
-      "spend": 2169999.97,
-      "incremental_leads": 34509.65,
-      "incremental_deals": 1820.8,
-      "incremental_revenue": 5483225.59,
-      "incremental_pipeline": 17576738.97,
-      "cpa": 1191.79,
+      "spend": 5425000.0,
+      "incremental_leads": 84579.66,
+      "incremental_deals": 4540.28,
+      "incremental_revenue": 13672409.14,
+      "incremental_pipeline": 43529518.19,
+      "cpa": 1194.86,
       "cpa_2023_reference": 1202.15,
       "by_year": {
         "2023": {
-          "spend": 699999.98,
-          "incremental_deals": 582.29,
+          "spend": 1750000.01,
+          "incremental_deals": 1455.71,
           "cpa": 1202.16
         },
         "2024": {
-          "spend": 719999.99,
-          "incremental_deals": 631.88,
-          "cpa": 1139.46
+          "spend": 1799999.98,
+          "incremental_deals": 1576.24,
+          "cpa": 1141.96
         },
         "2025": {
-          "spend": 750000.0,
-          "incremental_deals": 606.63,
-          "cpa": 1236.34
+          "spend": 1875000.01,
+          "incremental_deals": 1508.32,
+          "cpa": 1243.11
         }
       },
-      "marginal_cpa": 2082.36,
-      "roi_revenue": 2.5268,
-      "roi_pipeline": 8.0999,
-      "cost_per_incremental_lead": 62.88,
+      "marginal_cpa": 2092.66,
+      "roi_revenue": 2.5203,
+      "roi_pipeline": 8.0239,
+      "cost_per_incremental_lead": 64.14,
       "adstock": {
         "type": "geometric",
         "alpha": 0.19,
@@ -1015,11 +1015,11 @@
       },
       "saturation": {
         "type": "hill",
-        "half_saturation": 5130.0,
+        "half_saturation": 12830.0,
         "slope": 0.985,
         "input": "adstocked weekly spend / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 166.038071,
+      "beta_leads_per_week_per_size_unit": 407.033136,
       "lead_quality": {
         "p_mql": 0.7003,
         "p_sql": 0.3622,
@@ -1049,45 +1049,45 @@
         ],
         "spend": [
           0.0,
-          542499.99,
-          1084999.98,
-          1627499.98,
-          2169999.97,
-          2712499.96,
-          3254999.95,
-          4339999.94,
-          6509999.91
+          1356250.0,
+          2712500.0,
+          4068750.0,
+          5425000.0,
+          6781250.0,
+          8137500.0,
+          10850000.0,
+          16275000.0
         ],
         "incremental_deals": [
           0.0,
-          713.241,
-          1180.401,
-          1534.617,
-          1820.796,
-          2060.98,
-          2267.848,
-          2611.13,
-          3122.712
+          1781.455,
+          2946.055,
+          3828.143,
+          4540.282,
+          5137.648,
+          5651.947,
+          6505.022,
+          7775.646
         ]
       }
     }
   },
   "summary": {
-    "paid_spend": 45580000.56,
-    "expected_deals_all_sources": 31551.54,
-    "incremental_deals_paid_media": 17209.95,
-    "blended_cpa_paid_media": 1444.62,
-    "incremental_cpa_paid_media": 2648.47,
-    "paid_media_share_of_deals": 0.5455,
+    "paid_spend": 113949999.68,
+    "expected_deals_all_sources": 79529.71,
+    "incremental_deals_paid_media": 42865.69,
+    "blended_cpa_paid_media": 1432.8,
+    "incremental_cpa_paid_media": 2658.3,
+    "paid_media_share_of_deals": 0.539,
     "nonbrand_share_of_search_spend": 0.6965,
     "highest_cpa_channel": "display",
     "upper_funnel_share_of_brand_searches": 0.1672,
-    "upper_funnel_share_of_brand_search_deals": 0.0279
+    "upper_funnel_share_of_brand_search_deals": 0.0276
   },
   "controls": {
     "baseline": {
-      "expected_deals_in_window": 13322.0,
-      "leads_per_week_avg_region": 82.5,
+      "expected_deals_in_window": 34069.57,
+      "leads_per_week_avg_region": 206.25,
       "growth_per_year_log": 0.0521,
       "seasonality": {
         "form": "log season(r, w) = sum of humps size * exp(-0.5 * ((w - week - shift_r) / width) ** 2), summer_lull and winter_dip entering with a minus sign, w = ISO week; then holiday multipliers",
@@ -1172,8 +1172,8 @@
       "sdr_elasticity_on_p_sql": 0.329,
       "ae_elasticity_on_p_won": 0.222,
       "coverage": "headcount / (per_1k_accounts * target_accounts / 1000)",
-      "sdr_per_1k_accounts": 0.14,
-      "ae_per_1k_accounts": 0.19,
+      "sdr_per_1k_accounts": 0.35,
+      "ae_per_1k_accounts": 0.475,
       "multiplier_bounds": [
         0.75,
         1.12
@@ -1184,8 +1184,8 @@
       ]
     },
     "email": {
-      "expected_deals_in_window": 1019.6,
-      "deals_per_1k_sends": 0.0626,
+      "expected_deals_in_window": 2594.44,
+      "deals_per_1k_sends": 0.0644,
       "adstock": {
         "type": "geometric",
         "alpha": 0.371,
@@ -1194,11 +1194,11 @@
       },
       "saturation": {
         "type": "hill",
-        "half_saturation": 6010.0,
+        "half_saturation": 15030.0,
         "slope": 1.0,
         "input": "adstocked weekly sends / region size index"
       },
-      "beta_leads_per_week_per_size_unit": 10.987141,
+      "beta_leads_per_week_per_size_unit": 27.656673,
       "lead_quality": {
         "p_mql": 0.6229,
         "p_sql": 0.4574,
