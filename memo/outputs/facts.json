@@ -2,6 +2,7 @@
   "meta": {
     "built_by": "memo/facts.py",
     "reads": [
+      "geotest/outputs/design.json",
       "mmm/outputs/channels.json",
       "mmm/outputs/diagnostics_holdout.json",
       "mmm/outputs/optimizer.json",
@@ -1109,102 +1110,275 @@
     },
     {
       "id": "test_markets",
-      "value": 4.0,
+      "value": 20.0,
       "unit": "markets",
       "kind": "design",
-      "source": "docs/mmm/README.md",
-      "field": "Limits and next steps",
-      "desc": "Markets that run the cuts in the test"
+      "source": "geotest/outputs/design.json",
+      "field": "cells",
+      "desc": "Markets in the test: every market is in it"
     },
     {
-      "id": "test_control_markets",
-      "value": 16.0,
+      "id": "test_arm_markets",
+      "value": 10.0,
       "unit": "markets",
       "kind": "design",
-      "source": "docs/mmm/README.md",
-      "field": "Limits and next steps",
-      "desc": "Markets that stay at today's spend, to compare against"
+      "source": "geotest/outputs/design.json",
+      "field": "arms.grow.markets",
+      "desc": "Markets in each half of the test (each half is compared with the other markets)"
     },
     {
       "id": "test_weeks",
-      "value": 8.0,
+      "value": 12.0,
       "unit": "weeks",
       "kind": "design",
-      "source": "docs/mmm/README.md",
-      "field": "Limits and next steps",
+      "source": "geotest/outputs/design.json",
+      "field": "dates.test_weeks",
       "desc": "Test length"
     },
     {
-      "id": "test_weeks_range",
-      "value": null,
+      "id": "test_tail_weeks",
+      "value": 4.0,
       "unit": "weeks",
       "kind": "design",
-      "source": "docs/mmm/README.md",
-      "field": "Limits and next steps",
-      "desc": "Test length the MMM's limits call for",
-      "low": 6.0,
-      "high": 8.0
+      "source": "geotest/outputs/design.json",
+      "field": "dates.tail_weeks",
+      "desc": "Weeks after the test in which its deals are still counted, because deals close a few weeks after the lead"
     },
     {
-      "id": "test_spend_held_back",
-      "value": 45896.0798,
+      "id": "test_window_weeks",
+      "value": 16.0,
+      "unit": "weeks",
+      "kind": "design",
+      "source": "geotest/outputs/design.json",
+      "field": "dates.window_weeks",
+      "desc": "Weeks of deals the readout counts"
+    },
+    {
+      "id": "test_grow_step",
+      "value": 4500.0,
+      "unit": "USD",
+      "kind": "design",
+      "source": "geotest/outputs/design.json",
+      "field": "arms.grow.value",
+      "desc": "Extra YouTube spend a week in each grow market, per unit of market size (an average market is one unit)"
+    },
+    {
+      "id": "test_grow_spend",
+      "value": 500210.5263,
+      "unit": "USD",
+      "kind": "design",
+      "source": "geotest/outputs/design.json",
+      "field": "forecast.grow.spend_change",
+      "desc": "Extra YouTube spend over the test, all grow markets"
+    },
+    {
+      "id": "test_cut_saving",
+      "value": 403406.19,
+      "unit": "USD",
+      "kind": "design",
+      "source": "geotest/outputs/design.json",
+      "field": "forecast.cut.spend_change",
+      "desc": "Spend not spent on the cut channels over the test, all cut markets (last year's same weeks)"
+    },
+    {
+      "id": "test_net_cost",
+      "value": 96804.3363,
       "unit": "USD",
       "kind": "derived",
-      "source": "mmm/outputs/optimizer.json",
-      "field": "plan[].spend_change",
-      "desc": "Spend not spent in the test markets during the test (average-size markets)",
-      "how": "cut channels' spend cut x 4/20 markets x 8/156 weeks"
+      "source": "geotest/outputs/design.json",
+      "field": "forecast",
+      "desc": "Net extra spend for the whole test: the YouTube push minus what the cuts save",
+      "how": "test_grow_spend - test_cut_saving"
     },
     {
-      "id": "test_market_deals",
-      "value": 329.4974,
+      "id": "test_grow_forecast",
+      "value": 127.7852,
       "unit": "deals",
-      "kind": "derived",
-      "source": "mmm/outputs/channels.json",
-      "field": "summary.observed_deals_in_window",
-      "desc": "Deals the test markets close in the test weeks (average-size markets)",
-      "how": "observed deals x 4/20 x 8/156"
+      "kind": "estimate",
+      "source": "geotest/outputs/design.json",
+      "field": "forecast.grow.lift_mean",
+      "desc": "Extra deals the MMM expects from the YouTube push in the readout window",
+      "low": 77.1843,
+      "high": 175.6884,
+      "stat": "mean"
     },
     {
-      "id": "test_expected_drop",
-      "value": 5.473,
-      "unit": "deals",
-      "kind": "derived",
-      "source": "mmm/outputs/optimizer.json",
-      "field": "plan[].deal_change",
-      "desc": "Deals the model expects the cuts to cost in the test markets during the test",
-      "stat": "mean",
-      "how": "the cuts' window deal loss x the test's share of market-weeks (straight-line)"
-    },
-    {
-      "id": "test_expected_drop_pct",
-      "value": 1.661,
+      "id": "test_grow_forecast_pct",
+      "value": 9.1734,
       "unit": "percent",
       "kind": "derived",
-      "source": "mmm/outputs/optimizer.json",
-      "field": "plan[].deal_change",
-      "desc": "That drop as a share of the test markets' deals",
-      "how": "100 x test_expected_drop / test_market_deals"
+      "source": "geotest/outputs/design.json",
+      "field": "forecast.grow, window_deals_last_year",
+      "desc": "That lift as a share of the grow markets' deals in the same weeks last year",
+      "how": "100 x test_grow_forecast / grow markets' deals in last year's window"
     },
     {
-      "id": "test_detectable_drop",
-      "value": 36.3041,
+      "id": "test_grow_cost_per_deal",
+      "value": 3914.4641,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "geotest/outputs/design.json",
+      "field": "forecast.grow.cost_per_extra_deal",
+      "desc": "The MMM's expected cost per extra deal from the YouTube push, at the test's spend level"
+    },
+    {
+      "id": "test_cut_forecast",
+      "value": -70.5353,
       "unit": "deals",
-      "kind": "derived",
-      "source": "mmm/outputs/channels.json",
-      "field": "summary.observed_deals_in_window",
-      "desc": "Smallest drop the test can tell from chance: about 2 standard deviations of count noise in the test markets' deals. It leaves out noise in the matched markets, so the real bar is a little higher",
-      "how": "2 x sqrt(test_market_deals)"
+      "kind": "estimate",
+      "source": "geotest/outputs/design.json",
+      "field": "forecast.cut.lift_mean",
+      "desc": "Deals the MMM expects the cuts to cost in the readout window (negative = lost)",
+      "low": -121.57,
+      "high": -21.6379,
+      "stat": "mean"
     },
     {
-      "id": "test_detectable_multiple",
-      "value": 6.6333,
+      "id": "test_grow_bar",
+      "value": 126.4734,
+      "unit": "deals",
+      "kind": "design",
+      "source": "geotest/outputs/design.json",
+      "field": "mde.grow",
+      "desc": "Smallest YouTube lift the test can reliably see (80% power), from placebo tests on 2023 to 2025 data"
+    },
+    {
+      "id": "test_grow_power",
+      "value": 80.7141,
+      "unit": "percent",
+      "kind": "design",
+      "source": "geotest/outputs/design.json",
+      "field": "forecast.grow.power",
+      "desc": "Odds the test sees the YouTube lift if the model is right"
+    },
+    {
+      "id": "test_cut_bar",
+      "value": 192.6669,
+      "unit": "deals",
+      "kind": "design",
+      "source": "geotest/outputs/design.json",
+      "field": "mde.cut",
+      "desc": "Smallest drop from the cuts the test can reliably see (80% power)"
+    },
+    {
+      "id": "test_cut_power",
+      "value": 23.1305,
+      "unit": "percent",
+      "kind": "design",
+      "source": "geotest/outputs/design.json",
+      "field": "forecast.cut.power",
+      "desc": "Odds the test sees the cuts' drop if the model is right"
+    },
+    {
+      "id": "test_cut_multiple",
+      "value": 2.7315,
       "unit": "multiplier",
+      "kind": "design",
+      "source": "geotest/outputs/design.json",
+      "field": "forecast.cut.multiple_of_forecast_for_80pct_power",
+      "desc": "How many times the model's expected drop the cuts must cost for the test to reliably see it"
+    },
+    {
+      "id": "test_short_weeks",
+      "value": 8.0,
+      "unit": "weeks",
+      "kind": "design",
+      "source": "geotest/outputs/design.json",
+      "field": "durations",
+      "desc": "A shorter test that was considered"
+    },
+    {
+      "id": "test_short_power",
+      "value": 71.6693,
+      "unit": "percent",
+      "kind": "design",
+      "source": "geotest/outputs/design.json",
+      "field": "durations",
+      "desc": "Odds a test that short would see the YouTube lift if the model is right"
+    },
+    {
+      "id": "deals_2024",
+      "value": 11197.0,
+      "unit": "deals",
+      "kind": "input",
+      "source": "geotest/outputs/design.json",
+      "field": "data_cut.by_year.2024.won_deals",
+      "desc": "Closed-won deals in 2024 (weeks by their Monday)"
+    },
+    {
+      "id": "paid_spend_2024",
+      "value": 13923580.65,
+      "unit": "USD",
+      "kind": "input",
+      "source": "geotest/outputs/design.json",
+      "field": "data_cut.by_year.2024.paid_spend",
+      "desc": "Paid media spend in 2024, all 9 paid channels"
+    },
+    {
+      "id": "cost_per_deal_2024",
+      "value": 1243.5099,
+      "unit": "USD",
+      "kind": "input",
+      "source": "geotest/outputs/design.json",
+      "field": "data_cut.by_year.2024.cost_per_deal",
+      "desc": "Blended cost per deal in 2024: paid spend / all deals"
+    },
+    {
+      "id": "deals_2025",
+      "value": 9999.0,
+      "unit": "deals",
+      "kind": "input",
+      "source": "geotest/outputs/design.json",
+      "field": "data_cut.by_year.2025.won_deals",
+      "desc": "Closed-won deals in 2025 (weeks by their Monday)"
+    },
+    {
+      "id": "paid_spend_2025",
+      "value": 14345810.94,
+      "unit": "USD",
+      "kind": "input",
+      "source": "geotest/outputs/design.json",
+      "field": "data_cut.by_year.2025.paid_spend",
+      "desc": "Paid media spend in 2025, all 9 paid channels"
+    },
+    {
+      "id": "cost_per_deal_2025",
+      "value": 1434.7246,
+      "unit": "USD",
+      "kind": "input",
+      "source": "geotest/outputs/design.json",
+      "field": "data_cut.by_year.2025.cost_per_deal",
+      "desc": "Blended cost per deal in 2025: paid spend / all deals"
+    },
+    {
+      "id": "won_deals_change_pct",
+      "value": -10.6993,
+      "unit": "percent",
       "kind": "derived",
-      "source": "mmm/outputs/optimizer.json",
-      "field": "plan[].deal_change",
-      "desc": "How many times the model's expected drop the test needs to see before it can call the cuts costlier than the model thinks",
-      "how": "test_detectable_drop / test_expected_drop"
+      "source": "geotest/outputs/design.json",
+      "field": "data_cut.by_year.*.won_deals",
+      "desc": "Change in deals from 2024 to 2025",
+      "how": "100 x (2025 / 2024 - 1)"
+    },
+    {
+      "id": "paid_spend_change_pct",
+      "value": 3.0325,
+      "unit": "percent",
+      "kind": "derived",
+      "source": "geotest/outputs/design.json",
+      "field": "data_cut.by_year.*.paid_spend",
+      "desc": "Change in spend from 2024 to 2025",
+      "how": "100 x (2025 / 2024 - 1)"
+    },
+    {
+      "id": "cost_per_deal_change_pct",
+      "value": 15.377,
+      "unit": "percent",
+      "kind": "derived",
+      "source": "geotest/outputs/design.json",
+      "field": "data_cut.by_year.*.cost_per_deal",
+      "desc": "Change in cost per deal from 2024 to 2025",
+      "how": "100 x (2025 / 2024 - 1)"
     }
   ],
   "variants": {
@@ -1325,26 +1499,37 @@
     }
   ],
   "test": {
-    "what": "Run the plan's cuts to LinkedIn, display and affiliates in a few markets first, against matched markets at today's spend. It costs no new budget and spends a little less.",
-    "decision_rule": "If deals in the test markets fall about as much as the model expects, make the full reallocation. If they fall clearly more, the model is giving these channels too little credit: stop the cuts and refit the model with the test as a lift test.",
-    "limits": "The test can catch a large miss, not a small one.",
+    "what": "A spring market test of both sides of the plan at once. In one group of markets, YouTube runs far above plan, a level the model has never seen. In a crossing group, LinkedIn, display and affiliates go dark. Each group is measured against the markets outside it, so every market counts for both. Markets were matched by size and picked by how well they tracked each other in past placebo tests.",
+    "decision_rule": "Rules written down before the test: YouTube works if its lift is clearly positive. The cuts cost more than modeled if their drop is clearly bigger than the model expects; then no cut channel goes below today's spend. Either way, the result goes into the model as a lift test, the model is refit, and the rollout follows the refit model.",
+    "limits": "The YouTube group is sized to see the lift the model expects. The cut group is a guardrail: it only sees the cuts if they cost far more than the model thinks. YouTube runs far past any level in the data, so the forecast there is a stretch.",
+    "readout": "Late May, after the last deals in the window have had time to close.",
+    "dates": "Test: February 2 to April 26. Deals counted through May 24. Readout from the data as of May 31.",
     "facts": [
       "test_markets",
-      "test_control_markets",
+      "test_arm_markets",
       "test_weeks",
-      "test_weeks_range",
-      "realloc_cut_levels",
-      "test_spend_held_back",
-      "test_market_deals",
-      "test_expected_drop",
-      "test_expected_drop_pct",
-      "test_detectable_drop",
-      "test_detectable_multiple"
+      "test_tail_weeks",
+      "test_window_weeks",
+      "test_grow_step",
+      "test_grow_spend",
+      "test_cut_saving",
+      "test_net_cost",
+      "test_grow_forecast",
+      "test_grow_forecast_pct",
+      "test_grow_cost_per_deal",
+      "test_cut_forecast",
+      "test_grow_bar",
+      "test_grow_power",
+      "test_cut_bar",
+      "test_cut_power",
+      "test_cut_multiple",
+      "test_short_weeks",
+      "test_short_power"
     ]
   },
   "recommendation": [
-    "Now: approve the market test of the cuts. No new budget.",
-    "After the test: if it holds up, approve the same-budget reallocation.",
-    "Alternative, if you would rather add budget than cut: the YouTube ask. It rests on the best measured channel, so it does not need the test, but it is new money."
+    "Now: approve the spring market test. It needs a little new money, because the YouTube push costs more than the cuts save.",
+    "In late May: the test result goes into the model, and the refit model sets the rollout for the rest of the year. Approve that rollout then, not now.",
+    "Not now: the full reallocation. It rests on cuts to channels the data cannot see."
   ]
 }

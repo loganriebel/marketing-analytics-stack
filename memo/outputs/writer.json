@@ -3,8 +3,8 @@
   "attempts": [
     {
       "attempt": 1,
-      "cost_usd": 0.2043834,
-      "seconds": 28.1,
+      "cost_usd": 0.2788524,
+      "seconds": 56.1,
       "models_used": [
         "claude-sonnet-5-5"
       ],
@@ -13,14 +13,50 @@
       "style": [
         {
           "line": 0,
-          "text": "561 words; aim for 350 to 450"
+          "text": "437 words above the appendix; aim for 230 to 400"
         }
       ]
     },
     {
       "attempt": 2,
-      "cost_usd": 0.2250324,
-      "seconds": 28.5,
+      "cost_usd": 0.22091339999999998,
+      "seconds": 21.4,
+      "models_used": [
+        "claude-sonnet-5-5"
+      ],
+      "grounding_score": 1.0,
+      "unmatched": [],
+      "style": [
+        {
+          "line": 0,
+          "text": "440 words above the appendix; aim for 230 to 400"
+        },
+        {
+          "line": 0,
+          "text": "17 numbers above the appendix; at most 16"
+        }
+      ]
+    },
+    {
+      "attempt": 3,
+      "cost_usd": 0.22189140000000002,
+      "seconds": 25.6,
+      "models_used": [
+        "claude-sonnet-5-5"
+      ],
+      "grounding_score": 1.0,
+      "unmatched": [],
+      "style": [
+        {
+          "line": 0,
+          "text": "435 words above the appendix; aim for 230 to 400"
+        }
+      ]
+    },
+    {
+      "attempt": 4,
+      "cost_usd": 0.23437739999999999,
+      "seconds": 28.4,
       "models_used": [
         "claude-sonnet-5-5"
       ],
@@ -31,5 +67,5 @@
   ],
   "grounding_pass": true,
   "style_pass": true,
-  "words": 433
+  "words": 526
 }

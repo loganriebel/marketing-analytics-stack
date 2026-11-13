@@ -51,9 +51,9 @@ Upper funnel through brand search: 90% HDI coverage 9 of 12.
 
 Optimizer plan at the same total spend: model predicts 499 deals (30 to 1,001); the true world gives 582 (inside the HDI).
 
-Funding memo's recommended moves, extra deals a year:
+Proposal memo's recommended moves, extra deals a year:
 
 | Variant | Memo claims (90% range) | True | Error | Covered | Range in memo |
 |---|---:|---:|---:|---|---|
 | reallocation | 166 (10 to 334) | 194 | -14% | yes | yes |
-| youtube_ask | 128 (75 to 172) | 221 | -42% | no | yes |
+| youtube_ask | 128 (75 to 172) | 221 | -42% | no | no |

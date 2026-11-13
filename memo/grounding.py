@@ -1,6 +1,6 @@
 """Grounding check: every number in the memo must match a fact in the facts pack.
 
-    python -m memo.grounding        # checks memo/outputs/funding_memo.md
+    python -m memo.grounding        # checks memo/outputs/proposal_memo.md
 
 Writes memo/outputs/grounding.json and exits 1 unless every number matches.
 
@@ -48,7 +48,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 OUT_DIR = REPO / "memo" / "outputs"
-MEMO_PATH = OUT_DIR / "funding_memo.md"
+MEMO_PATH = OUT_DIR / "proposal_memo.md"
 FACTS_PATH = OUT_DIR / "facts.json"
 GROUNDING_PATH = OUT_DIR / "grounding.json"
 

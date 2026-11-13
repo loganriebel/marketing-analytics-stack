@@ -790,7 +790,7 @@
         "true_per_year": 221.177,
         "covered": false,
         "pct_error": -42.04903764858009,
-        "memo_states_range": true,
+        "memo_states_range": false,
         "by_channel": [
           {
             "channel": "youtube",

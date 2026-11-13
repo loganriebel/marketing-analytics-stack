@@ -311,7 +311,7 @@ def to_markdown(g: dict) -> str:
                   f"deals ({_fmt(o['model_hdi_90'][0])} to {_fmt(o['model_hdi_90'][1])}); the true world gives "
                   f"{_fmt(o['true_deal_change'])} ({'inside' if o['true_inside_hdi'] else 'outside'} the HDI)."]
     if "memo" in g:
-        lines += ["", "Funding memo's recommended moves, extra deals a year:", "",
+        lines += ["", "Proposal memo's recommended moves, extra deals a year:", "",
                   "| Variant | Memo claims (90% range) | True | Error | Covered | Range in memo |",
                   "|---|---:|---:|---:|---|---|"]
         for name, r in g["memo"]["variants"].items():
