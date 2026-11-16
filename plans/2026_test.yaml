@@ -9,10 +9,10 @@ test:
   end: '2026-04-20'
   arms:
   - id: youtube_up
-    markets: [CAK, CID, CMH, CVG, FSD, MKE, MLI, MSN, RFD, RST]
+    markets: [CMH, CVG, DLH, GRB, MKE, MLI, MSN, RFD, RST, TOL]
     moves:
-      youtube: {add_per_week_per_size: 2500.0}
+      youtube: {add_per_week_per_size: 5625.0}
   - id: search_back
-    markets: [CID, CLE, CVG, FAR, MKE, MLI, MSP, PIA, RST, TOL]
+    markets: [CHI, CVG, DAY, DLH, DSM, FAR, GRB, MSN, PIA, TOL]
     moves:
       paid_search_nonbrand: {multiplier: 0.39}
