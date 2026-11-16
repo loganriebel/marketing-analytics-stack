@@ -10,10 +10,10 @@ An example of the stack I run at work: dashboards, Claude on golden tables, MMM 
 
 - Sales-assisted motion: inbound lead, SDR call, demo, 14-day trial, close.
 - Short cycle: a lead closes in about two weeks; nine in ten close in 6 to 27 days.
-- First-year contracts run about $2,800 on average, and it closes about 200 deals a week.
-- Paid media across nine channels: $13.5M in 2023, $14.85M in 2024 and $17.23M in 2025.
+- First-year contracts run about $2,800 on average, and it closes about 500 deals a week.
+- Paid media across nine channels: $33.75M in 2023, $37.13M in 2024 and $43.08M in 2025.
 - Sold only in seven Midwest states: Minnesota, Wisconsin, Illinois, Iowa, Ohio, North Dakota, and South Dakota. They split into 20 metro markets in four sales areas.
-- About 50 SDRs and 70 AEs.
+- About 125 SDRs and 170 AEs.
 
 | Sales area | Markets |
 |---|---|
@@ -28,10 +28,10 @@ An example of the stack I run at work: dashboards, Claude on golden tables, MMM 
 
 Fernhook grew on paid search, and its CRM credits every deal to the last UTM touch.
 
-- **The money went to search.** Budget reviews reward the channels closest to the click, and non-brand search is closest of all. Its budget went from $3.4M in 2023 to $8.4M in 2025, paid for partly by trimming Meta, YouTube, Connected TV and LinkedIn. Performance against brand went from 60/40 in 2023 to 70/30 in 2024 and 80/20 in 2025.
+- **The money went to search.** Budget reviews reward the channels closest to the click, and non-brand search is closest of all. Its budget went from $8.45M in 2023 to $21.08M in 2025, paid for partly by trimming Meta, YouTube, Connected TV and LinkedIn. Performance against brand went from 60/40 in 2023 to 70/30 in 2024 and 80/20 in 2025.
 - **Spend kept climbing.** Total paid media rose 10% in 2024 and 16% in 2025.
-- **Search keeps getting more expensive.** Non-brand cost per click rose from $7.93 in 2023 to $10.82 in 2025, and its last-touch cost per lead from $115 to $180. Its leads close less often too: the win rate fell from 30% to 25%.
-- **Growth stalled.** Closed-won deals rose 5% in 2024, then fell 12% in 2025. Blended cost per deal went from $1,284 to $1,349 to $1,774.
+- **Search keeps getting more expensive.** Non-brand cost per click rose from $7.97 in 2023 to $10.83 in 2025, and its last-touch cost per lead from $117 to $184. Its leads close less often too: the win rate fell from 31% to 26%.
+- **Growth stalled.** Closed-won deals rose 4% in 2024, then fell 10% in 2025. Blended cost per deal went from $1,267 to $1,342 to $1,731.
 - **Nobody agrees on the numbers.** Every ad platform claims credit for the same deals, so their totals add up to far more than the CRM has. Last touch never credits Connected TV at all.
 - **Finance has stopped trusting marketing.** When the CFO asks what a channel returns, the team can show last-touch numbers or platform numbers, and neither holds up.
 
@@ -53,9 +53,9 @@ To test it, headless Claude answered 50 ad-hoc questions twice: once through the
 | Arm | Answerable correct | Correct refusals | Wrong refusals | Overall | Cost |
 |---|---|---|---|---|---|
 | Claude + governed metrics (MCP) | 42/42 (100%) | 8/8 | 0 | 50/50 | $3.27 |
-| Claude + raw tables (SQL) | 23/42 (55%) | 8/8 | 3 | 31/50 | $3.64 |
+| Claude + raw tables (SQL) | 23/42 (55%) | 8/8 | 3 | 31/50 | $3.65 |
 
-Model `claude-sonnet-5-5`, one pass per arm, same instructions, built-in tools off, run on the rebuilt world where budgets drift from brand to search. Per-question results: [evals/RESULTS.md](evals/RESULTS.md). Earlier runs are kept: the balanced-mix seven-state world (50/50 and 31/50) in `evals/results/archive_balanced_mix_world/`, and the first 20-region world (50/50 and 30/50) in `evals/results/archive_global_world/`.
+Model `claude-sonnet-5-5`, one pass per arm, same instructions, built-in tools off, run on the 2.5x world (budgets drift from brand to search, every volume 2.5 times the first build). Per-question results: [evals/RESULTS.md](evals/RESULTS.md). The run hit the Claude session limit after 25 questions, so the 75 errored questions were run again; 2 governed questions whose metrics server never loaded (Claude saw no tools) were run again too. Earlier runs are kept: the same world at 1x (50/50 and 31/50) in `evals/results/archive_1x_world/`, the balanced-mix seven-state world (50/50 and 31/50) in `evals/results/archive_balanced_mix_world/`, and the first 20-region world (50/50 and 30/50) in `evals/results/archive_global_world/`.
 
 Why the raw arm missed: it had to invent definitions. It left partner fees and webinars out of "paid media", grouped search and YouTube as "Google", counted deals by calendar close date instead of the house week rule, read "CPA" as cost per lead, and could not answer share-of-spend questions without channel roles. Every one of those is a definition the semantic layer settles once.
 
