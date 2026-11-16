@@ -70,7 +70,8 @@ def test_changed_number_fails(pack):
 
 def test_grounding_cli_fails_below_100(tmp_path, pack):
     memo = tmp_path / "memo.md"
-    memo.write_text("Move $1.5M a year for 900 deals.\n", encoding="utf-8")
+    real = next(f["value"] for f in pack["facts"] if f["unit"] == "USD" and abs(f["value"]) >= 100_000)
+    memo.write_text(f"Move ${abs(real):,.0f} a year for 123,457 deals.\n", encoding="utf-8")
     assert G.main(["--memo", str(memo), "--facts", str(F.FACTS_PATH), "--out", str(tmp_path / "g.json")]) == 1
     out = json.loads((tmp_path / "g.json").read_text(encoding="utf-8"))
     assert out["score"] == 0.5 and not out["pass"]

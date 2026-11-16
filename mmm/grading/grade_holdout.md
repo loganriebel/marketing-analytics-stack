@@ -55,5 +55,5 @@ Proposal memo's recommended moves, extra deals a year:
 
 | Variant | Memo claims (90% range) | True | Error | Covered | Range in memo |
 |---|---:|---:|---:|---|---|
-| reallocation | 218 (121 to 311) | 867 | -75% | no | yes |
-| youtube_ask | 186 (125 to 242) | 657 | -72% | no | no |
+| reallocation | 888 (577 to 1,233) | 1,520 | -42% | no | yes |
+| youtube_ask | 454 (318 to 571) | 657 | -31% | no | no |

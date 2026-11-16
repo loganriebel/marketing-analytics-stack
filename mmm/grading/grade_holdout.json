@@ -733,30 +733,30 @@
     "variants": {
       "reallocation": {
         "claim_fact": "realloc_deals_per_year",
-        "claimed_per_year": 217.8974,
+        "claimed_per_year": 888.0688,
         "claimed_hdi_90": [
-          120.942,
-          310.682
+          577.331,
+          1232.8241
         ],
-        "true_per_year": 866.7484664641594,
+        "true_per_year": 1520.0132565047475,
         "covered": false,
-        "pct_error": -74.8603650965894,
+        "pct_error": -41.57493060013807,
         "memo_states_range": true,
         "by_channel": [
           {
             "channel": "paid_search_nonbrand",
-            "multiplier": 0.9728,
-            "true_deal_change_per_year": -34.86800149060522
+            "multiplier": 0.8163,
+            "true_deal_change_per_year": -301.86428728051095
           },
           {
             "channel": "meta",
-            "multiplier": 1.0746,
-            "true_deal_change_per_year": 146.0733704394364
+            "multiplier": 1.5,
+            "true_deal_change_per_year": 881.8523333333333
           },
           {
             "channel": "linkedin",
-            "multiplier": 0.94,
-            "true_deal_change_per_year": -39.494955491502424
+            "multiplier": 1.2566,
+            "true_deal_change_per_year": 153.74914259752845
           },
           {
             "channel": "youtube",
@@ -775,21 +775,21 @@
           },
           {
             "channel": "affiliates",
-            "multiplier": 0.8019,
-            "true_deal_change_per_year": -174.96561365983612
+            "multiplier": 0.7928,
+            "true_deal_change_per_year": -183.7275988122698
           }
         ]
       },
       "youtube_ask": {
         "claim_fact": "ask_deals_per_year",
-        "claimed_per_year": 186.2939,
+        "claimed_per_year": 453.9797,
         "claimed_hdi_90": [
-          125.3571,
-          242.0186
+          318.369,
+          571.4678
         ],
         "true_per_year": 657.0630000000001,
         "covered": false,
-        "pct_error": -71.64748281367237,
+        "pct_error": -30.90773639666213,
         "memo_states_range": false,
         "by_channel": [
           {
