@@ -145,8 +145,54 @@ def prereg_md(d: dict, market_names: dict) -> str:
         "this plan.",
         f"4. **Guardrail:** if pulling {cuts} back costs more than modeled (rule 2), the rollout does not cut it "
         f"below today's spend. If {gname} shows no lift (rule 1 fails), the rollout does not grow it.",
-        "5. **Validity:** the readout is void if an arm's realized spend change misses its plan by more than 20%, "
-        "or if a market leaves its cell.",
-        "",
+        "5. **Validity, the market-compliance check.** Set now, before the test, and applied as written "
+        "(`compliance` in the design file, `geotest/compliance.py`). It reads spend only and never moves a lift.",
     ]
+    lines += _compliance_lines(d, gname, cuts)
+    lines.append("")
     return "\n".join(lines)
+
+
+def _compliance_lines(d: dict, gname: str, cuts: str) -> list[str]:
+    cp, g, c = d["compliance"], d["arms"]["grow"], d["arms"]["cut"]
+    dr, keep = cp["dry_run"], c["value"]
+    gl, cl = cp["grow_seen"]["line"], cp["cut_seen"]["line"]
+    n_cut = len(c["markets"])
+
+    def flagged(codes):
+        return ", ".join(codes) if codes else "no market"
+
+    return [
+        f"   - **Spend:** each arm's realized spend change, by the same ratio difference-in-differences on the "
+        f"moved channel's spend over the {d['dates']['test_weeks']} test weeks, lands within "
+        f"{cp['spend_change']['max_miss']:.0%} of its plan. The grow plan is {_money(g['value'])} a week per size "
+        "unit; the search plan is observed spend over the multiplier, minus observed spend.",
+        f"   - **Plan file:** `{cp['plan_file']['path']}`, the plan that drives 2026 spend, assigns these markets, "
+        "moves and dates.",
+        f"   - **Moves:** the spend shows every move. {gname[0].upper() + gname[1:]}, for each grow market: its "
+        f"lowest weekly {gname} spend per size unit over the test weeks is at least {_money(gl)}, half the add "
+        "(the add runs every test week; a median would not do, because national flights lift every market's "
+        "median in season). "
+        f"{cuts[0].upper() + cuts[1:]}, for the arm as a whole: the arm's summed spend in the test weeks of the "
+        "test's quarter, over its spend in that quarter's weeks before the test, and against the same step in the "
+        f"markets outside the arm, is nearer in logs to {keep:.2f} than to 1 (the line is {cl:.2f}). Budgets for "
+        "always-on channels are re-split across markets every quarter, so the step stays inside one quarter. Each "
+        "search market gets the same test on its own.",
+        "   - **Void** if the spend change misses, the plan file does not match, a grow market does not show the "
+        "add, or the search arm does not show the cut.",
+        "   - **Named, never void:** a search market whose own step misses the line, and a market outside an arm "
+        "whose spend shows that arm's move (drift). The readout names each one and recomputes the lifts without "
+        "it, as exploratory. Neither changes the registered lift. Deciding the cut for the arm rather than market "
+        "by market was Logan's call, made before the test, from the dry run below.",
+        f"   - **Dry run** on last year's same weeks (from {dr['weeks_start']}), when nothing was tested: the "
+        f"{gname} check flags {flagged(dr['grow']['flagged'])} (highest lowest week "
+        f"{_money(dr['grow']['max_lowest_weekly_per_size'])} against {_money(gl)}; over all "
+        f"{dr['grow']['windows']} earlier 12-week windows, at most "
+        f"{_money(dr['grow']['windows_max_lowest_weekly_per_size'])}); the step test flags "
+        f"{flagged(dr['cut']['flagged'])}. One noise unit of a market's step, from {dr['cut']['noise_quarters']} "
+        f"earlier quarters, is {dr['cut']['noise_log_sd']:.2f} in logs, and of the arm's step "
+        f"{dr['cut']['arm_noise_log_sd']:.2f}. At that noise, the arm misses the line by chance "
+        f"{dr['cut']['p_arm_misses_line']:.1%} of the time. Decided market by market, one of the {n_cut} would "
+        f"miss {dr['cut']['p_any_assigned_market_misses_line']:.0%} of the time; a market outside the arm crosses "
+        f"the line {dr['cut']['p_market_flagged_without_a_move']:.1%} of the time.",
+    ]

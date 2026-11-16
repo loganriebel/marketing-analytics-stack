@@ -9,29 +9,12 @@ difference-in-differences with the 2x2 dose solve (geotest/estimator.py), the 90
 interval from the registered placebo spread, and the five decision rules. Only weeks
 up to the readout snapshot are read, from that snapshot's data cut.
 
-Rule 5 names two validity checks without a method. They get one here, on spend only:
-
-* spend change: the same ratio difference-in-differences on the moved channel's
-  spend over the 12 test weeks, against the plan's dollars;
-* cells: the plan file that drove 2026 spend (plans/2026_test.yaml) must assign every
-  market to its registered cell, and the spend data must show every assigned move:
-  - grow channel: a grow market's median weekly spend per size unit is at least half
-    the planned add;
-  - search channel: a step test at the test start. Always-on budgets are re-split
-    across markets every calendar quarter, so each market's spend in the test weeks of
-    the test's quarter is compared with its spend in that quarter's weeks before the
-    test, against the same step in the markets outside the arm. A market shows the
-    cut when its step is nearer (in logs) to the plan's multiplier than to 1. The
-    step's noise comes from the same layout in every earlier quarter.
-  A market outside an arm whose spend looks moved has drifted, not left its cell: it
-  is named, and the lifts are recomputed without it (exploratory).
-
-Disclosure: the cells check was first set as each market's test-week search spend
-against its 52-week pre-test share (cell_check_first, kept in the output), read as
-void on any mismatch. It flagged two markets outside the arm whose budgets fell at
-the October and January re-splits, before the test. The step test and the reading
-above replaced it after the lifts were computed. They decide validity only, never a
-lift.
+Rule 5, the market-compliance check, is registered with the design (design.json
+"compliance"; the method is in geotest/compliance.py) and applied here as written: the
+spend change against plan, the plan file, and every assigned move showing in the spend.
+The search cut is decided for the arm, its markets summed. A search market whose own
+step misses, or a market outside an arm whose spend shows the move (drift), is named;
+the lifts are recomputed without it (exploratory), and it never voids the readout.
 
 Anything else is labeled exploratory and decides nothing.
 
@@ -51,6 +34,7 @@ import pandas as pd
 import yaml
 
 from . import estimator as E
+from .compliance import grow_cell_check, plan_check, spend_did, spend_did_noise, step_check
 from .data import REPO, Markets, load
 from .prereg import NAMES
 
@@ -61,8 +45,6 @@ CROSSCHECK_PATH = OUT_DIR / "synthetic_control.json"
 READOUT_MD = REPO / "geotest" / "READOUT.md"
 PLAN_PATH = REPO / "plans" / "2026_test.yaml"
 
-MAX_SPEND_MISS = 0.20      # rule 5: realized spend change within 20% of plan
-CELL_ADD_SHARE = 0.5       # a grow market shows at least half the planned weekly add
 BRAND_SEARCH = "paid_search_brand"   # follows searches; the grow arm's extra searches cost extra here
 ARM_KEYS = ("grow", "cut")
 
@@ -104,120 +86,6 @@ def decide(grow: dict, cut: dict, valid: bool) -> dict:
     }
 
 
-def spend_did(x: np.ndarray, t: np.ndarray, start: int, n_pre: int, n_weeks: int) -> tuple[float, float]:
-    """Observed spend in markets t over n_weeks from start, and what they would have
-    spent: the other markets' spend scaled by the pre-period ratio."""
-    pre = x[start - n_pre:start].sum(0)
-    win = x[start:start + n_weeks].sum(0)
-    return float(win[t].sum()), float(pre[t].sum() / pre[~t].sum() * win[~t].sum())
-
-
-def spend_did_noise(x: np.ndarray, t: np.ndarray, start: int, n_pre: int, n_weeks: int) -> float:
-    """Relative error sd of spend_did's counterfactual on windows before the test."""
-    errs = []
-    for s in range(n_pre, start - n_weeks + 1):
-        obs, cf = spend_did(x, t, s, n_pre, n_weeks)
-        errs.append(obs / cf - 1)
-    return float(np.sqrt(np.mean(np.square(errs))))
-
-
-def _quarter(ts: pd.Timestamp) -> tuple[int, int]:
-    return ts.year, (ts.month - 1) // 3
-
-
-def step_ratios(x: np.ndarray, others: np.ndarray, before: slice, after: slice) -> np.ndarray:
-    """(G,) each market's mean spend after over before, relative to the same step in
-    the `others` markets (a market is left out of its own reference)."""
-    out = np.zeros(x.shape[1])
-    for i in range(x.shape[1]):
-        ref = others.copy()
-        ref[i] = False
-        own = x[after, i].mean() / x[before, i].mean()
-        out[i] = own / (x[after][:, ref].sum(1).mean() / x[before][:, ref].sum(1).mean())
-    return out
-
-
-def step_check(m: Markets, d: dict, arms: np.ndarray, start: int, n_test: int) -> dict:
-    """The search channel's cut, as a step at the test start inside the test's quarter."""
-    c = d["arms"]["cut"]
-    x = sum(m.spend[ch] for ch in c["channels"])
-    q = _quarter(m.weeks[start])
-    in_q = np.array([_quarter(w) == q for w in m.weeks])
-    before = slice(int(np.argmax(in_q)), start)
-    after = slice(start, min(start + n_test, int(np.where(in_q)[0].max()) + 1))
-    n_before, n_after = before.stop - before.start, after.stop - after.start
-    others = ~arms[1]
-    ratio = step_ratios(x, others, before, after)
-    # Noise: the same layout in each earlier full quarter, every market against the same reference.
-    noise, seen = [], set()
-    for t, w in enumerate(m.weeks[:start]):
-        qq = _quarter(w)
-        if qq in seen or qq == q:
-            continue
-        seen.add(qq)
-        if t + n_before + n_after <= start and _quarter(m.weeks[t + n_before + n_after - 1]) == qq:
-            noise.append(np.log(step_ratios(x, others, slice(t, t + n_before),
-                                            slice(t + n_before, t + n_before + n_after))))
-    sd = float(np.std(np.concatenate(noise), ddof=1))
-    log_r, log_keep = np.log(ratio), np.log(c["value"])
-    seen_cut = np.abs(log_r - log_keep) < np.abs(log_r)
-    rows = [{"market": code, "cut_arm": bool(arms[1, i]), "step": float(ratio[i]),
-             "z_if_no_move": float(log_r[i] / sd), "z_if_cut": float((log_r[i] - log_keep) / sd),
-             "cut_seen": bool(seen_cut[i]), "in_cell": bool(seen_cut[i] == arms[1, i])}
-            for i, code in enumerate(m.regions)]
-    return {"weeks_before": n_before, "weeks_after": n_after, "line": float(np.sqrt(c["value"])),
-            "noise_log_sd": sd, "noise_quarters": len(noise), "markets": rows,
-            "all_in_cell": all(r["in_cell"] for r in rows)}
-
-
-def plan_check(d: dict, plan: dict) -> dict:
-    """Does the plan that drove 2026 spend assign each market to its registered cell?"""
-    g, c = d["arms"]["grow"], d["arms"]["cut"]
-    want = {f"{g['channel']}_up": (sorted(g["markets"]), {g["channel"]: {"add_per_week_per_size": g["value"]}}),
-            "search_back": (sorted(c["markets"]), {ch: {"multiplier": c["value"]} for ch in c["channels"]})}
-    got = {a["id"]: (sorted(a["markets"]), a["moves"]) for a in plan["test"]["arms"]}
-    t = plan["test"]
-    dates_ok = str(t["start"]) == d["dates"]["test_start"] and str(t["end"]) == d["dates"]["test_last_week"]
-    return {"plan_file": "plans/2026_test.yaml", "arms_match": got == want, "dates_match": dates_ok,
-            "matches": bool(got == want and dates_ok)}
-
-
-def grow_cell_check(m: Markets, d: dict, arms: np.ndarray, start: int, n_test: int) -> dict:
-    g = d["arms"]["grow"]
-    weekly = m.spend[g["channel"]][start:start + n_test] / m.size[None, :]
-    median = np.median(weekly, axis=0)
-    seen = median >= CELL_ADD_SHARE * g["value"]
-    rows = [{"market": code, "grow_arm": bool(arms[0, i]), "median_weekly_per_size": float(median[i]),
-             "grow_seen": bool(seen[i]), "in_cell": bool(seen[i] == arms[0, i])} for i, code in enumerate(m.regions)]
-    return {"line_per_size_week": CELL_ADD_SHARE * g["value"], "markets": rows,
-            "all_in_cell": all(r["in_cell"] for r in rows)}
-
-
-def cell_check_first(m: Markets, d: dict, arms: np.ndarray, start: int, n_pre: int, n_test: int) -> dict:
-    """The first cells check, kept for the record (see the module docstring)."""
-    g, c = d["arms"]["grow"], d["arms"]["cut"]
-    weekly = m.spend[g["channel"]][start:start + n_test] / m.size[None, :]
-    grow_median = np.median(weekly, axis=0)
-    grow_seen = grow_median >= CELL_ADD_SHARE * g["value"]
-    x = sum(m.spend[ch] for ch in c["channels"])
-    pre, win = x[start - n_pre:start].sum(0), x[start:start + n_test].sum(0)
-    ratio = np.zeros(len(m.regions))
-    for i in range(len(m.regions)):
-        others = ~arms[1]
-        others[i] = False
-        ratio[i] = win[i] / (pre[i] / pre[others].sum() * win[others].sum())
-    cut_line = (1 + c["value"]) / 2
-    cut_seen = ratio < cut_line
-    rows = []
-    for i, code in enumerate(m.regions):
-        rows.append({"market": code, "grow_arm": bool(arms[0, i]), "cut_arm": bool(arms[1, i]),
-                     "grow_channel_median_weekly_per_size": float(grow_median[i]), "grow_move_seen": bool(grow_seen[i]),
-                     "cut_spend_ratio": float(ratio[i]), "cut_move_seen": bool(cut_seen[i]),
-                     "in_cell": bool(grow_seen[i] == arms[0, i] and cut_seen[i] == arms[1, i])})
-    return {"grow_line_per_size_week": CELL_ADD_SHARE * g["value"], "cut_line": cut_line,
-            "markets": rows, "all_in_cell": all(r["in_cell"] for r in rows)}
-
-
 def _ratio_range(num: float, lo: float, hi: float) -> list | None:
     """num / x over the interval [lo, hi], or None when the interval reaches zero."""
     if lo > 0 or hi < 0:
@@ -251,23 +119,24 @@ def readout(d: dict, m: Markets, plan: dict) -> dict:
     cut_x = sum(m.spend[ch] for ch in c["channels"])
     cut_observed = float(cut_x[s:s + n_test][:, arms[1]].sum())
     cut_plan = cut_observed * (1 - 1 / keep)
-    spend = {}
+    spend, max_miss = {}, d["compliance"]["spend_change"]["max_miss"]
     for k, x, planned in (("grow", m.spend[g["channel"]], grow_plan), ("cut", cut_x, cut_plan)):
         t = arms[ARM_KEYS.index(k)]
         obs, cf = spend_did(x, t, s, n_pre, n_test)
         spend[k] = {"observed": obs, "without_move": cf, "realized_change": obs - cf, "plan_change": planned,
                     "registered_change": f[k]["spend_change"], "miss": (obs - cf) / planned - 1,
                     "check_noise_rel_sd": spend_did_noise(x, t, s, n_pre, n_test),
-                    "within_limit": bool(abs((obs - cf) / planned - 1) <= MAX_SPEND_MISS)}
+                    "within_limit": bool(abs((obs - cf) / planned - 1) <= max_miss)}
     cells = {"plan": plan_check(d, plan), "grow": grow_cell_check(m, d, arms, s, n_test),
              "cut": step_check(m, d, arms, s, n_test)}
+    # As registered: grow decided per market, the cut for the arm, its markets summed.
     cells["assigned_moves_seen"] = (all(r["grow_seen"] for r in cells["grow"]["markets"] if r["grow_arm"])
-                                    and all(r["cut_seen"] for r in cells["cut"]["markets"] if r["cut_arm"]))
-    cells["drifted"] = ([r["market"] for r in cells["grow"]["markets"] if r["grow_seen"] and not r["grow_arm"]]
-                        + [r["market"] for r in cells["cut"]["markets"] if r["cut_seen"] and not r["cut_arm"]])
+                                    and cells["cut"]["arm"]["cut_seen"])
+    cells["drift"] = {"grow": [r["market"] for r in cells["grow"]["markets"] if r["grow_seen"] and not r["grow_arm"]],
+                      "cut": [r["market"] for r in cells["cut"]["markets"] if r["cut_seen"] and not r["cut_arm"]]}
+    cells["cut_markets_missed"] = [r["market"] for r in cells["cut"]["markets"] if r["cut_arm"] and not r["cut_seen"]]
+    cells["named"] = sorted(set(cells["drift"]["grow"] + cells["drift"]["cut"] + cells["cut_markets_missed"]))
     cells["all_in_cell"] = bool(cells["plan"]["matches"] and cells["assigned_moves_seen"])
-    first = cell_check_first(m, d, arms, s, n_pre, n_test)
-    first["out_of_cell"] = [r["market"] for r in first["markets"] if not r["in_cell"]]
     valid = all(v["within_limit"] for v in spend.values()) and cells["all_in_cell"]
 
     arms_out = {}
@@ -315,16 +184,17 @@ def readout(d: dict, m: Markets, plan: dict) -> dict:
     realized_doses = E.planned_doses(m.size, arms, cut_x[s:s + n_test].sum(0) / keep, keep)
     lift_rd = E.lifts(pre, win, arms, realized_doses)
     bias = np.asarray(pl["mean_all"], float)
-    keep_m = ~np.isin(m.regions, cells["drifted"])
+    keep_m = ~np.isin(m.regions, cells["named"])
     lift_dd = E.lifts(pre[keep_m], win[keep_m], arms[:, keep_m], doses[:, keep_m])
     dec_dd = decide({"lift": lift_dd[0], "low": lift_dd[0] - E.Z_90 * sd[0], "high": lift_dd[0] + E.Z_90 * sd[0],
                      "forecast": f["grow"]["lift_mean"]},
                     {"lift": lift_dd[1], "low": lift_dd[1] - E.Z_90 * sd[1], "high": lift_dd[1] + E.Z_90 * sd[1],
                      "forecast": f["cut"]["lift_mean"]}, valid)
     exploratory = {
-        "drifted_markets_dropped": {
-            "note": "lifts without the markets whose spend drifted outside their arm, with the registered sd",
-            "dropped": cells["drifted"],
+        "named_markets_dropped": {
+            "note": "lifts without the markets the compliance check named (drift outside an arm, or an assigned "
+                    "search market whose own step missed), with the registered sd",
+            "dropped": cells["named"],
             "lift": {k: float(lift_dd[i]) for i, k in enumerate(ARM_KEYS)},
             "interval_90": {k: [float(lift_dd[i] - E.Z_90 * sd[i]), float(lift_dd[i] + E.Z_90 * sd[i])]
                             for i, k in enumerate(ARM_KEYS)},
@@ -346,8 +216,7 @@ def readout(d: dict, m: Markets, plan: dict) -> dict:
                                       "test_weeks", "window_weeks")},
         "arms": arms_out,
         "decision": decision,
-        "validity": {"spend": spend, "cells": cells, "cells_first_check": first, "valid": bool(valid),
-                     "max_spend_miss": MAX_SPEND_MISS},
+        "validity": {"spend": spend, "cells": cells, "valid": bool(valid), "max_spend_miss": max_miss},
         "secondary": secondary,
         "exploratory": exploratory,
         "mmm_lift_tests": lift_test_rows(d, m, arms, lift, sd, s, n_test, cut_observed),
@@ -471,64 +340,77 @@ def readout_md(r: dict, d: dict, cross: dict | None = None) -> str:
                                           f"Not tripped. The search arm did not show {cname} worth more than modeled, "
                                           f"and {gname} showed a lift."))
     sg, sc = v["spend"]["grow"], v["spend"]["cut"]
-    cells, first = v["cells"], v["cells_first_check"]
+    cells = v["cells"]
     cg, cc = cells["grow"], cells["cut"]
     names = d["market_names"]
 
     def who(codes):
         return " and ".join(f"{names[x]} ({x})" for x in codes)
 
-    drift = r["exploratory"]["drifted_markets_dropped"]
+    drift = r["exploratory"]["named_markets_dropped"]
     steps = {row["market"]: row for row in cc["markets"]}
     lines += [
         f"5. **Validity: {'the readout stands' if v['valid'] else 'the readout is void'}.** "
         f"Realized spend change against plan: grow {_money(sg['realized_change'])} against "
         f"{_money(sg['plan_change'])} ({sg['miss']:+.0%}); search {_money(sc['realized_change'])} against "
         f"{_money(sc['plan_change'])} ({sc['miss']:+.0%}); the limit is {v['max_spend_miss']:.0%}. "
-        + ("The plan file puts every market in its registered cell, and the spend data show every assigned move."
-           if cells["all_in_cell"] else "A market left its cell, or an assigned move does not show in the spend."),
+        + ("The plan file puts every market in its registered cell, every grow market shows the add, and the "
+           f"search arm shows the cut (step {cc['arm']['step']:.2f} against a line of {cc['line']:.2f})."
+           if cells["all_in_cell"] else "The plan file does not match, a grow market does not show the add, or the "
+           f"search arm does not show the cut (step {cc['arm']['step']:.2f} against a line of {cc['line']:.2f})."),
     ]
-    if cells["drifted"]:
-        dd = cells["drifted"]
-
-        def each(key, fmt):
-            return ", ".join(format(steps[x][key], fmt) for x in dd)
-
-        lines.append(
-            f"   Drift: {who(dd)}, outside the search arm, also ran less {cname} during the test than its own "
-            f"pace before it (step {each('step', '.2f')}, against a line of {cc['line']:.2f}; "
-            f"{each('z_if_no_move', '+.1f')} noise units from no move and {each('z_if_cut', '+.1f')} from the cut). "
-            f"The plan gives it no move. Without it, grow reads {_signed(drift['lift']['grow'])} and search "
-            f"{_signed(drift['lift']['cut'])}, and "
-            + ("no decision changes." if drift["same_decision"] else "a decision changes.")
-        )
+    if cells["cut_markets_missed"]:
+        dd = cells["cut_markets_missed"]
+        lines.append(f"   Missed on its own: {who(dd)}, in the search arm, stepped "
+                     + ", ".join(f"{steps[x]['step']:.2f}" for x in dd) + f" against a line of {cc['line']:.2f} ("
+                     + ", ".join(f"{steps[x]['z_if_cut']:+.1f}" for x in dd) + " noise units from the cut). As "
+                     "registered, the arm decides; this market is named.")
+    grow_steps = {row["market"]: row for row in cg["markets"]}
+    for k, dd in cells["drift"].items():
+        if not dd:
+            continue
+        if k == "cut":
+            what = (f"also ran less {cname} during the test than its own pace before it (step "
+                    + ", ".join(f"{steps[x]['step']:.2f}" for x in dd) + f", against a line of {cc['line']:.2f}; "
+                    + ", ".join(f"{steps[x]['z_if_no_move']:+.1f}" for x in dd) + " noise units from no move and "
+                    + ", ".join(f"{steps[x]['z_if_cut']:+.1f}" for x in dd) + " from the cut)")
+        else:
+            what = (f"also ran at least "
+                    + ", ".join(_money(grow_steps[x]["lowest_weekly_per_size"]) for x in dd)
+                    + f" of {gname} a week per size unit in every test week"
+                    + f", against a line of {_money(cg['line_per_size_week'])}")
+        arm = "search" if k == "cut" else "grow"
+        lines.append(f"   Drift: {who(dd)}, outside the {arm} arm, {what}. The plan gives "
+                     + ("it" if len(dd) == 1 else "them") + " no move.")
+    if cells["named"]:
+        lines.append(f"   Without {who(cells['named'])}, grow reads {_signed(drift['lift']['grow'])} and search "
+                     f"{_signed(drift['lift']['cut'])}, and "
+                     + ("no decision changes." if drift["same_decision"] else "a decision changes."))
     lines += [
         "",
-        "**How rule 5 was checked.** The registration named no method, so these were set on spend only.",
+        "**Rule 5, as registered** (design.json `compliance`, applied unchanged):",
         "",
-        f"- Spend change: the same ratio difference-in-differences on the moved channel's spend over the test "
+        f"- Spend change: the ratio difference-in-differences on the moved channel's spend over the test "
         f"weeks. Its error on earlier windows is {sg['check_noise_rel_sd']:.0%} of {gname} spend and "
-        f"{sc['check_noise_rel_sd']:.0%} of {cname} spend, so the {gname} check is rough. The plan's dollars: the "
-        f"grow add is {_money(d['arms']['grow']['value'])} a week per size unit; the search change is observed "
-        "spend over the multiplier, minus observed spend.",
-        f"- Cells: `{cells['plan']['plan_file']}`, the plan that drove 2026 spend, must match the registered arms "
-        f"and dates ({'it does' if cells['plan']['matches'] else 'it does not'}), and every assigned move must "
-        "show in the spend.",
-        f"- {gname} add: a market shows it when its median weekly {gname} spend per size unit is at least "
+        f"{sc['check_noise_rel_sd']:.0%} of {cname} spend. The plan's dollars: the grow add is "
+        f"{_money(d['arms']['grow']['value'])} a week per size unit; the search change is observed spend over the "
+        "multiplier, minus observed spend.",
+        f"- Plan file: `{cells['plan']['plan_file']}`, the plan that drove 2026 spend, must match the registered "
+        f"arms and dates ({'it does' if cells['plan']['matches'] else 'it does not'}).",
+        f"- {gname} add: the add runs every test week, so a market shows it when its lowest weekly {gname} spend per size "
+        f"unit over the test weeks is at least "
         f"{_money(cg['line_per_size_week'])}.",
-        f"- {cname[0].upper() + cname[1:]} cut: a step test at the test start. Budgets for always-on channels are re-split across markets "
-        f"every quarter, so each market's spend in the {cc['weeks_after']} test weeks of the test's quarter is "
-        f"compared with its {cc['weeks_before']} weeks of that quarter before the test, against the same step in "
-        "the markets outside the arm. A market shows the cut when its step is nearer, in logs, to "
-        f"{d['arms']['cut']['value']:.2f} than to 1 (the line is {cc['line']:.2f}). One noise unit, from the same "
-        f"layout in {cc['noise_quarters']} earlier quarters, is {cc['noise_log_sd']:.2f} in logs.",
-        "- A market outside an arm whose spend looks moved has drifted, not left its cell. It is named, and the "
-        "lifts are recomputed without it.",
-        f"- **Disclosure.** The cells check was first set as each market's test-week {cname} spend against its "
-        f"{r['window']['pre_period_weeks']}-week pre-test share, with any mismatch voiding the readout. It flagged "
-        f"{who(first['out_of_cell']) or 'no market'}, outside the arm, whose budgets fell at quarterly re-splits "
-        "before the test began. The checks above replaced it after the lifts were computed. They decide validity "
-        "only, never a lift.",
+        f"- {cname[0].upper() + cname[1:]} cut: a step test at the test start. Spend in the "
+        f"{cc['weeks_after']} test weeks of the test's quarter is compared with the {cc['weeks_before']} weeks of "
+        "that quarter before the test, against the same step in the markets outside the arm. The arm, its markets "
+        f"summed, shows the cut when its step is nearer, in logs, to {d['arms']['cut']['value']:.2f} than to 1 (the "
+        f"line is {cc['line']:.2f}); one noise unit is {cc['arm']['noise_log_sd']:.2f} in logs. Each market gets the "
+        f"same test on its own (one noise unit {cc['noise_log_sd']:.2f}, from {cc['noise_quarters']} earlier "
+        "quarters).",
+        "- Void if an arm's spend misses its plan by more than the limit, the plan file does not match, an "
+        "assigned grow market does not show the add, or the search arm does not show the cut. A search market whose "
+        "own step misses, or a market outside an arm whose spend shows the move (drift), is named, and the lifts "
+        "are recomputed without it (exploratory). Neither voids the readout.",
         "",
         "## Cost per deal (secondary)",
         "",
