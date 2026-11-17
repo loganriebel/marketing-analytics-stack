@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 
 from . import config as C
-from .plans import MARKET_TEST_COLUMNS
+from .plans import MARKET_TEST_COLUMNS, MEDIA_PLAN_COLUMNS
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_RAW_DIR = REPO_ROOT / "data" / "raw"
@@ -883,6 +883,7 @@ def simulate(seed: int = C.DEFAULT_SEED, keep_state: bool = False) -> SimResult:
         "promo_calendar": promo_df,
         "media_plan_changes": plan_changes_df,
         "market_tests": pd.DataFrame(columns=MARKET_TEST_COLUMNS),
+        "media_plan_weekly": pd.DataFrame(columns=MEDIA_PLAN_COLUMNS),
         "fleet_activity_index_weekly": index_df,
     }
 

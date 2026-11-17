@@ -13,6 +13,10 @@ Rules:
 * Plans drive spend; the true world decides outcomes. 2026 spend is the plan's budget
   basis bought with each channel's usual habits (flighting, market split, noise), then
   the plan's test arms and national moves. Brand search follows searches, as before.
+* The media plan is exported too (media_plan_weekly): each planned channel's weekly
+  budget line by market, the plan's moves applied, before delivery noise (the weekly
+  national swing and each market's AR(1) buying noise). Delivered spend is that line
+  times the noise, so the plan export adds no draws and changes no other table.
 * No peeking. Draws whose count does not depend on spend (demand noise, buying habits,
   headcount, email, webinars, reporting noise) come from one stream per component,
   drawn for the whole year at once. Draws whose count depends on spend (leads and their
@@ -35,7 +39,7 @@ import pandas as pd
 from . import config as C
 from .generate import (SimResult, _adstock, _brand_flighting, _categorical, _date_str, _depth_price, _hill,
                        _monday_of_iso_week, _nonbrand_quality, _r, _season_log, simulate)
-from .plans import MARKET_TEST_COLUMNS, Plan, load_all
+from .plans import MARKET_TEST_COLUMNS, MEDIA_PLAN_COLUMNS, Plan, load_all
 
 EXT_START = C.WINDOW_START + timedelta(weeks=C.N_WEEKS)   # 2025-12-29, ISO 2026-W01
 EXT_WEEKS = 53                                             # through the week of 2026-12-28
@@ -95,13 +99,14 @@ def _exogenous(st: dict, cal: dict, seed: int) -> dict:
     for wk, m in C.SEASON["holiday_weeks"].items():
         season[cal["woy"] == wk] *= m
     ex["season"] = season
-    bau, add_noise = {}, {}
+    bau, add_noise, plan_bau = {}, {}, {}
     for ch in C.PLANNED_CHANNELS:
         p, h, r = C.SPEND[ch], st["habits"][ch], rngs[ch]
         level = h["weekly_level_last"]  # 2025's budget, at its weekly pace
         q_draw = np.exp(r.normal(0.0, p["quarter_sigma"], 4))
         q_mult = np.where(cal["quarter"] < 0, h["q_mult_last"], q_draw[np.maximum(cal["quarter"], 0)])
-        national = level * cal["holiday_cut"] * q_mult * np.exp(r.normal(0.0, p["weekly_sigma"], T))
+        budget = level * cal["holiday_cut"] * q_mult        # the planned national line
+        national = budget * np.exp(r.normal(0.0, p["weekly_sigma"], T))
         noise = np.exp(_ar1_continue(r, h["log_noise_last"], T, p["region_sigma"], 0.6))
         if p["flight"] == "seasonal_push":
             shape = _brand_flighting(r, p["push"], cal, lat, region_ok[ch], habits=h.get("habits"))
@@ -115,8 +120,11 @@ def _exogenous(st: dict, cal: dict, seed: int) -> dict:
         x = np.round(national[:, None] * h["alloc"][None, :] * shape * noise, 2)
         x[x < 10.0] = 0.0
         bau[ch] = x
+        line = np.round(budget[:, None] * h["alloc"][None, :] * shape, 2)
+        line[line < 10.0] = 0.0
+        plan_bau[ch] = line
         add_noise[ch] = np.exp(rngs["add_noise"].normal(0.0, p["weekly_sigma"], (T, R)))
-    ex["bau"], ex["add_noise"], ex["region_ok"] = bau, add_noise, region_ok
+    ex["bau"], ex["add_noise"], ex["region_ok"], ex["plan_bau"] = bau, add_noise, region_ok, plan_bau
 
     # Demand: national shock (AR(1) from end-2025), market-week noise, fleet index.
     b, r = C.BASE, rngs["demand"]
@@ -198,9 +206,13 @@ def _exogenous(st: dict, cal: dict, seed: int) -> dict:
 # --- plans -> spend -------------------------------------------------------------------
 
 def _apply_plans(plans: list[Plan], ex: dict, cal: dict, st: dict) -> tuple[dict, list[dict]]:
-    """Planned-channel spend (T, R) after every plan's moves, and a log of each move."""
+    """Planned-channel spend (T, R) after every plan's moves, and a log of each move. The
+    media plan's budget lines get the same moves (an add without delivery noise), in
+    ex["media_plan"]."""
     codes, size = st["codes"], st["size"]
     spend = {ch: x.copy() for ch, x in ex["bau"].items()}
+    lines = {ch: x.copy() for ch, x in ex["plan_bau"].items()}
+    ex["media_plan"] = lines
     moves_log = []
 
     def apply(ch, mv, weeks, markets, tag):
@@ -211,10 +223,13 @@ def _apply_plans(plans: list[Plan], ex: dict, cal: dict, st: dict) -> tuple[dict
         cell = np.ix_(weeks, g)
         if mv.multiplier is not None:
             spend[ch][cell] = np.round(spend[ch][cell] * mv.multiplier, 2)
+            lines[ch][cell] = np.round(lines[ch][cell] * mv.multiplier, 2)
         else:
             added = mv.add_per_week_per_size * size[None, g] * ex["add_noise"][ch][cell]
             spend[ch][cell] = np.round(spend[ch][cell] + added, 2)
+            lines[ch][cell] = np.round(lines[ch][cell] + mv.add_per_week_per_size * size[None, g], 2)
         spend[ch][spend[ch] < 10.0] = 0.0
+        lines[ch][lines[ch] < 10.0] = 0.0
         moves_log.append({**tag, "channel": ch, "weeks": weeks, "markets": g,
                           "spend_change": spend[ch] - before})
 
@@ -606,6 +621,17 @@ def _tables(base: SimResult, st: dict, cal: dict, ex: dict, plans: list[Plan], s
                                      "end_date": str(p.test.end + timedelta(days=6)),
                                      "approved_date": str(p.approved)})
     t["market_tests"] = pd.DataFrame(rows, columns=MARKET_TEST_COLUMNS)
+
+    mp = ex["media_plan"]
+    parts = []
+    for ch in C.PLANNED_CHANNELS:
+        ok = np.where(ex["region_ok"][ch])[0]
+        tt, rr = np.meshgrid(np.arange(n_gen), ok, indexing="ij")
+        parts.append(pd.DataFrame({"week_start": week_str[tt.ravel()], "region_code": codes[rr.ravel()],
+                                   "channel": ch, "planned_spend": mp[ch][tt.ravel(), rr.ravel()]}))
+    t["media_plan_weekly"] = (pd.concat(parts, ignore_index=True)
+                              .sort_values(["week_start", "region_code", "channel"], kind="stable")
+                              .reset_index(drop=True)[MEDIA_PLAN_COLUMNS])
 
     t["crm_leads"], t["crm_opportunities"] = _crm(st, weeks_out, snapshot)
     return t
