@@ -64,28 +64,28 @@ On connect:
 
 ## Colors
 
-Okabe-Ito based, safe for color-blind readers. Assign `Marketing Role` in each of the three data sources with the same hex values.
+The Fernhook brand palette, checked for color-blind readers. The logo, fonts, dashboard frame, header and footer text, and the `Preferences.tps` palettes are in the brand pack, [`brand/README.md`](brand/README.md). Assign `Marketing Role` in each of the three data sources with the same hex values.
 
 | Marketing Role | Hex | Channels |
 |---|---|---|
 | performance | `#0072B2` | Paid Search Brand, Paid Search Non-Brand, Display Retargeting, Affiliates and Partners |
-| brand | `#E69F00` | Meta, YouTube, Connected TV, LinkedIn |
-| events | `#CC79A7` | Webinars |
-| owned | `#009E73` | Email |
-| unpaid | `#999999` | Organic Search, Direct, Referral |
+| brand | `#C27800` | Meta, YouTube, Connected TV, LinkedIn |
+| events | `#CC6A8E` | Webinars |
+| owned | `#1B7A55` | Email |
+| unpaid | `#878D89` | Organic Search, Direct, Referral |
 
 Views, on Dashboard 2 only:
 
 | View | Hex | Mark |
 |---|---|---|
-| CRM last touch | `#7F7F7F` | filled circle |
-| Platform reported | `#CC79A7` | filled circle |
-| MMM | `#009E73` | filled circle with 90% HDI line |
+| CRM last touch | `#6E7470` | filled circle |
+| Platform reported | `#CC6A8E` | filled circle |
+| MMM | `#1B7A55` | filled circle with 90% HDI line |
 | Truth (answer key) | `#000000` | hollow diamond |
 
 Deltas: good `#2E7D32`, bad `#C62828`, neutral `#6B6B6B`. Up is good for leads, won deals and pipeline; down is good for CPL and CPA; spend is neutral. Number format for deltas: `▲0.0%;▼0.0%;0.0%`.
 
-Fonts: Tableau Book and Tableau Semibold render on Public without substitution.
+Fonts: Tableau Book and Tableau Semibold render on Public without substitution. Sizes and the shared dashboard frame are in [`brand/README.md`](brand/README.md).
 
 ## Parameters (Weekly source)
 
@@ -204,7 +204,7 @@ Layout, top to bottom: KPI tiles across the top; channel table (left, 60%) besid
 ### 1.3 Trend line
 
 - **Feeds:** Weekly.
-- **Build:** Columns `Week Start` (exact date, continuous). Rows `Trend Value` and `Trend Last Year`, dual axis, synchronized. This year solid `#333333`, last year dashed `#999999`. Reference band from `MIN([Period Start])` to `p.Report Week`.
+- **Build:** Columns `Week Start` (exact date, continuous). Rows `Trend Value` and `Trend Last Year`, dual axis, synchronized. This year solid `#1F2421`, last year dashed `#878D89`. Reference band from `MIN([Period Start])` to `p.Report Week`.
 - **Calcs:**
   ```
   // Period Start
@@ -237,12 +237,12 @@ Layout, top to bottom: KPI tiles across the top; channel table (left, 60%) besid
   MAX([Is Discount Promo])
   ```
 - **Filters:** `Trend Window`, `Sales Area`, `Market`. It explains the 2025 dip: the hiring freeze ran July 2024 to January 2025.
-- **Color:** SDR `#56B4E9`, AE `#0072B2`, promo `#E0E0E0`.
+- **Color:** SDR `#6A9FD0`, AE `#0072B2`, promo `#E6E4DC`.
 
 ### 1.5 Market map
 
 - **Feeds:** Weekly.
-- **Build:** `AVG([Longitude])` on Columns, `AVG([Latitude])` on Rows. Detail `Market`, `Region Id`. Size `Won Cur`. Color `Won vs YA`, diverging orange-blue centered on 0, range ±30%. Label `Market` for the six largest. Background: Tableau Light, Midwest extent.
+- **Build:** `AVG([Longitude])` on Columns, `AVG([Latitude])` on Rows. Detail `Market`, `Region Id`. Size `Won Cur`. Color `Won vs YA`, the "Fernhook red-blue" diverging palette centered on 0, range ±30%. Label `Market` for the six largest. Background: Tableau Light, Midwest extent.
 - **Calcs:**
   ```
   // Deals per 1k Accounts   (tooltip)
@@ -258,7 +258,7 @@ Layout, top to bottom: KPI tiles across the top; channel table (left, 60%) besid
 ### 1.6 Funnel conversion (2 sheets)
 
 - **Feeds:** Weekly.
-- **Counts:** Rows `Measure Names` (Leads Cur, MQLs Cur, SQLs Cur, Opps Cur, Won Cur, in that order). Columns `Measure Values`, bar. Label values. Color `#9E9E9E`, with Won Cur `#333333`. Role colors stay off this sheet, since stages are not channels.
+- **Counts:** Rows `Measure Names` (Leads Cur, MQLs Cur, SQLs Cur, Opps Cur, Won Cur, in that order). Columns `Measure Values`, bar. Label values. Color `#878D89`, with Won Cur `#1F2421`. Role colors stay off this sheet, since stages are not channels.
 - **Rates:** a text sheet under it with four rates and their year-over-year change in points. These are same-period ratios, because each stage is counted in its own week; they are not cohort rates. Same definitions as the governed `mql_rate`, `sql_rate`, `opportunity_rate` and `win_rate`.
   ```
   // MQL Rate Cur
@@ -319,7 +319,7 @@ Turning it off shows what a real team has: three views that disagree.
 - **Feeds:** MMM views.
 - **Build:** Rows `Marketing Role`, `Channel Name`. Columns `Cpa` and `Measure Values` (`Cpa Hdi Low`, `Cpa Hdi High`), dual axis, synchronized, both log scale, fixed range 300 to 100,000.
   - Marks 1 (`Cpa`): Shape and Color by `View Name` (see Colors), size about 9. Detail `View Id`.
-  - Marks 2 (interval): Line, `Measure Names` on Path, color `#009E73`, size 2. Only MMM rows carry an HDI, so only they draw.
+  - Marks 2 (interval): Line, `Measure Names` on Path, color `#1B7A55`, size 2. Only MMM rows carry an HDI, so only they draw.
 - **Calcs:** none beyond the filter.
 - **Filters:** `Grain` = channel, `Show View`.
 - **Color by role:** the `Marketing Role` row header carries the role; add a thin sheet left of it with `MIN(1)` as a Square colored by `Marketing Role` and headers hidden, or tint the row-header pane.
@@ -364,7 +364,7 @@ Layout: plan BANs across the top; response curves as small multiples (full width
 ### 3.2 Response curves (small multiples)
 
 - **Feeds:** MMM plan (curves table, plan table through `Channel Id`).
-- **Build:** Columns `Channel Name` then `Spend Multiplier` (continuous dimension, 0 to 3). Rows `Measure Values` (`Deals Hdi Low`, `HDI Width`) as stacked Area, dual axis with `SUM([Deals Mean])` as Line. Synchronize. Y axis: independent range per column. Area colored by `Measure Names`: the low area transparent, the width area `#D9D9D9`. The line is colored by `Marketing Role`.
+- **Build:** Columns `Channel Name` then `Spend Multiplier` (continuous dimension, 0 to 3). Rows `Measure Values` (`Deals Hdi Low`, `HDI Width`) as stacked Area, dual axis with `SUM([Deals Mean])` as Line. Synchronize. Y axis: independent range per column. Area colored by `Measure Names`: the low area transparent, the width area `#DCDDD6`. The line is colored by `Marketing Role`.
   - Reference band, per pane, from 0.5 to 1.5: the optimizer's bounds.
   - Reference lines, per pane: at 1 ("today") and at `MIN([Multiplier])` from the plan table ("plan").
 - **Calcs:**
@@ -399,7 +399,7 @@ Layout: plan BANs across the top; response curves as small multiples (full width
   // Change Label
   IIF([Multiplier] >= 1, "+", "") + STR(ROUND(([Multiplier] - 1) * 100)) + "%"
   + IIF([At Bound] = 1, " (cap)", "")
-  // Bar Color   (role colors, plus "not a lever" = #BDBDBD)
+  // Bar Color   (role colors, plus "not a lever" = #C5C8C3)
   IF [Is Lever] = 0 THEN "not a lever" ELSE [Marketing Role] END
   // Spend Change per Year   (tooltip)
   [Spend Change] / 3
@@ -419,7 +419,7 @@ On connect: Story weekly: convert every `Is ...` flag to a dimension and alias 1
 ### 4.1 Forecast against result (the headline sheet)
 
 - **Feeds:** Story readouts.
-- **Build:** Rows `Readout`. Columns: a dual axis. Axis 1: `Measured` (circle, `#0072B2`) and `Measure Values` (`Measured Low`, `Measured High`) as a line on Path. Axis 2: `Forecast` (circle, `#999999`) and `Forecast Low` to `Forecast High` as a thinner line, nudged down with a row offset. Synchronize. Reference line at 0. `True In Window` as a black hollow diamond, labeled "answer key".
+- **Build:** Rows `Readout`. Columns: a dual axis. Axis 1: `Measured` (circle, `#0072B2`) and `Measure Values` (`Measured Low`, `Measured High`) as a line on Path. Axis 2: `Forecast` (circle, `#878D89`) and `Forecast Low` to `Forecast High` as a thinner line, nudged down with a row offset. Synchronize. Reference line at 0. `True In Window` as a black hollow diamond, labeled "answer key".
 - **Calcs:**
   ```
   // Readout Label
@@ -433,7 +433,7 @@ On connect: Story weekly: convert every `Is ...` flag to a dimension and alias 1
 ### 4.2 Test markets against control
 
 - **Feeds:** Story weekly.
-- **Build:** Columns `Week Start` (continuous week). Rows `SUM([Won Deals])`. Color `Youtube Test Group` (test `#0072B2`, control `#999999`). Shade the test weeks and the window with a reference band from the test start to the window end.
+- **Build:** Columns `Week Start` (continuous week). Rows `SUM([Won Deals])`. Color `Youtube Test Group` (test `#0072B2`, control `#878D89`). Shade the test weeks and the window with a reference band from the test start to the window end.
 - **Calcs:**
   ```
   // Indexed Deals   (each group's deals over its pre-period mean, so the two lines start level)
@@ -445,13 +445,13 @@ On connect: Story weekly: convert every `Is ...` flag to a dimension and alias 1
 ### 4.3 Rollout markets against the holdout
 
 - **Feeds:** Story weekly.
-- **Build:** same as 4.2 with color `Rollout Group` (rollout `#0072B2`, holdout `#999999`), indexed to `Is Rollout Pre Period` (the 52 weeks before the spring test). Reference band over the rollout weeks.
+- **Build:** same as 4.2 with color `Rollout Group` (rollout `#0072B2`, holdout `#878D89`), indexed to `Is Rollout Pre Period` (the 52 weeks before the spring test). Reference band over the rollout weeks.
 - **Filters:** `Week Start` from 2025-02-03 to 2026-12-28; exclude `Rollout Group` = no rollout.
 
 ### 4.4 The rollout's moves
 
 - **Feeds:** Rollout plan.
-- **Build:** Rows `Channel Name`. Columns `Change Pct` as diverging bars (grown `#0072B2`, cut `#D55E00`), label `+50%` style. Second sheet, same rows: `Forecast Deals In Window` as a circle with `Forecast Deals Low` to `Forecast Deals High` as a line. Tooltip: `Spend Proxy Weeks`, `Delivered Over Planned` against `Check Line`, and `Holdout Delivered Over Planned`.
+- **Build:** Rows `Channel Name`. Columns `Change Pct` as diverging bars (grown `#0072B2`, cut `#C8452F`), label `+50%` style. Second sheet, same rows: `Forecast Deals In Window` as a circle with `Forecast Deals Low` to `Forecast Deals High` as a line. Tooltip: `Spend Proxy Weeks`, `Delivered Over Planned` against `Check Line`, and `Holdout Delivered Over Planned`.
 - **Note on the sheet:** "Delivered spend tracked the media plan in every moved channel, so every move ran, the 12% search trim included."
 
 
