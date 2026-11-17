@@ -63,6 +63,22 @@ models:
               arguments:
                 values: [rollout, holdout, no rollout]
 
+  - name: fct_media_plan_weekly
+    description: >
+      The media plan's weekly budget line beside the spend the platforms delivered, by week, market and
+      planned channel. Empty before the 2026 plan.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [week_start, region_id, channel_id]
+    columns:
+      - name: planned_spend
+        data_tests:
+          - not_null
+      - name: spend
+        data_tests:
+          - not_null
+
   - name: dim_channel
     description: Golden channel dimension. Nine paid channels, owned email, and three unpaid CRM sources.
     columns:

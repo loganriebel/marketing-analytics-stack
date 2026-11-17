@@ -352,6 +352,34 @@ models:
               arguments:
                 values: [multiplier, add_per_week_per_size]
 
+  - name: stg_media_plan_weekly
+    description: One row per week, market and planned channel.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [week_start, region_id, channel_id]
+    columns:
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_regions')
+                field: region_id
+      - name: channel_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('channels')
+                field: channel_id
+      - name: planned_spend
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+
   - name: stg_fleet_activity_index
     description: One row per week.
     columns:

@@ -45,3 +45,8 @@ sources:
         description: >
           The market test registry: one row per test arm, market and planned move, with the test's
           dates. Empty until a test is registered.
+      - name: media_plan_weekly
+        description: >
+          The media plan from the planning tool: each planned channel's weekly budget line by market,
+          the plan's moves applied. Brand search follows searches and webinars are events, so neither
+          is planned here. Empty before the 2026 plan.
