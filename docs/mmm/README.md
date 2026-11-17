@@ -191,6 +191,41 @@ Reported in `diagnostics_<fit>.json` (`mmm/validation.py`). They describe the fi
 
 There is no ANOVA table. F-tests split variance for least squares with fixed effects; here each effect has a full posterior, so the 90% HDI and the share of draws above zero (in the parameter table) answer the same question.
 
+## Backtest
+
+**Training vs holdout.** The model learns from the training weeks. The holdout weeks are kept out of the fit. Afterward the model predicts deals for them from their actual spend and controls, and the prediction is compared with what happened. Training error shows how well the model fits weeks it has seen; holdout error shows how well it predicts weeks it has not, which is the harder test. The holdout is not a spend forecast: it is given each week's real spend.
+
+**One holdout is one draw.** The graded fit holds out 13 weeks (September 29 to December 22, 2025, 8% of the data): one season, 13 national weeks. `python -m mmm.backtest` refits the unchanged model four times, with the same priors, sampler settings and gates. Each fold trains from January 2023 through its cutoff, loads no week past its own holdout, and predicts the next 13 weeks. Fold 4 is the graded holdout fit again (MAPE 5.2% both times). Full tables: [`mmm/grading/backtest.md`](../../mmm/grading/backtest.md); numbers: `mmm/outputs/backtest.json`.
+
+| Fold | Trained through | Predicts | MAPE | WAPE | Bias | In 90% interval | R² | NRMSE ratio |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| 1 | Dec 30, 2024 (105 weeks) | Jan 6 to Mar 31, 2025 | 3.5% | 3.5% | -0.8% | 13 of 13 | 0.83 | 0.95 |
+| 2 | Mar 31, 2025 (118) | Apr 7 to Jun 30 | 3.9% | 3.9% | +1.8% | 13 of 13 | 0.49 | 0.90 |
+| 3 | Jun 30, 2025 (131) | Jul 7 to Sep 29 | 3.6% | 3.5% | +0.7% | 12 of 13 | 0.35 | 0.96 |
+| 4 (graded) | Sep 22, 2025 (143) | Sep 29 to Dec 22 | 5.2% | 5.3% | -4.4% | 11 of 13 | -0.89 | 1.36 |
+| Pooled | | 52 fold-weeks | 4.0% | 4.1% | -0.7% | 49 of 52 | 0.83 | 1.09 |
+
+National weekly deals. Bias is total predicted minus observed over observed. NRMSE ratio is holdout RMSE over its mean, divided by the same for training. Folds 3 and 4 share September 29. Every fold passes every health gate: max r-hat 1.005, min bulk ESS 1,157, min tail ESS 712, at most 5 divergences in 8,000.
+
+- **The graded window is the hardest of the four.** It is the only fold with a clear miss: it runs 4.4% low, with late October, early November and mid-December 40 to 65 deals a week above the line. The other three quarters land within 2%, two of them high. Pooled over 52 weeks the model runs 0.7% low. The "4% low" belongs to that quarter, not to the model.
+- **R² needs more than 13 weeks.** One quarter's weekly deals barely move, so a small miss in level swamps them: R² runs from 0.83 to -0.89 by fold. Over all 52 out-of-sample weeks it is 0.83, near training's 0.88.
+- **A holdout can fit better than training.** In folds 1 to 3 the holdout's RMSE over the mean is a little lower than training's (ratio 0.90 to 0.96). Both sit at the count-noise floor, about the square root of weekly deals (20 to 23 nationally), so which comes out lower is mostly luck. A ratio a little under 1 is not a warning sign. Fold 4's 1.36 is the one real miss (RMSE 34.8, 1.5 times its floor).
+- **NRMSE depends on what it divides by.** Over the mean, holdout and training are close (pooled ratio 1.09). Over the range (max minus min), one quarter's range (65 to 148 deals) is far smaller than training's (347), so the same misses read 12.7% to 53.5% and the ratio 1.8 to 7.8. Tools differ here, so compare NRMSE only with the same divisor and window.
+- **Small weeks inflate MAPE.** Across market-weeks, holdout MAPE is 23.0% but WAPE is 16.6%. The smaller half of markets (13 deals a week) read 28.0% MAPE, the larger half (36 a week) 17.9%. A miss of 3 deals is 23% of 13 and 8% of 36. WAPE weights each week by its deals, so small weeks do not blow it up. The same holds in training: 21% MAPE, 15% WAPE.
+- **Prediction is still not attribution.** All four folds predict well, and the graded fit still gives paid media 37% too little credit. A backtest checks the total, not the split.
+
+**Is 13 weeks enough?** For the gate, yes. Every fold's MAPE (3.5% to 5.2%) is far under the 10% limit, so a 13-week holdout reliably catches a broken fit. For bias, R² and interval coverage, no. One quarter can read anywhere from 4.4% low to 1.8% high, and each week moves coverage by 8 points. So the 13-week holdout stays the gate, and bias, R² and coverage are read from the backtest.
+
+**Why not a longer holdout?** A 26-week holdout would train through June 30, 2025 (fold 3's window) and hide July to September 2025 from the fit. Those weeks sit on the plateau at the top of the search ramp: non-brand search averaged $399,000 to $453,000 a week nationally, its highest share of search ever (81% in July). Training would keep 21 weeks with non-brand search above $380,000 instead of 29. Prediction error would not show the loss: fold 1 never saw a non-brand week above $339,000 and still predicted early 2025 within 3.5%. But those weeks are what the model needs to learn how fast search saturates, the part it already gets wrong ($7,896 next-dollar cost against $11,117 true). Rolling folds test four seasons and still let the graded fit learn from all but the last 13 weeks.
+
+```bash
+.venv-mmm\Scripts\python -m mmm.backtest
+.venv-mmm\Scripts\python -m pytest tests/test_mmm_backtest.py -q
+```
+
+- The four fits ran one after another in 33 minutes. Each fold's posterior (about 3 GB) is deleted once it is scored. Its predictions stay in `mmm/fits/backtest/` (gitignored), so a rerun skips folds already scored.
+- The test runs two folds on the smoke subset (2 markets, 100 draws) in about a minute.
+
 ## Outputs
 
 `mmm/outputs/` is what step 5's memo grounding check reads. Every estimate has a posterior mean, median and 90% HDI from 2,000 posterior draws.
