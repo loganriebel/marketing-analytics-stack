@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+from datetime import date, timedelta
 from pathlib import Path
 
 import numpy as np
@@ -27,6 +28,10 @@ METRICS = ["incremental_deals", "cpa", "marginal_cpa", "roi_revenue"]
 MEDIATED = ["incremental_deals_via_brand_search", "incremental_deals_total", "cpa_total",
             "marginal_cpa_total"]
 TOTAL_CURVE_KEYS = ("response_curve_total", "total_response_curve")
+# 2026: the answer key the year-end data cut writes, and what the team said in advance.
+TRUTH_2026_PATH = C.REPO_ROOT / "data" / "cut_2027-01-03" / "truth_2026.json"
+READOUT_PATH = C.REPO_ROOT / "geotest" / "outputs" / "readout.json"
+ROLLOUT_DIR = C.REPO_ROOT / "rollout" / "outputs"
 
 
 def _pct_err(est, true):
@@ -430,8 +435,106 @@ def grade(outputs: Path = C.OUTPUT_DIR, truth_path: Path = TRUTH_PATH, memo_dir:
     return g
 
 
+def _in_window(by_close_week: dict, first: str, last: str) -> float:
+    """Expected deals closing in the weeks whose Monday falls in [first, last]."""
+    return float(sum(v for w, v in by_close_week.items() if first <= w <= last))
+
+
+def _check(true: float, est: float | None, lo: float | None, hi: float | None) -> dict:
+    out = {"true": true, "estimate": est, "interval_90": [lo, hi], "error": None if est is None else est - true,
+           "pct_error": _pct_err(est, true)}
+    out["covered"] = None if lo is None else bool(min(lo, hi) <= true <= max(lo, hi))
+    return out
+
+
+def grade_2026(truth26: dict, readout: dict, plan: dict | None, results: dict | None) -> dict:
+    """The 2026 market test and the rollout against the 2026 answer key.
+
+    Each test arm's true effect is the noise-free deals its spend change caused in its
+    markets that close inside the readout window; the readout's lift and the January
+    forecast are scored against it. The rollout's true effect is the same for the
+    national moves, closing inside the rollout weeks, against the May forecast and the
+    January 2027 measurement.
+    """
+    w = readout["window"]
+    last_monday = str(date.fromisoformat(w["window_end"]) - timedelta(days=6))
+    out = {"seed": truth26["seed"], "snapshot": truth26["snapshot"], "plans": truth26["plans"], "test": {}}
+    for key, a in readout["arms"].items():
+        cell = next(c for c in truth26["cells"].values() if sorted(c["markets"]) == sorted(a["markets"]))
+        true = _in_window(cell["incremental_deals_by_close_week"], w["window_start"], last_monday)
+        f = a["forecast"]
+        out["test"][key] = {
+            "arm": cell["label"], "markets": cell["markets"], "window": [w["window_start"], w["window_end"]],
+            "true_in_window": true, "true_all_closes": cell["incremental_deals"],
+            "measured": _check(true, a["lift"], *a["interval_90"]),
+            "forecast": _check(true, f["lift_mean"], *f["hdi_90"]),
+            "true_spend_change": cell["spend_change_by_channel"],
+        }
+    # The rollout runs as one arm, so its markets are the 15 that moved and the holdout stays out.
+    rolled = None if plan is None else next(
+        (c for c in truth26["cells"].values() if sorted(c["markets"]) == sorted(plan["holdout"]["rollout_markets"])),
+        None)
+    if rolled is not None:
+        mv = rolled
+        d = plan["dates"]
+        true = _in_window(mv["incremental_deals_by_close_week"], d["start"], d["last_week"])
+        fc = plan["rollout"]["plan"]
+        r = {"plan": plan["name"], "weeks": [d["start"], d["end"]], "true_in_window": true,
+             "true_all_closes": mv["incremental_deals"],
+             "forecast": _check(true, fc["deal_change_in_window"]["mean"], *fc["deal_change_in_window"]["hdi_90"]),
+             "forecast_all_closes": _check(mv["incremental_deals"], fc["deal_change"]["mean"],
+                                           *fc["deal_change"]["hdi_90"]),
+             "true_spend_change": mv["spend_change_by_channel"],
+             "true_brand_search_spend_change": mv["brand_search_spend_change"]}
+        if results is not None:
+            m = results["measured"]
+            r["measured"] = _check(true, m["lift"], *m["interval_90"])
+            r["measured"]["method"] = m["method"]
+            if "model_view" in results:
+                v = results["model_view"]["deal_change_in_window"]
+                r["model_view"] = _check(true, v["mean"], *v["hdi_90"])
+        out["rollout"] = r
+    return out
+
+
+def markdown_2026(g: dict) -> str:
+    def rng(c):
+        lo, hi = c["interval_90"]
+        return "" if lo is None else f" ({_fmt(lo)} to {_fmt(hi)})"
+
+    def yes(c):
+        return "n/a" if c["covered"] is None else ("yes" if c["covered"] else "no")
+
+    lines = [f"# 2026 grade: the market test and the rollout, seed {g['seed']}", "",
+             f"Answer key: `truth_2026.json` from the {g['snapshot']} data cut, plans "
+             + ", ".join(f"`{p}`" for p in g["plans"]) + ". True effects are expected, noise-free deals "
+             "the spend change caused that close inside the window; nobody in the story sees them.", "",
+             "| What | Window | True | Estimate (90% range) | Error | Covered |", "|---|---|---:|---:|---:|---|"]
+    for key, t in g["test"].items():
+        for name, c in (("readout", t["measured"]), ("January forecast", t["forecast"])):
+            lines.append(f"| Test, {key} arm, {name} | {t['window'][0]} to {t['window'][1]} | {_fmt(c['true'])} | "
+                         f"{_fmt(c['estimate'])}{rng(c)} | {_fmt(c['error'])} | {yes(c)} |")
+    if "rollout" in g:
+        r = g["rollout"]
+        rows = [("May forecast", r["forecast"])]
+        if "measured" in r:
+            rows.append((f"year-end measurement ({r['measured']['method']})", r["measured"]))
+        if "model_view" in r:
+            rows.append(("the model's own view (cross-check)", r["model_view"]))
+        for name, c in rows:
+            lines.append(f"| Rollout, {name} | {r['weeks'][0]} to {r['weeks'][1]} | {_fmt(c['true'])} | "
+                         f"{_fmt(c['estimate'])}{rng(c)} | {_fmt(c['error'])} | {yes(c)} |")
+        c = r["forecast_all_closes"]
+        lines += ["", f"All the deals the rollout causes, closing in the window or after: true {_fmt(c['true'])}, "
+                  f"forecast {_fmt(c['estimate'])}{rng(c)}."]
+    return "\n".join(lines) + "\n"
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--year-2026", action="store_true",
+                    help="grade the 2026 market test and the rollout against the 2026 answer key instead")
+    ap.add_argument("--truth-2026", type=Path, default=TRUTH_2026_PATH)
     ap.add_argument("--outputs", type=Path, default=C.OUTPUT_DIR)
     ap.add_argument("--truth", type=Path, default=TRUTH_PATH,
                     help="answer key of the world the outputs came from (a dev seed's own file)")
@@ -439,6 +542,17 @@ def main(argv=None) -> int:
     ap.add_argument("--memo-dir", type=Path, default=MEMO_DIR, help="step 5 memo outputs; skipped if absent")
     ap.add_argument("--compare", type=Path, help="an earlier grade (JSON) of the same window to set beside this one")
     args = ap.parse_args(argv)
+    if args.year_2026:
+        def read(p):
+            return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
+        g = grade_2026(read(args.truth_2026), read(READOUT_PATH), read(ROLLOUT_DIR / "plan.json"),
+                       read(ROLLOUT_DIR / "results.json"))
+        args.grade_dir.mkdir(parents=True, exist_ok=True)
+        (args.grade_dir / "grade_2026.json").write_text(json.dumps(g, indent=2) + "\n", encoding="utf-8")
+        md = markdown_2026(g)
+        (args.grade_dir / "grade_2026.md").write_text(md, encoding="utf-8")
+        print(md)
+        return 0
     g = grade(args.outputs, args.truth, args.memo_dir)
     args.grade_dir.mkdir(parents=True, exist_ok=True)
     stem = f"grade_{g['fit']}" + ("" if g["seed"] == 2026 else f"_seed{g['seed']}")

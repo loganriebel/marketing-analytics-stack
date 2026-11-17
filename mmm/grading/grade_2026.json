@@ -1,0 +1,166 @@
+{
+  "seed": 2026,
+  "snapshot": "2027-01-03",
+  "plans": [
+    "plans/2026_test.yaml",
+    "plans/2026_rollout.yaml"
+  ],
+  "test": {
+    "grow": {
+      "arm": "MT2026Q1 arm youtube_up",
+      "markets": [
+        "CMH",
+        "CVG",
+        "DLH",
+        "GRB",
+        "MKE",
+        "MLI",
+        "MSN",
+        "RFD",
+        "RST",
+        "TOL"
+      ],
+      "window": [
+        "2026-02-02",
+        "2026-05-24"
+      ],
+      "true_in_window": 345.9325,
+      "true_all_closes": 373.326,
+      "measured": {
+        "true": 345.9325,
+        "estimate": 462.5818601314278,
+        "interval_90": [
+          245.67820515062587,
+          679.4855151122297
+        ],
+        "error": 116.64936013142778,
+        "pct_error": 33.7202662749027,
+        "covered": true
+      },
+      "forecast": {
+        "true": 345.9325,
+        "estimate": 333.60359624165693,
+        "interval_90": [
+          287.47631212616653,
+          382.15086822383245
+        ],
+        "error": -12.328903758343074,
+        "pct_error": -3.563962263835596,
+        "covered": true
+      },
+      "true_spend_change": {
+        "youtube": 561193.22
+      }
+    },
+    "cut": {
+      "arm": "MT2026Q1 arm search_back",
+      "markets": [
+        "CHI",
+        "CVG",
+        "DAY",
+        "DLH",
+        "DSM",
+        "FAR",
+        "GRB",
+        "MSN",
+        "PIA",
+        "TOL"
+      ],
+      "window": [
+        "2026-02-02",
+        "2026-05-24"
+      ],
+      "true_in_window": -119.0942,
+      "true_all_closes": -119.938,
+      "measured": {
+        "true": -119.0942,
+        "estimate": -79.34822761210451,
+        "interval_90": [
+          -328.3020805502946,
+          169.60562532608554
+        ],
+        "error": 39.74597238789549,
+        "pct_error": -33.3735583999015,
+        "covered": true
+      },
+      "forecast": {
+        "true": -119.0942,
+        "estimate": -189.59965887166445,
+        "interval_90": [
+          -252.14479394572527,
+          -112.8490743173474
+        ],
+        "error": -70.50545887166444,
+        "pct_error": 59.20142112014224,
+        "covered": true
+      },
+      "true_spend_change": {
+        "paid_search_nonbrand": -1624941.21
+      }
+    }
+  },
+  "rollout": {
+    "plan": "2026 rollout",
+    "weeks": [
+      "2026-06-01",
+      "2027-01-03"
+    ],
+    "true_in_window": 881.6096,
+    "true_all_closes": 925.482,
+    "forecast": {
+      "true": 881.6096,
+      "estimate": 533.4049516845764,
+      "interval_90": [
+        406.75397778159794,
+        661.3804744498432
+      ],
+      "error": -348.2046483154236,
+      "pct_error": -39.49646740636939,
+      "covered": false
+    },
+    "forecast_all_closes": {
+      "true": 925.482,
+      "estimate": 543.2269966659958,
+      "interval_90": [
+        402.9091213469247,
+        677.9963104445895
+      ],
+      "error": -382.2550033340042,
+      "pct_error": -41.30334283476115,
+      "covered": false
+    },
+    "true_spend_change": {
+      "paid_search_nonbrand": -1192506.78,
+      "meta": 612770.07,
+      "linkedin": 292437.76,
+      "youtube": 369142.54,
+      "ctv": 278387.5,
+      "display": -926629.22,
+      "affiliates": 353513.88
+    },
+    "true_brand_search_spend_change": 109596.15,
+    "measured": {
+      "true": 881.6096,
+      "estimate": 464.474988998094,
+      "interval_90": [
+        18.2150546417555,
+        910.7349233544325
+      ],
+      "error": -417.134611001906,
+      "pct_error": -47.315116691323006,
+      "covered": true,
+      "method": "standing holdout"
+    },
+    "model_view": {
+      "true": 881.6096,
+      "estimate": 504.63375008387317,
+      "interval_90": [
+        383.4497647500302,
+        633.2810908519263
+      ],
+      "error": -376.97584991612683,
+      "pct_error": -42.759952922033385,
+      "covered": false
+    }
+  }
+}
