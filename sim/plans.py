@@ -43,6 +43,13 @@ from . import config as C
 
 BUDGET_BASES = ("hold_2025_exit",)
 MOVE_KEYS = ("multiplier", "add_per_week_per_size")
+# The market test registry export (market_tests.csv): one row per test arm, market and move.
+# Before any test is registered it is written with its header and no rows.
+MARKET_TEST_COLUMNS = ["test_id", "test_name", "arm_id", "region_code", "channel", "move", "move_value",
+                       "start_date", "end_date", "approved_date"]
+# The media plan export (media_plan_weekly.csv): each planned channel's weekly budget line by
+# market, from the 2026 plans. Before 2026 it is written with its header and no rows.
+MEDIA_PLAN_COLUMNS = ["week_start", "region_code", "channel", "planned_spend"]
 
 
 @dataclass

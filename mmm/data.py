@@ -35,10 +35,10 @@ class Panel:
         """Region size index: target accounts over the regional mean."""
         return self.accounts / self.accounts.mean()
 
-    def subset(self, regions: list[str] | None = None, n_weeks: int | None = None) -> "Panel":
+    def subset(self, regions: list[str] | None = None, n_weeks: int | None = None, first_week: int = 0) -> "Panel":
         # sorted, because PyMC-Marketing orders the geo coordinate alphabetically
         g = sorted(self.regions.index(r) for r in regions) if regions else list(range(len(self.regions)))
-        t = slice(0, n_weeks)
+        t = slice(first_week, None if n_weeks is None else first_week + n_weeks)
         weeks = self.weeks[t]
         regs = [self.regions[i] for i in g]
         ctrl = self.controls_raw[self.controls_raw.region_id.isin(regs)

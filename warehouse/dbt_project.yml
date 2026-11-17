@@ -10,6 +10,11 @@ macro-paths: ["macros"]
 target-path: "target"
 clean-targets: ["target", "dbt_packages"]
 
+# The two registered 2026 tests that dim_region describes.
+vars:
+  market_test_id: MT2026Q1
+  rollout_test_id: RO2026H2
+
 flags:
   send_anonymous_usage_stats: false
 

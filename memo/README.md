@@ -1,4 +1,6 @@
-# Chapter 3: the proposal memo (January 2026)
+# Chapters 3 and 8: the CFO memos
+
+## Chapter 3: the proposal memo (January 2026)
 
 An agent turns the MMM's outputs and the pre-registered market test into a one-page proposal for the CFO, and a script fails the run if the memo holds any number the facts pack does not.
 
@@ -14,6 +16,18 @@ An agent turns the MMM's outputs and the pre-registered market test into a one-p
 | YouTube +50% (new money) | 454 (318 to 571) | 657 | no |
 
 The table is the grader's check of the plan the memo describes ([MMM grade](../mmm/grading/grade_holdout.md)), not something the memo or the test design saw. Both claims are too low: the plan works better than the model thinks. The memo asks for the test, not the reallocation, so the reallocation's range sits in its appendix and the YouTube +50% variant is not stated.
+
+## Chapter 8: the results memo (January 2027)
+
+The same pipeline writes the year-end memo from its own facts pack (`memo/results.py`): 40 facts read from what the team wrote down during 2026, the spring test readout (`geotest/outputs/readout.json`), the rollout plan and its registered holdout (`rollout/outputs/plan.json`), and the year-end holdout readout (`rollout/outputs/results.json`). It never reads the MMM's grading folder: the rollout's true gain lives only in `mmm/grading/grade_2026.json`.
+
+**The memo ([results_memo.md](outputs/results_memo.md)):** "The rollout worked: a clear gain in deals at the same budget". All 35 numbers match the facts pack (35 of 35), on the second draft of a second run, about $0.28 ([results_writer.json](outputs/results_writer.json)). Its first draft ran long (466 words and 19 numbers above the appendix). A first run of 5 drafts ($0.64) failed: the pack's own wording said the range "sits above zero", so the writer kept writing "zero", which no fact holds, and every draft ran past 400 words. The pack now says "a gain", and the results memo gets 450 words above the appendix. About $0.92 in all.
+
+![Forecast against result: the spring test and the rollout, with 90% ranges](outputs/results_chart.png)
+
+- **Sections:** What we did, What happened, Did it work, What it cost, What's next, Appendix: the ranges; the chart at the end of Did it work. Same number rules and style checks as the proposal, with room for 450 words above the appendix.
+- **The holdout decides.** The memo reports the holdout readout as the result, says its power, and mentions the model's own view only as a cross-check.
+- **Run it:** `.venv\Scripts\python -m memo --memo results --retries 4`, after `python -m stack.run --only yearend,results`. `python -m memo.results` rebuilds the pack and chart only.
 
 ## Three parts and a chart
 

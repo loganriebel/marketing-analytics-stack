@@ -28,6 +28,56 @@ models:
               arguments:
                 min_value: 36
                 max_value: 49
+      - name: market_test_id
+        description: The registered market test the cells below describe (MT2026Q1); null before any test.
+      - name: market_test_cell
+        description: >
+          The market's cell in the 2x2 market test: youtube only, search only, youtube and search, or
+          neither. 'no test' before a test is registered.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [youtube only, search only, youtube and search, neither, no test]
+      - name: youtube_test_group
+        description: test if the market got the test's extra YouTube, control if not.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [test, control, no test]
+      - name: search_test_group
+        description: test if the market ran non-brand search at the test's lower pace, control if not.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [test, control, no test]
+      - name: rollout_group
+        description: >
+          The June to December 2026 rollout (RO2026H2): rollout if the market moved to the new plan,
+          holdout if it stayed on the old plan to measure it. 'no rollout' before the rollout is registered.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [rollout, holdout, no rollout]
+
+  - name: fct_media_plan_weekly
+    description: >
+      The media plan's weekly budget line beside the spend the platforms delivered, by week, market and
+      planned channel. Empty before the 2026 plan.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [week_start, region_id, channel_id]
+    columns:
+      - name: planned_spend
+        data_tests:
+          - not_null
+      - name: spend
+        data_tests:
+          - not_null
 
   - name: dim_channel
     description: Golden channel dimension. Nine paid channels, owned email, and three unpaid CRM sources.

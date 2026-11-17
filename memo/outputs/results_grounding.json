@@ -1,0 +1,627 @@
+{
+  "memo": "memo/outputs/results_memo.md",
+  "facts": "memo/outputs/results_facts.json",
+  "checked": 35,
+  "matched": 35,
+  "score": 1.0,
+  "pass": true,
+  "unmatched": [],
+  "numbers": [
+    {
+      "kind": "number",
+      "text": "12",
+      "line": 5,
+      "unit": "weeks",
+      "context": "In spring we ran a 12-week test in matched markets. One group pushed YouTube. The other pulled back non-brand",
+      "values": [
+        12.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "test_weeks"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "15",
+      "line": 7,
+      "unit": "markets",
+      "context": "From June we ran the model's plan in 15 markets at the same total budget. We put more into Meta, YouTube, conn",
+      "values": [
+        15.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "rollout_markets"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "5",
+      "line": 7,
+      "unit": "markets",
+      "context": "display retargeting and non-brand search. We kept 5 markets on the old plan all year so we could measure the r",
+      "values": [
+        5.0
+      ],
+      "precisions": [
+        0.1
+      ],
+      "matched": [
+        "holdout_markets"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "11%",
+      "line": 11,
+      "unit": "percent",
+      "context": "Deals rose 11% on the year before. Paid spend fell 1.8%. Cost per deal fell 11%.",
+      "values": [
+        11.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "won_deals_change_pct",
+        "cost_per_deal_change_pct"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "1.8%",
+      "line": 11,
+      "unit": "percent",
+      "context": "eals rose 11% on the year before. Paid spend fell 1.8%. Cost per deal fell 11%.",
+      "values": [
+        1.8
+      ],
+      "precisions": [
+        0.1
+      ],
+      "matched": [
+        "paid_spend_change_pct"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "11%",
+      "line": 11,
+      "unit": "percent",
+      "context": "before. Paid spend fell 1.8%. Cost per deal fell 11%.",
+      "values": [
+        11.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "won_deals_change_pct",
+        "cost_per_deal_change_pct"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "463",
+      "line": 17,
+      "unit": "deals",
+      "context": "Spring test: YouTube worked. It produced 463 extra deals against a model forecast of 334. That is above the fo",
+      "values": [
+        463.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "test_youtube_lift"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "334",
+      "line": 17,
+      "unit": null,
+      "context": "duced 463 extra deals against a model forecast of 334. That is above the forecast but inside the model's range",
+      "values": [
+        334.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "test_youtube_forecast"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "464",
+      "line": 19,
+      "unit": "deals",
+      "context": "measured range is a gain. The rollout markets won 464 extra deals against the holdout. The model had forecast",
+      "values": [
+        464.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "rollout_lift"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "533",
+      "line": 19,
+      "unit": null,
+      "context": "deals against the holdout. The model had forecast 533, so the result agrees with the forecast. The holdout had",
+      "values": [
+        533.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "rollout_forecast"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "63%",
+      "line": 19,
+      "unit": "percent",
+      "context": "result agrees with the forecast. The holdout had 63% odds of a clear read at the forecast lift. The model's o",
+      "values": [
+        63.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "rollout_power"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "90%",
+      "line": 21,
+      "unit": "percent",
+      "context": "nst result: the spring test and the rollout, with 90% ranges](results_chart.png)",
+      "values": [
+        90.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "hdi_prob"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "$2.1M",
+      "line": 25,
+      "unit": "USD",
+      "context": "The rollout stayed inside the budget. It moved $2.1M between channels and added no new spend except the brand",
+      "values": [
+        2100000.0
+      ],
+      "precisions": [
+        100000
+      ],
+      "matched": [
+        "rollout_moved"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "$91K",
+      "line": 25,
+      "unit": "USD",
+      "context": "follows extra searches. That brand search came to $91K.",
+      "values": [
+        91000.0
+      ],
+      "precisions": [
+        1000
+      ],
+      "matched": [
+        "rollout_brand_search"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "$1,490",
+      "line": 27,
+      "unit": "USD",
+      "context": "deal ran a little higher in the rollout markets ($1,490) than in the holdout markets ($1,440). We do not read",
+      "values": [
+        1490.0
+      ],
+      "precisions": [
+        10
+      ],
+      "matched": [
+        "rollout_markets_cost_per_deal"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "$1,440",
+      "line": 27,
+      "unit": "USD",
+      "context": "out markets ($1,490) than in the holdout markets ($1,440). We do not read that gap as a verdict on the plan. T",
+      "values": [
+        1440.0
+      ],
+      "precisions": [
+        10
+      ],
+      "matched": [
+        "holdout_markets_cost_per_deal"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "90%",
+      "line": 38,
+      "unit": "percent",
+      "context": "Every range below is a 90% range.",
+      "values": [
+        90.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "hdi_prob"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "463",
+      "line": 40,
+      "unit": null,
+      "context": "- YouTube push, measured extra deals: 463 (246 to 679).",
+      "values": [
+        463.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "test_youtube_lift"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "range",
+      "text": "246 to 679",
+      "line": 40,
+      "unit": null,
+      "context": "- YouTube push, measured extra deals: 463 (246 to 679).",
+      "values": [
+        246.0,
+        679.0
+      ],
+      "precisions": [
+        1,
+        1
+      ],
+      "matched": [
+        "test_youtube_lift"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "334",
+      "line": 41,
+      "unit": null,
+      "context": "- YouTube push, model forecast: 334 (287 to 382).",
+      "values": [
+        334.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "test_youtube_forecast"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "range",
+      "text": "287 to 382",
+      "line": 41,
+      "unit": null,
+      "context": "- YouTube push, model forecast: 334 (287 to 382).",
+      "values": [
+        287.0,
+        382.0
+      ],
+      "precisions": [
+        1,
+        1
+      ],
+      "matched": [
+        "test_youtube_forecast"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "$1,390",
+      "line": 42,
+      "unit": "USD",
+      "context": "ra deal, counting the brand search that followed: $1,390 ($946 to $2,620).",
+      "values": [
+        1390.0
+      ],
+      "precisions": [
+        10
+      ],
+      "matched": [
+        "test_youtube_cost_per_deal"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "range",
+      "text": "$946 to $2,620",
+      "line": 42,
+      "unit": "USD",
+      "context": "counting the brand search that followed: $1,390 ($946 to $2,620).",
+      "values": [
+        946.0,
+        2620.0
+      ],
+      "precisions": [
+        1,
+        10
+      ],
+      "matched": [
+        "test_youtube_cost_per_deal"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "79",
+      "line": 43,
+      "unit": null,
+      "context": "- Search pullback, measured deal change: 79 lost (from a loss of 328 to a gain of 170).",
+      "values": [
+        79.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "test_search_lift"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "328",
+      "line": 43,
+      "unit": null,
+      "context": "ck, measured deal change: 79 lost (from a loss of 328 to a gain of 170).",
+      "values": [
+        328.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "test_search_lift"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "170",
+      "line": 43,
+      "unit": null,
+      "context": "change: 79 lost (from a loss of 328 to a gain of 170).",
+      "values": [
+        170.0
+      ],
+      "precisions": [
+        10
+      ],
+      "matched": [
+        "test_search_lift"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "190",
+      "line": 44,
+      "unit": null,
+      "context": "- Search pullback, model forecast: 190 lost (from a loss of 252 to a loss of 113).",
+      "values": [
+        190.0
+      ],
+      "precisions": [
+        10
+      ],
+      "matched": [
+        "test_search_forecast"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "252",
+      "line": 44,
+      "unit": null,
+      "context": "ullback, model forecast: 190 lost (from a loss of 252 to a loss of 113).",
+      "values": [
+        252.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "test_search_forecast"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "113",
+      "line": 44,
+      "unit": null,
+      "context": "recast: 190 lost (from a loss of 252 to a loss of 113).",
+      "values": [
+        113.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "test_search_forecast"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "464",
+      "line": 45,
+      "unit": null,
+      "context": "ollout, measured extra deals against the holdout: 464 (18 to 911).",
+      "values": [
+        464.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "rollout_lift"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "range",
+      "text": "18 to 911",
+      "line": 45,
+      "unit": null,
+      "context": "t, measured extra deals against the holdout: 464 (18 to 911).",
+      "values": [
+        18.0,
+        911.0
+      ],
+      "precisions": [
+        1,
+        1
+      ],
+      "matched": [
+        "rollout_lift"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "533",
+      "line": 46,
+      "unit": null,
+      "context": "- Rollout, model forecast: 533 (407 to 661).",
+      "values": [
+        533.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "rollout_forecast"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "range",
+      "text": "407 to 661",
+      "line": 46,
+      "unit": null,
+      "context": "- Rollout, model forecast: 533 (407 to 661).",
+      "values": [
+        407.0,
+        661.0
+      ],
+      "precisions": [
+        1,
+        1
+      ],
+      "matched": [
+        "rollout_forecast"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "number",
+      "text": "505",
+      "line": 47,
+      "unit": null,
+      "context": "out, the model's own view of the realized result: 505 (383 to 633).",
+      "values": [
+        505.0
+      ],
+      "precisions": [
+        1
+      ],
+      "matched": [
+        "rollout_model_view"
+      ],
+      "ok": true
+    },
+    {
+      "kind": "range",
+      "text": "383 to 633",
+      "line": 47,
+      "unit": null,
+      "context": "the model's own view of the realized result: 505 (383 to 633).",
+      "values": [
+        383.0,
+        633.0
+      ],
+      "precisions": [
+        1,
+        1
+      ],
+      "matched": [
+        "rollout_model_view"
+      ],
+      "ok": true
+    }
+  ],
+  "exempt": [
+    {
+      "text": "2026",
+      "line": 13,
+      "why": "year"
+    }
+  ]
+}

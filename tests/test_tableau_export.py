@@ -19,7 +19,9 @@ DB = REPO / "data" / "warehouse.duckdb"
 needs_warehouse = pytest.mark.skipif(not DB.exists(), reason="run python -m sim and dbt build first")
 
 FILES = ("weekly_channel_market.csv", "controls_weekly_market.csv", "mmm_channel_views.csv",
-         "mmm_response_curves.csv", "mmm_optimizer_plan.csv")
+         "mmm_response_curves.csv", "mmm_optimizer_plan.csv", "test_rollout_weekly_market.csv",
+         "story_readouts.csv", "rollout_plan.csv")
+YEAR_END = REPO / "data" / "cut_2027-01-03" / "data" / "warehouse.duckdb"
 
 # Runs the export under an audit hook that logs every file Python opens and every module imported.
 AUDITED_RUN = r"""
@@ -127,8 +129,22 @@ def test_2025_totals_match_the_governed_metrics(export, tmp_path):
         assert y2025[column].sum() == pytest.approx(float(rows[0][1]), rel=1e-9), metric
 
 
+@pytest.mark.skipif(not YEAR_END.exists(), reason="run the yearend stage first")
+def test_dashboard_4_files(export):
+    out, _ = export
+    weekly = pd.read_csv(out / "test_rollout_weekly_market.csv")
+    assert not weekly.duplicated(["week_start", "region_id"]).any()
+    assert len(weekly) == weekly["week_start"].nunique() * 20
+    by = weekly.groupby("region_id").first()
+    assert (by["rollout_group"] == "holdout").sum() == 5 and (by["rollout_group"] == "rollout").sum() == 15
+    assert set(by.loc[by["rollout_group"] == "holdout", "market_test_cell"]) == {"neither"}
+    readouts = pd.read_csv(out / "story_readouts.csv")
+    assert readouts["answer_key_note"].notna().all() == readouts["true_in_window"].notna().all()
+    assert len(pd.read_csv(out / "rollout_plan.csv")) == 7
+
+
 @needs_warehouse
 def test_committed_csvs_match_a_fresh_export(export):
     out, _ = export
-    for name in FILES:
+    for name in FILES if YEAR_END.exists() else FILES[:5]:
         assert (COMMITTED / name).read_bytes() == (out / name).read_bytes(), f"re-run python -m tableau.export ({name})"

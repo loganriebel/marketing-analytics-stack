@@ -1,6 +1,7 @@
 """Score eval results against SQL ground truth and write evals/RESULTS.md.
 
   python -m evals.score --model claude-sonnet-5-5
+  python -m evals.score --set 2026          # scores on that set's data cut, writes evals/RESULTS_2026.md
 """
 
 from __future__ import annotations
@@ -12,7 +13,7 @@ from pathlib import Path
 
 import duckdb
 
-from .run import DEFAULT_MODEL, REPO, load_questions, results_path
+from .run import DEFAULT_MODEL, REPO, load_set, results_path
 
 DB_PATH = REPO / "data" / "warehouse.duckdb"
 OUT = REPO / "evals" / "RESULTS.md"
@@ -20,8 +21,8 @@ REL_TOL = 0.005  # 0.5%
 ABS_TOL = {"number": 0.01, "percent": 0.05}
 
 
-def ground_truth(questions: list[dict]) -> dict[str, object]:
-    con = duckdb.connect(str(DB_PATH), read_only=True)
+def ground_truth(questions: list[dict], db: Path = DB_PATH) -> dict[str, object]:
+    con = duckdb.connect(str(db), read_only=True)
     try:
         return {q["id"]: con.execute(q["sql"]).fetchone()[0] for q in questions if q["answer_type"] != "refusal"}
     finally:
@@ -60,8 +61,8 @@ def is_correct(q: dict, row: dict, truth: object) -> bool:
     return any(abs(c - e) <= tol for c in candidates)
 
 
-def load_rows(arm: str, model: str) -> dict[str, dict]:
-    path = results_path(arm, model)
+def load_rows(arm: str, model: str, name: str | None = None) -> dict[str, dict]:
+    path = results_path(arm, model, name)
     rows = {}
     if path.exists():
         for line in path.read_text(encoding="utf-8").splitlines():
@@ -71,14 +72,15 @@ def load_rows(arm: str, model: str) -> dict[str, dict]:
     return rows
 
 
-def score(model: str) -> str:
-    questions = load_questions()
-    truth = ground_truth(questions)
+def score(model: str, name: str | None = None) -> str:
+    qset = load_set(name)
+    questions = qset["questions"]
+    truth = ground_truth(questions, REPO / qset["warehouse"] if qset["warehouse"] else DB_PATH)
     answerable = [q for q in questions if q["answer_type"] != "refusal"]
     refusals = [q for q in questions if q["answer_type"] == "refusal"]
     table, detail = [], []
     for arm, label in (("governed", "Claude + governed metrics (MCP)"), ("raw", "Claude + raw tables (SQL)")):
-        rows = load_rows(arm, model)
+        rows = load_rows(arm, model, name)
         if not rows:
             continue
         ok = {q["id"]: is_correct(q, rows[q["id"]], truth.get(q["id"])) for q in questions if q["id"] in rows}
@@ -99,11 +101,13 @@ def score(model: str) -> str:
                 if isinstance(want, float):
                     want = round(want, 3)
                 detail.append(f"| {arm} | {q['id']} | {q['category']} | {got} | {want} | {'yes' if ok[q['id']] else 'no'} |")
+    where = "" if not name else (f" Data: the `{Path(qset['warehouse']).parent.parent.as_posix()}` cut, "
+                                 f"weeks {qset['weeks'][0]} to {qset['weeks'][1]}.")
     md = [
-        "# Eval results", "",
-        f"Model: `{model}`, one pass per arm, same system prompt. 42 questions have a SQL ground truth "
-        "(0.5% tolerance); 8 should be refused. Built-in tools are off, so each arm sees data only through its "
-        "MCP server.", "",
+        "# Eval results" + ("" if not name else f": {name} questions"), "",
+        f"Model: `{model}`, one pass per arm, same system prompt. {len(answerable)} questions have a SQL ground "
+        f"truth (0.5% tolerance); {len(refusals)} should be refused. Built-in tools are off, so each arm sees data "
+        f"only through its MCP server.{where}", "",
         "| Arm | Answerable correct | Correct refusals | Wrong refusals | Overall | Cost | Avg time |",
         "|---|---|---|---|---|---|---|",
         *table, "",
@@ -118,9 +122,11 @@ def score(model: str) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default=DEFAULT_MODEL)
+    ap.add_argument("--set", dest="qset", help="a question set other than the default, e.g. 2026")
     args = ap.parse_args()
-    text = score(args.model)
-    OUT.write_text(text, encoding="utf-8", newline="\n")
+    text = score(args.model, args.qset)
+    out = OUT if not args.qset else OUT.with_name(f"RESULTS_{args.qset}.md")
+    out.write_text(text, encoding="utf-8", newline="\n")
     print("\n".join(text.splitlines()[:8]))
 
 

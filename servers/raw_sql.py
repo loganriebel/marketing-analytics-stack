@@ -10,6 +10,7 @@ Run with: python -m servers.raw_sql
 
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
 from typing import Any
@@ -19,7 +20,8 @@ from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 
 REPO = Path(__file__).resolve().parents[1]
-RAW_DIR = REPO / "data" / "raw"
+# FERNHOOK_RAW_DIR points the baseline at a later data cut's raw exports.
+RAW_DIR = REPO / os.environ.get("FERNHOOK_RAW_DIR", "data/raw")
 MAX_ROWS = 500
 WRITE_WORDS = re.compile(r"\b(insert|update|delete|create|drop|alter|attach|copy|export|install|load|pragma|set|call)\b", re.I)
 

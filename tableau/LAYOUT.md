@@ -1,6 +1,6 @@
 # Tableau build plan: Fernhook marketing readout
 
-Three dashboards on Tableau Public, built from the five CSVs in `tableau/data/`. Budget: about 3.5 hours.
+Four dashboards on Tableau Public, built from the eight CSVs in `tableau/data/`. Budget: about 4.5 hours.
 
 | Block | Time |
 |---|---:|
@@ -8,9 +8,10 @@ Three dashboards on Tableau Public, built from the five CSVs in `tableau/data/`.
 | Dashboard 1, weekly performance readout | 90 min |
 | Dashboard 2, three views of the same spend | 40 min |
 | Dashboard 3, where the next dollar goes | 45 min |
+| Dashboard 4, test readout and rollout | 60 min |
 | QA against the check values, publish | 20 min |
 
-All data is synthetic. Regenerate the CSVs with `python -m tableau.export` after `python -m sim` and `dbt build` (see the root README). `pytest` checks that the committed CSVs match a fresh export and that 2025 spend, leads and won deals equal the governed MetricFlow metrics.
+All data is synthetic. Regenerate the CSVs with `python -m tableau.export` after `python -m sim` and `dbt build` (see the root README). Dashboard 4's three files also need the year-end data cut and the rollout readout (`python -m stack.run --only yearend,results`). `pytest` checks that the committed CSVs match a fresh export and that 2025 spend, leads and won deals equal the governed MetricFlow metrics.
 
 ## The data
 
@@ -25,6 +26,9 @@ Conventions in every file: ISO dates, one row per grain, flags as 1/0, blank whe
 | `mmm_channel_views.csv` | channel x view | 36 | Cost per deal four ways for the 8 channels the MMM measures, plus a paid-media total row per view (`Grain` = `paid_media_total`). |
 | `mmm_response_curves.csv` | channel x spend multiplier | 72 | Posterior-mean deals with 90% HDI at 0 to 3x each channel's actual 2023 to 2025 spend path. |
 | `mmm_optimizer_plan.csv` | channel | 9 | Current vs suggested spend at the same total, with the deal change and its HDI. 7 levers, brand search (not a lever), and a total row. |
+| `test_rollout_weekly_market.csv` | week x market | 4,180 | 209 weeks (2023 to 2026) x 20 markets from the year-end data cut: won deals, paid spend, spend for the 8 media channels, each market's spring-test cell and groups and its rollout group, and 1/0 flags for the test weeks, the test window, the rollout weeks and each readout's pre-period. |
+| `story_readouts.csv` | readout | 4 | The spring test's two arms and the rollout: measured lift with its 90% interval, the forecast made in advance with its 90% range, power, the registered decision, and the answer key's true lift (labeled). The fourth row is the model's own view of the rollout, a cross-check that decides nothing. |
+| `rollout_plan.csv` | channel | 7 | The rollout's move per channel, its spend on the stand-in weeks (June to December 2025), the May forecast with its range, and delivered spend over the media plan's budget line in the rollout weeks (rollout markets and holdout), with the move check's line. |
 
 Field notes:
 
@@ -47,6 +51,9 @@ Three data sources. Extracts are automatic on Tableau Public.
 | **Weekly** | `weekly_channel_market` (root), `controls_weekly_market` | `Week Start` = `Week Start` and `Region Id` = `Region Id` | many to one, all records match |
 | **MMM views** | `mmm_channel_views` | none | |
 | **MMM plan** | `mmm_optimizer_plan` (root), `mmm_response_curves` | `Channel Id` = `Channel Id` | one to many, some records match (the total row has no curve) |
+| **Story weekly** | `test_rollout_weekly_market` | none | |
+| **Story readouts** | `story_readouts` | none | |
+| **Rollout plan** | `rollout_plan` | none | |
 
 On connect:
 
@@ -401,7 +408,52 @@ Layout: plan BANs across the top; response curves as small multiples (full width
 
 **Caption (draft):** "At the same total spend, the plan moves money from display, non-brand search and affiliates to Meta, YouTube, CTV and LinkedIn. The MMM expects +2,664 deals (90% HDI 1,732 to 3,698); the answer key gives +4,560. Meta, YouTube, CTV and display sit at the ±50% bound, so the plan goes as far as the bounds allow, not as far as the curves would."
 
-## Check values
+## Dashboard 4: test readout and rollout
+
+Title: "What the test and the rollout showed". Subtitle: "Spring 2026 market test and the June to December rollout, each against the forecast made before it ran. Synthetic data." Fixed size 1400 x 1000.
+
+Layout: forecast-against-result strip across the top (full width); test markets against control (left) beside rollout markets against the holdout (right); the rollout's moves along the bottom.
+
+On connect: Story weekly: convert every `Is ...` flag to a dimension and alias 1/0 to Yes/No. Story readouts: sort `Readout` by its row order (spring YouTube, spring search, rollout, model view). Rollout plan: sort `Channel Name` by `Channel Sort`.
+
+### 4.1 Forecast against result (the headline sheet)
+
+- **Feeds:** Story readouts.
+- **Build:** Rows `Readout`. Columns: a dual axis. Axis 1: `Measured` (circle, `#0072B2`) and `Measure Values` (`Measured Low`, `Measured High`) as a line on Path. Axis 2: `Forecast` (circle, `#999999`) and `Forecast Low` to `Forecast High` as a thinner line, nudged down with a row offset. Synchronize. Reference line at 0. `True In Window` as a black hollow diamond, labeled "answer key".
+- **Calcs:**
+  ```
+  // Readout Label
+  [Readout] + "  |  " + [Decision]
+  // Power Label
+  IF ISNULL([Power At Forecast]) THEN "decides nothing" ELSE "power " + STR(ROUND([Power At Forecast] * 100)) + "%" END
+  ```
+- **Tooltip:** measured with interval, forecast with range, `Power Label`, and the answer key with `Answer Key Note`.
+- **Caption (draft):** "YouTube's spring lift came in above the forecast and inside its range. The search pullback showed no clear drop, at 35% power. The rollout read +464 deals (+18 to +911) against a +533 forecast. The answer key says +882: the model and the forecast ran low, the holdout covered it."
+
+### 4.2 Test markets against control
+
+- **Feeds:** Story weekly.
+- **Build:** Columns `Week Start` (continuous week). Rows `SUM([Won Deals])`. Color `Youtube Test Group` (test `#0072B2`, control `#999999`). Shade the test weeks and the window with a reference band from the test start to the window end.
+- **Calcs:**
+  ```
+  // Indexed Deals   (each group's deals over its pre-period mean, so the two lines start level)
+  SUM([Won Deals]) / WINDOW_AVG(SUM(IF [Is Test Pre Period] = 1 THEN [Won Deals] END))
+  ```
+- **Parameter:** `p.Arm` (YouTube arm, search arm) swaps the color field between `Youtube Test Group` and `Search Test Group`.
+- **Filters:** `Week Start` from 2025-02-03 to 2026-06-29.
+
+### 4.3 Rollout markets against the holdout
+
+- **Feeds:** Story weekly.
+- **Build:** same as 4.2 with color `Rollout Group` (rollout `#0072B2`, holdout `#999999`), indexed to `Is Rollout Pre Period` (the 52 weeks before the spring test). Reference band over the rollout weeks.
+- **Filters:** `Week Start` from 2025-02-03 to 2026-12-28; exclude `Rollout Group` = no rollout.
+
+### 4.4 The rollout's moves
+
+- **Feeds:** Rollout plan.
+- **Build:** Rows `Channel Name`. Columns `Change Pct` as diverging bars (grown `#0072B2`, cut `#D55E00`), label `+50%` style. Second sheet, same rows: `Forecast Deals In Window` as a circle with `Forecast Deals Low` to `Forecast Deals High` as a line. Tooltip: `Spend Proxy Weeks`, `Delivered Over Planned` against `Check Line`, and `Holdout Delivered Over Planned`.
+- **Note on the sheet:** "Delivered spend tracked the media plan in every moved channel, so every move ran, the 12% search trim included."
+
 
 With the defaults (report week 2025-12-15, 1 week, no filters):
 
@@ -424,10 +476,12 @@ Dashboard 2, paid-media CPA: CRM $2,780, platform $1,298, MMM $4,519 ($3,712 to 
 
 Dashboard 3: plan +2,664 deals mean (median 2,650, HDI 1,732 to 3,698), P(gain) 100%, answer key +4,560. Meta, YouTube and CTV +50% (cap), LinkedIn +26%, non-brand -18%, affiliates -21%, display -50% (cap). Brand search +$625,555.
 
+Dashboard 4: spring test window (2026-02-02 to 2026-05-24) YouTube test markets 3,741 won deals, control 4,403. Readouts: YouTube +463 (+246 to +679) against +334; search -79 (-328 to +170) against -190; rollout +464 (+18 to +911) against +533 (+407 to +661); model view +505. Answer key: +346, -119, +882. Rollout weeks: rollout markets 13,128 deals on $19,554,847 of paid spend, holdout 4,650 on $6,677,308. 2026 won deals 28,054.
+
 ## Publish to Tableau Public
 
 1. Build in Tableau Public (desktop, free). It connects to text files; the workbook stores the data as an extract.
-2. Hide every worksheet (each dashboard tab, Hide All Sheets). Dashboard order: 1, 2, 3.
+2. Hide every worksheet (each dashboard tab, Hide All Sheets). Dashboard order: 1, 2, 3, 4.
 3. Open Dashboard 2 last before saving. Public lands on the sheet that was open at save time and uses it for the thumbnail, and the four-way comparison is the strongest first view.
 4. File, Save to Tableau Public As. Name: "Fernhook marketing readout (synthetic)".
 5. On the published page, Edit Details:
