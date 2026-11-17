@@ -154,3 +154,11 @@ semantic_models:
         type: categorical
       - name: sales_area
         type: categorical
+      - name: market_test_cell
+        type: categorical
+      - name: youtube_test_group
+        type: categorical
+      - name: search_test_group
+        type: categorical
+      - name: rollout_group
+        type: categorical

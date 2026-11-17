@@ -1,0 +1,426 @@
+{
+  "meta": {
+    "built_by": "memo/results.py",
+    "reads": [
+      "geotest/outputs/readout.json",
+      "rollout/outputs/plan.json",
+      "rollout/outputs/results.json"
+    ],
+    "units": "USD; deals; percent (already x100); weeks; markets"
+  },
+  "facts": [
+    {
+      "id": "deals_2025",
+      "value": 25318.0,
+      "unit": "deals",
+      "kind": "input",
+      "source": "rollout/outputs/results.json",
+      "field": "year.2025.won_deals",
+      "desc": "Closed-won deals in 2025 (weeks by their Monday)"
+    },
+    {
+      "id": "paid_spend_2025",
+      "value": 43535140.43,
+      "unit": "USD",
+      "kind": "input",
+      "source": "rollout/outputs/results.json",
+      "field": "year.2025.paid_spend",
+      "desc": "Paid media spend in 2025, all 9 paid channels"
+    },
+    {
+      "id": "cost_per_deal_2025",
+      "value": 1719.5332,
+      "unit": "USD",
+      "kind": "input",
+      "source": "rollout/outputs/results.json",
+      "field": "year.2025.cost_per_deal",
+      "desc": "Blended cost per deal in 2025: paid spend / all deals"
+    },
+    {
+      "id": "deals_2026",
+      "value": 28054.0,
+      "unit": "deals",
+      "kind": "input",
+      "source": "rollout/outputs/results.json",
+      "field": "year.2026.won_deals",
+      "desc": "Closed-won deals in 2026 (weeks by their Monday)"
+    },
+    {
+      "id": "paid_spend_2026",
+      "value": 42772952.97,
+      "unit": "USD",
+      "kind": "input",
+      "source": "rollout/outputs/results.json",
+      "field": "year.2026.paid_spend",
+      "desc": "Paid media spend in 2026, all 9 paid channels"
+    },
+    {
+      "id": "cost_per_deal_2026",
+      "value": 1524.665,
+      "unit": "USD",
+      "kind": "input",
+      "source": "rollout/outputs/results.json",
+      "field": "year.2026.cost_per_deal",
+      "desc": "Blended cost per deal in 2026: paid spend / all deals"
+    },
+    {
+      "id": "won_deals_change_pct",
+      "value": 10.8065,
+      "unit": "percent",
+      "kind": "derived",
+      "source": "rollout/outputs/results.json",
+      "field": "year.change_pct.won_deals",
+      "desc": "Change in deals from 2025 to 2026. Holds everything that moved in 2026, not just marketing",
+      "how": "100 x (2026 / 2025 - 1)"
+    },
+    {
+      "id": "paid_spend_change_pct",
+      "value": -1.7507,
+      "unit": "percent",
+      "kind": "derived",
+      "source": "rollout/outputs/results.json",
+      "field": "year.change_pct.paid_spend",
+      "desc": "Change in paid spend from 2025 to 2026. Holds everything that moved in 2026, not just marketing",
+      "how": "100 x (2026 / 2025 - 1)"
+    },
+    {
+      "id": "cost_per_deal_change_pct",
+      "value": -11.3326,
+      "unit": "percent",
+      "kind": "derived",
+      "source": "rollout/outputs/results.json",
+      "field": "year.change_pct.cost_per_deal",
+      "desc": "Change in cost per deal from 2025 to 2026. Holds everything that moved in 2026, not just marketing",
+      "how": "100 x (2026 / 2025 - 1)"
+    },
+    {
+      "id": "test_weeks",
+      "value": 12.0,
+      "unit": "weeks",
+      "kind": "input",
+      "source": "geotest/outputs/readout.json",
+      "field": "window.test_weeks",
+      "desc": "Spring test length"
+    },
+    {
+      "id": "test_arm_markets",
+      "value": 10.0,
+      "unit": "markets",
+      "kind": "input",
+      "source": "geotest/outputs/readout.json",
+      "field": "arms.grow.markets",
+      "desc": "Markets in each half of the spring test"
+    },
+    {
+      "id": "test_youtube_lift",
+      "value": 462.5819,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "geotest/outputs/readout.json",
+      "field": "arms.grow.lift",
+      "desc": "Measured extra deals from the YouTube push in the spring test",
+      "low": 245.6782,
+      "high": 679.4855
+    },
+    {
+      "id": "test_youtube_forecast",
+      "value": 333.6036,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "geotest/outputs/readout.json",
+      "field": "arms.grow.forecast",
+      "desc": "The model's January forecast for the YouTube push",
+      "low": 287.4763,
+      "high": 382.1509,
+      "stat": "mean"
+    },
+    {
+      "id": "test_youtube_cost_per_deal",
+      "value": 1389.264,
+      "unit": "USD",
+      "kind": "derived",
+      "source": "geotest/outputs/readout.json",
+      "field": "secondary.grow.cost_per_extra_deal",
+      "desc": "Cost per extra deal from the YouTube push, counting the brand search that followed",
+      "low": 945.7866,
+      "high": 2615.8133,
+      "how": "extra spend / measured lift; range from the lift's interval"
+    },
+    {
+      "id": "test_youtube_model_cost_per_deal",
+      "value": 2290.9586,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "geotest/outputs/readout.json",
+      "field": "secondary.grow.mmm_marginal_cpa",
+      "desc": "The model's cost per extra deal for YouTube before the test"
+    },
+    {
+      "id": "test_search_lift",
+      "value": -79.3482,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "geotest/outputs/readout.json",
+      "field": "arms.cut.lift",
+      "desc": "Measured deal change from pulling non-brand search back (negative = lost)",
+      "low": -328.3021,
+      "high": 169.6056
+    },
+    {
+      "id": "test_search_forecast",
+      "value": -189.5997,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "geotest/outputs/readout.json",
+      "field": "arms.cut.forecast",
+      "desc": "The model's January forecast for pulling search back (negative = lost)",
+      "low": -252.1448,
+      "high": -112.8491,
+      "stat": "mean"
+    },
+    {
+      "id": "test_search_power",
+      "value": 34.7471,
+      "unit": "percent",
+      "kind": "design",
+      "source": "geotest/outputs/readout.json",
+      "field": "arms.cut.power_at_forecast",
+      "desc": "Odds the search side could see the drop the model expected: a guardrail, not a measurement"
+    },
+    {
+      "id": "test_search_saved",
+      "value": 1624941.1956,
+      "unit": "USD",
+      "kind": "input",
+      "source": "geotest/outputs/readout.json",
+      "field": "secondary.cut.spend_saved",
+      "desc": "Non-brand search spend saved during the spring test"
+    },
+    {
+      "id": "rollout_weeks",
+      "value": 31.0,
+      "unit": "weeks",
+      "kind": "design",
+      "source": "rollout/outputs/plan.json",
+      "field": "dates.weeks",
+      "desc": "Rollout length, June 1 to the end of December"
+    },
+    {
+      "id": "rollout_markets",
+      "value": 15.0,
+      "unit": "markets",
+      "kind": "design",
+      "source": "rollout/outputs/plan.json",
+      "field": "holdout.rollout_markets",
+      "desc": "Markets on the new plan"
+    },
+    {
+      "id": "holdout_markets",
+      "value": 5.0,
+      "unit": "markets",
+      "kind": "design",
+      "source": "rollout/outputs/plan.json",
+      "field": "holdout.holdout",
+      "desc": "Markets kept on the old plan all year to measure the rollout"
+    },
+    {
+      "id": "holdout_share",
+      "value": 26.8576,
+      "unit": "percent",
+      "kind": "design",
+      "source": "rollout/outputs/plan.json",
+      "field": "holdout.rollout_share_of_pre_period_deals",
+      "desc": "The holdout markets' share of deals",
+      "how": "100 x (1 - rollout share)"
+    },
+    {
+      "id": "rollout_paid_search_nonbrand_change_pct",
+      "value": -11.63,
+      "unit": "percent",
+      "kind": "design",
+      "source": "rollout/outputs/plan.json",
+      "field": "rollout.plan.multipliers.paid_search_nonbrand",
+      "desc": "non-brand search: spend change in the rollout markets",
+      "how": "100 x (multiplier - 1)"
+    },
+    {
+      "id": "rollout_meta_change_pct",
+      "value": 50.0,
+      "unit": "percent",
+      "kind": "design",
+      "source": "rollout/outputs/plan.json",
+      "field": "rollout.plan.multipliers.meta",
+      "desc": "Meta: spend change in the rollout markets",
+      "how": "100 x (multiplier - 1)"
+    },
+    {
+      "id": "rollout_linkedin_change_pct",
+      "value": 50.0,
+      "unit": "percent",
+      "kind": "design",
+      "source": "rollout/outputs/plan.json",
+      "field": "rollout.plan.multipliers.linkedin",
+      "desc": "LinkedIn: spend change in the rollout markets",
+      "how": "100 x (multiplier - 1)"
+    },
+    {
+      "id": "rollout_youtube_change_pct",
+      "value": 50.0,
+      "unit": "percent",
+      "kind": "design",
+      "source": "rollout/outputs/plan.json",
+      "field": "rollout.plan.multipliers.youtube",
+      "desc": "YouTube: spend change in the rollout markets",
+      "how": "100 x (multiplier - 1)"
+    },
+    {
+      "id": "rollout_ctv_change_pct",
+      "value": 50.0,
+      "unit": "percent",
+      "kind": "design",
+      "source": "rollout/outputs/plan.json",
+      "field": "rollout.plan.multipliers.ctv",
+      "desc": "connected TV (CTV): spend change in the rollout markets",
+      "how": "100 x (multiplier - 1)"
+    },
+    {
+      "id": "rollout_display_change_pct",
+      "value": -50.0,
+      "unit": "percent",
+      "kind": "design",
+      "source": "rollout/outputs/plan.json",
+      "field": "rollout.plan.multipliers.display",
+      "desc": "display retargeting: spend change in the rollout markets",
+      "how": "100 x (multiplier - 1)"
+    },
+    {
+      "id": "rollout_affiliates_change_pct",
+      "value": 50.0,
+      "unit": "percent",
+      "kind": "design",
+      "source": "rollout/outputs/plan.json",
+      "field": "rollout.plan.multipliers.affiliates",
+      "desc": "affiliates and partners: spend change in the rollout markets",
+      "how": "100 x (multiplier - 1)"
+    },
+    {
+      "id": "rollout_moved",
+      "value": 2089882.255,
+      "unit": "USD",
+      "kind": "derived",
+      "source": "rollout/outputs/plan.json",
+      "field": "rollout.plan.by_channel[].spend_change",
+      "desc": "Spend the plan moves from the cut channels to the grown ones over the rollout (last year's same weeks)",
+      "how": "sum of positive spend_change"
+    },
+    {
+      "id": "rollout_forecast",
+      "value": 533.405,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "rollout/outputs/plan.json",
+      "field": "holdout.forecast",
+      "desc": "The refit model's May forecast: extra deals in the rollout markets closing by year end",
+      "low": 406.754,
+      "high": 661.3805,
+      "stat": "mean"
+    },
+    {
+      "id": "rollout_power",
+      "value": 62.5972,
+      "unit": "percent",
+      "kind": "design",
+      "source": "rollout/outputs/plan.json",
+      "field": "holdout.power_at_forecast",
+      "desc": "Odds the holdout could see the forecast lift clearly, from placebo tests before the rollout"
+    },
+    {
+      "id": "rollout_bar",
+      "value": 674.5975,
+      "unit": "deals",
+      "kind": "design",
+      "source": "rollout/outputs/plan.json",
+      "field": "holdout.smallest_detectable_lift",
+      "desc": "Smallest lift the holdout can reliably see (80% power)"
+    },
+    {
+      "id": "rollout_lift",
+      "value": 464.475,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "rollout/outputs/results.json",
+      "field": "measured.lift",
+      "desc": "Measured extra deals in the rollout markets against the holdout, June to December",
+      "low": 18.2151,
+      "high": 910.7349
+    },
+    {
+      "id": "rollout_model_view",
+      "value": 504.6338,
+      "unit": "deals",
+      "kind": "estimate",
+      "source": "rollout/outputs/results.json",
+      "field": "model_view.deal_change_in_window",
+      "desc": "The refit model's own view of the realized rollout (a cross-check that decides nothing)",
+      "low": 383.4498,
+      "high": 633.2811,
+      "stat": "mean"
+    },
+    {
+      "id": "rollout_brand_search",
+      "value": 91493.2744,
+      "unit": "USD",
+      "kind": "estimate",
+      "source": "rollout/outputs/results.json",
+      "field": "secondary.brand_search_spend_change",
+      "desc": "Extra brand-search spend that followed the extra searches in the rollout markets"
+    },
+    {
+      "id": "rollout_markets_cost_per_deal",
+      "value": 1489.5527,
+      "unit": "USD",
+      "kind": "input",
+      "source": "rollout/outputs/results.json",
+      "field": "secondary.blended_cost_per_deal_in_window.rollout_markets",
+      "desc": "Blended cost per deal in the rollout markets, June to December"
+    },
+    {
+      "id": "holdout_markets_cost_per_deal",
+      "value": 1435.9804,
+      "unit": "USD",
+      "kind": "input",
+      "source": "rollout/outputs/results.json",
+      "field": "secondary.blended_cost_per_deal_in_window.holdout_markets",
+      "desc": "Blended cost per deal in the holdout markets, June to December"
+    },
+    {
+      "id": "hdi_prob",
+      "value": 90.0,
+      "unit": "percent",
+      "kind": "input",
+      "source": "rollout/outputs/plan.json",
+      "field": "holdout.rules",
+      "desc": "Every range is a 90% range"
+    }
+  ],
+  "test_readout": {
+    "youtube": "The YouTube push worked: its whole range is a gain. It came in above the model's forecast but inside its range, so it agrees with the model.",
+    "search": "Pulling non-brand search back showed no clear drop. That side was a guardrail with low odds of seeing the drop the model expected, so it does not show search does nothing. It only rules out a big hidden loss.",
+    "rules": "Neither guardrail tripped, so the rollout followed the refit model, as written down before the test."
+  },
+  "rollout": {
+    "what": "From June, the refit model's plan in the rollout markets at the same total budget: more Meta, YouTube, connected TV, LinkedIn and affiliates, less display retargeting and less non-brand search. The holdout markets, the ones in neither group of the spring test, stayed on the old plan so the rollout could be measured against them.",
+    "readout": "The rollout worked: its whole measured range is a gain.",
+    "verdict": "works",
+    "against_forecast": "agrees with the forecast",
+    "model_view": "The model's own view of the rollout is shown beside the holdout as a cross-check. It uses no outcomes and decides nothing, and the model is likely to under-credit paid media.",
+    "budget": "The rollout moved money between channels inside the same budget; it added no new spend except the brand search that follows extra searches.",
+    "totals": "The year's totals hold everything that moved in 2026: the spring test, the rollout, sales headcount, the market and the season. They describe the year; they do not measure the rollout. The holdout does."
+  },
+  "next": [
+    "Keep the rollout plan into the new year, and refit the model on the full year with the holdout result added.",
+    "Keep a smaller holdout running, because a holdout this size can only see a large effect.",
+    "Test non-brand search again with a bigger and longer pullback. It is still the biggest and least measured channel.",
+    "Hold Meta flat in a few markets through a busy season, so the model can tell Meta from the season."
+  ]
+}

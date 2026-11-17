@@ -35,8 +35,10 @@ jobs:
 
       # sim and dbt build the base world. "test" runs the world through the 2026 market
       # test and builds that cut, so the readout test can rebuild the committed readout.
+      # "yearend" runs it through December 2026 with the rollout plan, so the rollout and
+      # Tableau tests can rebuild the committed holdout readout and dashboard 4 files.
       - name: Simulate the world and build the marts
-        run: python -m stack.run --only sim,dbt,test
+        run: python -m stack.run --only sim,dbt,test,yearend
 
       - name: Tests
         run: python -m pytest tests/ -q
@@ -79,3 +81,4 @@ jobs:
           tests/test_mmm_no_truth_leak.py
           tests/test_mmm_market_lifts.py
           tests/test_geotest.py
+          tests/test_rollout_plan.py

@@ -1,0 +1,8 @@
+channel_id,channel_name,channel_group,marketing_role,channel_sort,multiplier,change_pct,spend_proxy_weeks,spend_change_proxy_weeks,forecast_deals_in_window,forecast_deals_low,forecast_deals_high,brand_search_spend_change,delivered_over_planned,check_line,holdout_delivered_over_planned,move_shows
+paid_search_nonbrand,Paid Search Non-Brand,search,performance,2,0.8837,-11.63,9778992.27,-1137296.801,-65.7279,-95.4708,-36.0034,,1.0035,1.0638,1.0044,1
+meta,Meta,paid_social,brand,3,1.5,50.0,1624591.58,812295.79,289.2821,205.3813,372.4518,27382.4115,0.9948,0.8165,0.9935,1
+linkedin,LinkedIn,paid_social,brand,4,1.5,50.0,507262.3,253631.15,40.3196,0.2165,83.3121,,1.0143,0.8165,1.0143,1
+youtube,YouTube,video,brand,5,1.5,50.0,917331.75,458665.875,174.1594,116.3794,227.0585,17554.1169,0.9697,0.8165,0.9705,1
+ctv,Connected TV,ctv,brand,6,1.5,50.0,461213.03,230606.515,91.0273,78.0393,101.9129,19498.0333,0.9899,0.8165,0.9993,1
+display,Display Retargeting,display,performance,7,0.5,-50.0,1904196.24,-952098.12,-25.2044,-57.8134,-0.0066,,1.0103,1.4142,1.0103,1
+affiliates,Affiliates and Partners,partners,performance,8,1.5,50.0,669365.85,334682.925,29.5487,0.076,67.0132,,1.0159,0.8165,1.0157,1

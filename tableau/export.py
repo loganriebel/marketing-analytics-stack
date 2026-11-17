@@ -9,6 +9,11 @@ Tableau Public cannot read DuckDB, so CSVs are the hand-off. Inputs:
   columns. mmm/grade.py stays the only reader of the simulator's answer key.
 * tableau/metro_centroids.csv: public longitudes of each market's main city
   (dim_region carries latitude only).
+* For dashboard 4 (the spring test and the rollout): the year-end data cut
+  (data/cut_2027-01-03/data/warehouse.duckdb, marts only), the test readout
+  (geotest/outputs/readout.json), the rollout plan and its holdout readout
+  (rollout/outputs/), and the grader's 2026 results (mmm/grading/grade_2026.json)
+  for the answer-key columns. Skipped, with a note, until the year-end cut exists.
 
 Writes tableau/data/*.csv: ISO dates, one row per grain, numbers as numbers,
 flags as 1/0, blank where a value does not exist (CPA with no deals, clicks a
@@ -31,6 +36,9 @@ REPO = HERE.parent
 WAREHOUSE = REPO / "data" / "warehouse.duckdb"
 MMM_OUTPUTS = REPO / "mmm" / "outputs"
 MMM_GRADING = REPO / "mmm" / "grading"
+YEAR_END = REPO / "data" / "cut_2027-01-03" / "data" / "warehouse.duckdb"
+READOUT = REPO / "geotest" / "outputs" / "readout.json"
+ROLLOUT = REPO / "rollout" / "outputs"
 CENTROIDS = HERE / "metro_centroids.csv"
 OUT_DIR = HERE / "data"
 
@@ -335,6 +343,135 @@ def mmm_optimizer_plan(dims: pd.DataFrame, optimizer: dict, mmm: dict, grade: di
     return df.sort_values(["channel_sort"], kind="stable").reset_index(drop=True)
 
 
+TEST_WEEKLY_SQL = """
+select
+    f.week_start,
+    r.region_id,
+    r.region_name as market,
+    r.sales_area,
+    r.target_accounts,
+    r.market_test_cell,
+    r.youtube_test_group,
+    r.search_test_group,
+    r.rollout_group,
+    f.won_deals,
+    coalesce(s.paid_spend, 0) as paid_spend,
+    coalesce(s.youtube, 0) as spend_youtube,
+    coalesce(s.paid_search_nonbrand, 0) as spend_paid_search_nonbrand,
+    coalesce(s.paid_search_brand, 0) as spend_paid_search_brand,
+    coalesce(s.meta, 0) as spend_meta,
+    coalesce(s.linkedin, 0) as spend_linkedin,
+    coalesce(s.ctv, 0) as spend_ctv,
+    coalesce(s.display, 0) as spend_display,
+    coalesce(s.affiliates, 0) as spend_affiliates
+from (select week_start, region_id, sum(won_deals) as won_deals from fct_funnel group by 1, 2) as f
+inner join dim_region as r on f.region_id = r.region_id
+left join (
+    select
+        week_start, region_id,
+        sum(spend)::double as paid_spend,
+        sum(case when channel_id = 'youtube' then spend end)::double as youtube,
+        sum(case when channel_id = 'paid_search_nonbrand' then spend end)::double as paid_search_nonbrand,
+        sum(case when channel_id = 'paid_search_brand' then spend end)::double as paid_search_brand,
+        sum(case when channel_id = 'meta' then spend end)::double as meta,
+        sum(case when channel_id = 'linkedin' then spend end)::double as linkedin,
+        sum(case when channel_id = 'ctv' then spend end)::double as ctv,
+        sum(case when channel_id = 'display' then spend end)::double as display,
+        sum(case when channel_id = 'affiliates' then spend end)::double as affiliates
+    from fct_channel_weekly
+    group by 1, 2
+) as s on f.week_start = s.week_start and f.region_id = s.region_id
+order by f.week_start, r.region_id
+"""
+
+
+def test_rollout_weekly_market(con: duckdb.DuckDBPyConnection, readout: dict, plan: dict) -> pd.DataFrame:
+    """Week x market from the year-end cut, with each market's test cell and rollout group and
+    each week's period: test weeks, the test's readout window, the rollout weeks, and the
+    pre-periods each readout scales by."""
+    df = _iso(con.sql(TEST_WEEKLY_SQL).df())
+    w, h = readout["window"], plan["holdout"]
+    wk = df["week_start"]
+    first_test = pd.Timestamp(w["test_start"])
+    df["is_test_week"] = wk.between(w["test_start"], w["test_end"]).astype(int)
+    df["is_test_window"] = wk.between(w["window_start"], w["window_end"]).astype(int)
+    df["is_test_pre_period"] = wk.between(str((first_test - pd.Timedelta(weeks=w["pre_period_weeks"])).date()),
+                                          str((first_test - pd.Timedelta(days=1)).date())).astype(int)
+    df["is_rollout_week"] = wk.between(*h["window"]).astype(int)
+    df["is_rollout_pre_period"] = wk.between(*h["pre_period"]).astype(int)
+    money = [c for c in df.columns if c == "paid_spend" or c.startswith("spend_")]
+    df[money] = df[money].round(2)
+    return df.reset_index(drop=True)
+
+
+def _readout_row(what: str, window: list, measured: dict, forecast: dict, power: float, decision: str,
+                 truth: dict | None) -> dict:
+    return {"readout": what, "window_start": window[0], "window_end": window[1],
+            "measured": measured["value"], "measured_low": measured["low"], "measured_high": measured["high"],
+            "forecast": forecast["value"], "forecast_low": forecast["low"], "forecast_high": forecast["high"],
+            "power_at_forecast": power, "decision": decision,
+            "true_in_window": None if truth is None else truth["true_in_window"],
+            "answer_key_note": ANSWER_KEY_NOTE if truth is not None else None}
+
+
+def story_readouts(readout: dict, plan: dict, results: dict, grade: dict | None) -> pd.DataFrame:
+    """One row per readout: the spring test's two arms and the rollout, measured against forecast."""
+    w, d = readout["window"], readout["decision"]
+    rows = []
+    for key, what, decision in (("grow", "Spring test: YouTube push", f"YouTube works; {d['rule_2_grow']}"),
+                                ("cut", "Spring test: non-brand search pullback",
+                                 f"No clear drop; {d['rule_2_cut']}")):
+        a = readout["arms"][key]
+        rows.append(_readout_row(
+            what, [w["window_start"], w["window_end"]],
+            {"value": a["lift"], "low": a["interval_90"][0], "high": a["interval_90"][1]},
+            {"value": a["forecast"]["lift_mean"], "low": a["forecast"]["hdi_90"][0],
+             "high": a["forecast"]["hdi_90"][1]},
+            a["power_at_forecast"], decision, (grade or {}).get("test", {}).get(key)))
+    m, f, h = results["measured"], plan["holdout"]["forecast"], plan["holdout"]
+    rd = results["decision"]
+    verdict = "works" if rd["rule_1_rollout_works"] else ("clear drop" if rd["rule_3_drop_is_clear"] else "not clear")
+    rows.append(_readout_row(
+        "Rollout: 15 markets against the 5 held out", h["window"],
+        {"value": m["lift"], "low": m["interval_90"][0], "high": m["interval_90"][1]},
+        {"value": f["mean"], "low": f["hdi_90"][0], "high": f["hdi_90"][1]},
+        h["power_at_forecast"], f"{verdict}; {rd['rule_2_against_forecast']}", (grade or {}).get("rollout")))
+    mv = results.get("model_view")
+    if mv:
+        dv = mv["deal_change_in_window"]
+        rows.append(_readout_row("Rollout: the model's own view (cross-check)", h["window"],
+                                 {"value": dv["mean"], "low": dv["hdi_90"][0], "high": dv["hdi_90"][1]},
+                                 {"value": f["mean"], "low": f["hdi_90"][0], "high": f["hdi_90"][1]},
+                                 None, "decides nothing", (grade or {}).get("rollout")))
+    df = pd.DataFrame(rows)
+    num = [c for c in df.columns if c.startswith(("measured", "forecast", "true_"))]
+    df[num] = df[num].astype(float).round(2)
+    df["power_at_forecast"] = df["power_at_forecast"].astype(float).round(4)
+    return df
+
+
+def rollout_plan(dims: pd.DataFrame, plan: dict, results: dict) -> pd.DataFrame:
+    """Per channel: the rollout's move, its spend on last year's same weeks, the May forecast,
+    and delivered spend against the media plan over the rollout weeks (the move check)."""
+    real = results["validity"]["moves"]["channels"]
+    rows = []
+    for r in plan["rollout"]["plan"]["by_channel"]:
+        c = r["channel"]
+        dc = r["deal_change_in_window"]
+        rows.append({**_dims(dims, c), "multiplier": r["multiplier"], "change_pct": 100 * (r["multiplier"] - 1),
+                     "spend_proxy_weeks": r["spend_now"], "spend_change_proxy_weeks": r["spend_change"],
+                     "forecast_deals_in_window": dc["mean"], "forecast_deals_low": dc["hdi_90"][0],
+                     "forecast_deals_high": dc["hdi_90"][1],
+                     "brand_search_spend_change": r.get("brand_search_spend_change"),
+                     "delivered_over_planned": real[c]["rollout_ratio"], "check_line": real[c]["rollout_line"],
+                     "holdout_delivered_over_planned": real[c]["holdout_ratio"],
+                     "move_shows": int(real[c]["move_shows"])})
+    df = pd.DataFrame(rows)
+    num = [c for c in df.columns if df[c].dtype.kind == "f"]
+    df[num] = df[num].round(4)
+    return df.sort_values("channel_sort", kind="stable").reset_index(drop=True)
+
+
 def write(df: pd.DataFrame, path: Path) -> None:
     df.to_csv(path, index=False, lineterminator="\n")
     print(f"{path.name:<30} {len(df):>7,} rows")
@@ -366,6 +503,21 @@ def main(argv: list[str] | None = None) -> int:
     write(mmm_channel_views(dims, mmm, baselines, grade), out / "mmm_channel_views.csv")
     write(mmm_response_curves(dims, optimizer), out / "mmm_response_curves.csv")
     write(mmm_optimizer_plan(dims, optimizer, mmm, grade), out / "mmm_optimizer_plan.csv")
+
+    if not (YEAR_END.exists() and (ROLLOUT / "results.json").exists()):
+        print("dashboard 4 skipped: run the yearend and results stages first")
+        return 0
+    readout, plan, results = _json(READOUT), _json(ROLLOUT / "plan.json"), _json(ROLLOUT / "results.json")
+    grade26 = MMM_GRADING / "grade_2026.json"
+    con = duckdb.connect(str(YEAR_END), read_only=True)
+    try:
+        weekly26 = test_rollout_weekly_market(con, readout, plan)
+    finally:
+        con.close()
+    write(weekly26, out / "test_rollout_weekly_market.csv")
+    write(story_readouts(readout, plan, results, _json(grade26) if grade26.exists() else None),
+          out / "story_readouts.csv")
+    write(rollout_plan(dims, plan, results), out / "rollout_plan.csv")
     return 0
 
 

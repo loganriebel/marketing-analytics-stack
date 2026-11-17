@@ -1,0 +1,39 @@
+{
+  "model": "claude-sonnet-5-5",
+  "attempts": [
+    {
+      "attempt": 1,
+      "cost_usd": 0.1515684,
+      "seconds": 38.3,
+      "models_used": [
+        "claude-sonnet-5-5"
+      ],
+      "grounding_score": 1.0,
+      "unmatched": [],
+      "style": [
+        {
+          "line": 0,
+          "text": "466 words above the appendix; aim for 230 to 450"
+        },
+        {
+          "line": 0,
+          "text": "19 numbers above the appendix; at most 16"
+        }
+      ]
+    },
+    {
+      "attempt": 2,
+      "cost_usd": 0.1282224,
+      "seconds": 23.4,
+      "models_used": [
+        "claude-sonnet-5-5"
+      ],
+      "grounding_score": 1.0,
+      "unmatched": [],
+      "style": []
+    }
+  ],
+  "grounding_pass": true,
+  "style_pass": true,
+  "words": 578
+}

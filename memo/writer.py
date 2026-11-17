@@ -1,7 +1,8 @@
-"""Write the CFO proposal memo with headless Claude, from the facts pack only.
+"""Write a CFO memo with headless Claude, from its facts pack only.
 
-    python -m memo                               # facts, memo, grounding
+    python -m memo                               # the proposal memo: facts, chart, memo, grounding
     python -m memo --model claude-sonnet-5-5 --retries 2
+    python -m memo --memo results                # the January 2027 results memo (memo/results.py)
 
 Builds memo/outputs/facts.json and the chart, asks `claude -p` for the memo with every built-in
 tool off and no MCP servers, from an empty folder, so the facts pack in the
@@ -17,7 +18,9 @@ import json
 import subprocess
 import tempfile
 import time
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 
 from . import chart
 from . import facts as F
@@ -67,6 +70,39 @@ Style.
 - Output only the memo in Markdown. No preamble, no closing note."""
 
 
+@dataclass(frozen=True)
+class Spec:
+    """One memo: its prompt, its form, its facts pack and chart, and where its files go."""
+    name: str
+    system: str
+    sections: list[str]
+    chart_line: str
+    chart_section: str
+    memo_path: Path
+    facts_path: Path
+    grounding_path: Path
+    log_path: Path
+    build: Callable[[], dict]
+    draw: Callable[[dict], object]
+    headline_max: int = HEADLINE_MAX_NUMBERS
+    body_words: tuple[int, int] = BODY_WORDS
+    body_max_numbers: int = BODY_MAX_NUMBERS
+    appendix_max_words: int = APPENDIX_MAX_WORDS
+
+
+PROPOSAL = Spec("proposal", SYSTEM, SECTIONS, CHART_LINE, "What we found", G.MEMO_PATH, F.FACTS_PATH,
+                G.GROUNDING_PATH, WRITER_LOG, F.write, chart.draw)
+
+
+def spec(name: str) -> Spec:
+    if name == "proposal":
+        return PROPOSAL
+    if name == "results":
+        from .results import RESULTS
+        return RESULTS
+    raise ValueError(f"unknown memo {name!r}")
+
+
 def _prompt(pack: dict, previous: str | None = None, failures: list[dict] | None = None) -> str:
     body = "Facts pack:\n```json\n" + json.dumps(pack, indent=1) + "\n```\n\n"
     if previous is None:
@@ -89,21 +125,21 @@ def _sections(text: str) -> dict[str, tuple[int, int]]:
     return out
 
 
-def style_problems(text: str) -> list[dict]:
+def style_problems(text: str, sp: Spec = PROPOSAL) -> list[dict]:
     """The form the prompt asks for, as far as a script can see it."""
     lines = text.splitlines()
     out = [{"line": i, "text": "em or en dash"} for i, ln in enumerate(lines, 1) if "—" in ln or "–" in ln]
     secs = _sections(text)
-    if list(secs) != SECTIONS:
-        out.append({"line": 0, "text": f"sections must be exactly {SECTIONS}, got {list(secs)}"})
+    if list(secs) != sp.sections:
+        out.append({"line": 0, "text": f"sections must be exactly {sp.sections}, got {list(secs)}"})
         return out
     if not lines or not lines[0].startswith("# "):
         out.append({"line": 1, "text": "the first line must be the # headline"})
     items, _ = G.extract(text)
     head_n = sum(1 for it in items if it["line"] == 1)
-    if head_n > HEADLINE_MAX_NUMBERS:
-        out.append({"line": 1, "text": f"headline has {head_n} numbers; at most {HEADLINE_MAX_NUMBERS}"})
-    app = secs[SECTIONS[-1]][0]
+    if head_n > sp.headline_max:
+        out.append({"line": 1, "text": f"headline has {head_n} numbers; at most {sp.headline_max}"})
+    app = secs[sp.sections[-1]][0]
     for it in items:
         if it["kind"] == "range" and it["line"] < app:
             out.append({"line": it["line"], "text": f"range {it['text']!r} above the appendix; move it there"})
@@ -112,31 +148,33 @@ def style_problems(text: str) -> list[dict]:
             if not ln.strip().startswith("!["):
                 out.append({"line": i, "text": "range wording above the appendix"})
     charts = [i for i, ln in enumerate(lines, 1) if ln.strip().startswith("![")]
-    found = secs["What we found"]
-    if len(charts) != 1 or lines[charts[0] - 1].strip() != CHART_LINE or not found[0] < charts[0] <= found[1]:
-        out.append({"line": 0, "text": f"exactly one chart line, as given, at the end of What we found: {CHART_LINE}"})
+    found = secs[sp.chart_section]
+    if len(charts) != 1 or lines[charts[0] - 1].strip() != sp.chart_line or not found[0] < charts[0] <= found[1]:
+        out.append({"line": 0, "text": f"exactly one chart line, as given, at the end of {sp.chart_section}: "
+                                       f"{sp.chart_line}"})
     body = "\n".join(ln for ln in lines[:app - 1] if not ln.strip().startswith("!["))
     words, n_body = len(body.split()), sum(1 for it in items if it["line"] < app)
-    if not BODY_WORDS[0] <= words <= BODY_WORDS[1]:
-        out.append({"line": 0, "text": f"{words} words above the appendix; aim for {BODY_WORDS[0]} to {BODY_WORDS[1]}"})
-    if n_body > BODY_MAX_NUMBERS:
-        out.append({"line": 0, "text": f"{n_body} numbers above the appendix; at most {BODY_MAX_NUMBERS}"})
+    lo, hi = sp.body_words
+    if not lo <= words <= hi:
+        out.append({"line": 0, "text": f"{words} words above the appendix; aim for {lo} to {hi}"})
+    if n_body > sp.body_max_numbers:
+        out.append({"line": 0, "text": f"{n_body} numbers above the appendix; at most {sp.body_max_numbers}"})
     app_words = len(" ".join(lines[app:]).split())
-    if app_words > APPENDIX_MAX_WORDS:
-        out.append({"line": app, "text": f"appendix has {app_words} words; at most {APPENDIX_MAX_WORDS}"})
+    if app_words > sp.appendix_max_words:
+        out.append({"line": app, "text": f"appendix has {app_words} words; at most {sp.appendix_max_words}"})
     return out
 
 
-def command(model: str) -> list[str]:
+def command(model: str, system: str = SYSTEM) -> list[str]:
     return ["claude", "-p", "--output-format", "json", "--model", model, "--tools", "", "--strict-mcp-config",
-            "--setting-sources", "", "--append-system-prompt", SYSTEM, "--max-turns", "1",
+            "--setting-sources", "", "--append-system-prompt", system, "--max-turns", "1",
             "--no-session-persistence"]
 
 
-def ask(prompt: str, model: str, timeout: int) -> dict:
+def ask(prompt: str, model: str, timeout: int, system: str = SYSTEM) -> dict:
     with tempfile.TemporaryDirectory(prefix="fernhook_memo_") as tmp:
         started = time.time()
-        proc = subprocess.run(command(model), input=prompt, cwd=tmp, capture_output=True, text=True,
+        proc = subprocess.run(command(model, system), input=prompt, cwd=tmp, capture_output=True, text=True,
                               encoding="utf-8", timeout=timeout, shell=False)
     out = json.loads(proc.stdout)
     if out.get("is_error"):
@@ -150,18 +188,20 @@ def main(argv=None) -> int:
     ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--retries", type=int, default=2, help="rewrites allowed after a failed grounding check")
     ap.add_argument("--timeout", type=int, default=600, help="seconds per Claude call")
+    ap.add_argument("--memo", choices=["proposal", "results"], default="proposal", help="which memo to write")
     args = ap.parse_args(argv)
+    sp = spec(args.memo)
 
-    pack = F.write()
-    print(f"facts: {len(pack['facts'])} in {F.FACTS_PATH.relative_to(F.REPO).as_posix()}")
-    chart.draw(pack)
+    pack = sp.build()
+    print(f"facts: {len(pack['facts'])} in {sp.facts_path.relative_to(F.REPO).as_posix()}")
+    sp.draw(pack)
     attempts, text, problems = [], None, None
     for n in range(args.retries + 1):
-        reply = ask(_prompt(pack, text, problems), args.model, args.timeout)
+        reply = ask(_prompt(pack, text, problems), args.model, args.timeout, sp.system)
         text = reply["text"]
-        G.MEMO_PATH.write_text(text, encoding="utf-8", newline="\n")
-        result = G.run()
-        style = style_problems(text)
+        sp.memo_path.write_text(text, encoding="utf-8", newline="\n")
+        result = G.run(sp.memo_path, sp.facts_path, sp.grounding_path)
+        style = style_problems(text, sp)
         problems = [{"line": u["line"], "text": f"{u['text']!r} in: {u['context']}"}
                     for u in result["unmatched"]] + style
         attempts.append({"attempt": n + 1, **{k: reply[k] for k in ("cost_usd", "seconds", "models_used")},
@@ -171,7 +211,7 @@ def main(argv=None) -> int:
             break
     log = {"model": args.model, "attempts": attempts, "grounding_pass": result["pass"],
            "style_pass": not style, "words": len(text.split())}
-    WRITER_LOG.write_text(json.dumps(log, indent=2) + "\n", encoding="utf-8", newline="\n")
+    sp.log_path.write_text(json.dumps(log, indent=2) + "\n", encoding="utf-8", newline="\n")
     return 0 if result["pass"] and not style else 1
 
 

@@ -66,29 +66,38 @@ def test_the_data_cut_matches_the_readout_snapshot():
     assert (REPO / R.TEST_PLAN).exists()
 
 
+def test_the_year_end_cut_matches_the_rollout_readout_snapshot():
+    plan = json.loads((REPO / "rollout" / "outputs" / "plan.json").read_text(encoding="utf-8"))
+    assert R.YEAR_END_DATE == plan["holdout"]["readout_snapshot"]
+    assert (REPO / R.ROLLOUT_PLAN).exists()
+
+
 def test_inputs_named_on_the_command_line_are_committed():
-    for path in ("geotest/outputs/readout.json", "mmm/grading/grade_holdout.json", R.TEST_PLAN):
+    for path in ("geotest/outputs/readout.json", "mmm/grading/grade_holdout.json", R.TEST_PLAN, R.ROLLOUT_PLAN,
+                 "evals/questions_2026.yml"):
         assert (REPO / path).exists(), path
 
 
 def test_chain_order():
     assert R.NAMES == ("sim", "dbt", "eda", "evals", "mmm", "design", "memo", "test", "readout",
-                       "refit", "tableau")
+                       "refit", "rollout", "yearend", "results", "results_memo", "evals_2026", "tableau")
 
 
 def test_evals_are_opt_in():
     names = lambda stages: [s.name for s in stages]
-    assert "evals" not in names(R.select(None, None, with_evals=False))
+    assert not {"evals", "evals_2026"} & set(names(R.select(None, None, with_evals=False)))
     assert names(R.select(None, None, with_evals=True)) == list(R.NAMES)
     assert "evals" not in names(R.select(None, "dbt", with_evals=False))
-    with pytest.raises(SystemExit, match="--with-evals"):
-        R.select(["evals"], None, with_evals=False)
+    for stage in ("evals", "evals_2026"):
+        with pytest.raises(SystemExit, match="--with-evals"):
+            R.select([stage], None, with_evals=False)
     assert names(R.select(["evals"], None, with_evals=True)) == ["evals"]
 
 
 def test_only_and_from():
     assert [s.name for s in R.select(["tableau", "sim"], None, False)] == ["sim", "tableau"]
-    assert [s.name for s in R.select(None, "readout", False)] == ["readout", "refit", "tableau"]
+    assert [s.name for s in R.select(None, "readout", False)] == ["readout", "refit", "rollout", "yearend",
+                                                                   "results", "results_memo", "tableau"]
     with pytest.raises(SystemExit, match="Unknown"):
         R.select(["nope"], None, False)
     with pytest.raises(SystemExit, match="not both"):

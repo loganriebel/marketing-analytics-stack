@@ -41,3 +41,12 @@ sources:
         description: Marketing's log of budget changes made between annual plans.
       - name: fleet_activity_index_weekly
         description: Weekly commercial fleet activity index, a market-demand signal.
+      - name: market_tests
+        description: >
+          The market test registry: one row per test arm, market and planned move, with the test's
+          dates. Empty until a test is registered.
+      - name: media_plan_weekly
+        description: >
+          The media plan from the planning tool: each planned channel's weekly buying line by market,
+          the plan's moves applied. Delivered spend differs from it by the platforms' weekly swing. Brand search follows searches and webinars are events, so neither
+          is planned here. Empty before the 2026 plan.

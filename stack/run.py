@@ -24,6 +24,10 @@ REPO = Path(__file__).resolve().parents[1]
 CUT_DATE = "2026-05-31"
 CUT_DIR = f"data/cut_{CUT_DATE}"
 TEST_PLAN = "plans/2026_test.yaml"
+# Must equal holdout.readout_snapshot in rollout/outputs/plan.json (tests/test_stack.py checks).
+YEAR_END_DATE = "2027-01-03"
+YEAR_END_DIR = f"data/cut_{YEAR_END_DATE}"
+ROLLOUT_PLAN = "plans/2026_rollout.yaml"
 
 
 @dataclass(frozen=True)
@@ -83,6 +87,26 @@ STAGES: tuple[Stage, ...] = (
                         ("MMM_OUTPUT_DIR", "mmm/outputs/refit"))),
            py("mmm", "mmm.grade", "--outputs", "mmm/outputs/refit",
               "--compare", "mmm/grading/grade_holdout.json"))),
+    Stage("rollout", "Plan the June to December rollout from the refit MMM, and register its holdout "
+                     "readout. About 6 minutes.",
+          (py("mmm", "rollout.plan"),)),
+    Stage("yearend", "Run the world through December 2026 with the test and rollout plans, then build that "
+                     "data cut's marts.",
+          (py("main", "sim", "--through", YEAR_END_DATE, "--plan", TEST_PLAN, "--plan", ROLLOUT_PLAN,
+              "--out", YEAR_END_DIR),
+           dbt("build", "--project-dir", "../../warehouse", "--profiles-dir", "../../warehouse",
+               "--no-partial-parse", "--target-path", f"../{YEAR_END_DIR}/target", cwd=YEAR_END_DIR))),
+    Stage("results", "Read out the rollout's holdout as registered, set the model's view beside it, then "
+                     "grade the 2026 test and rollout against the answer key. About 5 minutes.",
+          (py("main", "rollout.results"), py("mmm", "rollout.crosscheck"), py("main", "rollout.results"),
+           py("mmm", "mmm.grade", "--year-2026"))),
+    Stage("results_memo", "Write the January 2027 results memo and check that every number is grounded. "
+                          "Calls the claude CLI, about $0.30 a draft.",
+          (py("main", "memo", "--memo", "results", "--retries", "4"),)),
+    Stage("evals_2026", "Ask Claude the 2026 test and rollout questions two ways, on the year-end data cut, "
+                        "and score them. Costs about $1.50. Opt in with --with-evals.",
+          (py("main", "evals.run", "--arm", "both", "--set", "2026"), py("main", "evals.score", "--set", "2026")),
+          opt_in=True),
     Stage("tableau", "Export the CSVs behind the Tableau dashboards.",
           (py("main", "tableau.export"),)),
 )
@@ -108,7 +132,7 @@ def select(only: list[str] | None, start: str | None, with_evals: bool) -> list[
         unknown = sorted(set(only) - set(NAMES))
         if unknown:
             raise SystemExit(f"Unknown stage(s): {', '.join(unknown)}. Stages: {', '.join(NAMES)}.")
-        if "evals" in only and not with_evals:
+        if any(s.opt_in and s.name in only for s in STAGES) and not with_evals:
             raise SystemExit("The evals cost about $7 in Claude usage. Add --with-evals to run them.")
         chosen = [s for s in STAGES if s.name in only]
     elif start:

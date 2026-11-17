@@ -9,6 +9,10 @@ resumes where it stopped. Claude runs from an empty folder with every
 built-in tool off, so the MCP server is its only way to see data.
 
   python -m evals.run --arm both --model claude-sonnet-5-5
+  python -m evals.run --arm both --set 2026     # the 2026 test and rollout questions
+
+A question set other than the default (evals/questions_<set>.yml) names its own data cut:
+both MCP servers read that cut, and its answers go to <arm>__<model>__<set>.jsonl.
 """
 
 from __future__ import annotations
@@ -27,6 +31,7 @@ import yaml
 
 REPO = Path(__file__).resolve().parents[1]
 QUESTIONS = REPO / "evals" / "questions.yml"
+BASE_WEEKS = ("2023-01-02", "2025-12-22")
 RESULTS_DIR = REPO / "evals" / "results"
 DEFAULT_MODEL = "claude-sonnet-5-5"
 
@@ -39,7 +44,7 @@ ARMS = {
 
 SYSTEM = """You are a marketing analyst at Fernhook Software, a B2B software company. Answer the question using only your tools.
 House rules:
-- Weekly data runs from the week of 2023-01-02 through the week of 2025-12-22.
+- Weekly data runs from the week of {first} through the week of {last}.
 - A week belongs to the month, quarter and year that contain its Monday.
 - Spend and revenue are in USD.
 - If your tools and data cannot answer the question, or would need a definition you do not have, say so instead of estimating.
@@ -50,12 +55,34 @@ Write percentages as numbers like 12.5 for 12.5%. Do not put units, commas or cu
 ANSWER_RE = re.compile(r"\{[^{}]*\"answer\"[^{}]*\}", re.S)
 
 
-def load_questions() -> list[dict]:
-    return yaml.safe_load(QUESTIONS.read_text(encoding="utf-8"))["questions"]
+def load_set(name: str | None = None) -> dict:
+    """A question set: its questions, and for a later data cut its warehouse, raw folder and weeks."""
+    path = QUESTIONS if not name else REPO / "evals" / f"questions_{name}.yml"
+    d = yaml.safe_load(path.read_text(encoding="utf-8"))
+    return {"name": name, "questions": d["questions"], "warehouse": d.get("warehouse"),
+            "raw_dir": d.get("raw_dir"), "weeks": tuple(str(w) for w in d.get("weeks", BASE_WEEKS))}
 
 
-def results_path(arm: str, model: str) -> Path:
-    return RESULTS_DIR / f"{arm}__{model}.jsonl"
+def load_questions(name: str | None = None) -> list[dict]:
+    return load_set(name)["questions"]
+
+
+def results_path(arm: str, model: str, name: str | None = None) -> Path:
+    return RESULTS_DIR / (f"{arm}__{model}.jsonl" if not name else f"{arm}__{model}__{name}.jsonl")
+
+
+def system_prompt(qset: dict) -> str:
+    return SYSTEM.replace("{first}", qset["weeks"][0]).replace("{last}", qset["weeks"][1])
+
+
+def server_env(qset: dict) -> dict[str, str]:
+    """Point both MCP servers at the set's data cut (paths relative to the repo root)."""
+    env = {}
+    if qset.get("warehouse"):
+        env["FERNHOOK_WAREHOUSE"] = qset["warehouse"]
+    if qset.get("raw_dir"):
+        env["FERNHOOK_RAW_DIR"] = qset["raw_dir"]
+    return env
 
 
 def done_ids(path: Path) -> set[str]:
@@ -80,16 +107,19 @@ def parse_answer(text: str) -> tuple[object, bool | None]:
     return obj.get("answer"), bool(obj.get("refused"))
 
 
-def ask(question: str, arm: str, model: str, workdir: Path, timeout: int) -> dict:
+def ask(question: str, arm: str, model: str, workdir: Path, timeout: int, qset: dict | None = None) -> dict:
     spec = ARMS[arm]
+    qset = qset or load_set()
     cfg = {"mcpServers": {spec["server"]: {
-        "command": sys.executable, "args": ["-m", spec["module"]], "env": {"PYTHONPATH": str(REPO)}}}}
+        "command": sys.executable, "args": ["-m", spec["module"]],
+        "env": {"PYTHONPATH": str(REPO), **server_env(qset)}}}}
     cfg_path = workdir / f"mcp_{arm}.json"
     cfg_path.write_text(json.dumps(cfg), encoding="utf-8")
     cmd = ["claude", "-p", question, "--output-format", "json", "--model", model,
            "--tools", "", "--strict-mcp-config", "--mcp-config", str(cfg_path),
            "--allowedTools", ",".join(spec["tools"]), "--setting-sources", "",
-           "--append-system-prompt", SYSTEM, "--max-turns", "20", "--no-session-persistence"]
+           "--append-system-prompt", system_prompt(qset),
+           "--max-turns", "20", "--no-session-persistence"]
     # Load MCP tools up front; with tool search on, they stay deferred behind ToolSearch,
     # which --tools "" removes, so Claude would see no tools at all.
     env = {**os.environ, "ENABLE_TOOL_SEARCH": "false"}
@@ -117,9 +147,11 @@ def main() -> None:
     ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--ids", help="comma-separated question ids, e.g. q01,q43")
     ap.add_argument("--timeout", type=int, default=900, help="seconds per question")
+    ap.add_argument("--set", dest="qset", help="a question set other than the default, e.g. 2026")
     args = ap.parse_args()
 
-    questions = load_questions()
+    qset = load_set(args.qset)
+    questions = qset["questions"]
     if args.ids:
         wanted = set(args.ids.split(","))
         questions = [q for q in questions if q["id"] in wanted]
@@ -129,13 +161,13 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="fernhook_eval_") as tmp:
         workdir = Path(tmp)
         for arm in arms:
-            path = results_path(arm, args.model)
+            path = results_path(arm, args.model, args.qset)
             skip = done_ids(path)
             todo = [q for q in questions if q["id"] not in skip]
             print(f"[{arm}] {len(skip)} already answered, {len(todo)} to go", flush=True)
             for q in todo:
                 try:
-                    row = ask(q["question"], arm, args.model, workdir, args.timeout)
+                    row = ask(q["question"], arm, args.model, workdir, args.timeout, qset)
                 except subprocess.TimeoutExpired:
                     row = {"error": f"timeout after {args.timeout}s"}
                 row = {"id": q["id"], "arm": arm, "model": args.model, **row}
