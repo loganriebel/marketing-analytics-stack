@@ -325,6 +325,33 @@ models:
                 min_value: -100
                 max_value: 200
 
+  - name: stg_market_tests
+    description: One row per registered test arm, market and channel move.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [test_id, arm_id, region_id, channel_id]
+    columns:
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_regions')
+                field: region_id
+      - name: channel_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('channels')
+                field: channel_id
+      - name: move
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [multiplier, add_per_week_per_size]
+
   - name: stg_fleet_activity_index
     description: One row per week.
     columns:

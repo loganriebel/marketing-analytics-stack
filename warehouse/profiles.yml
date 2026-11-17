@@ -1,9 +1,10 @@
 # Paths are relative to the repo root: run dbt from there with
 #   dbt build --project-dir warehouse --profiles-dir warehouse
+# FERNHOOK_WAREHOUSE points MetricFlow (and the governed server) at a later data cut.
 marketing_analytics_stack:
   target: dev
   outputs:
     dev:
       type: duckdb
-      path: data/warehouse.duckdb
+      path: "{{ env_var('FERNHOOK_WAREHOUSE', 'data/warehouse.duckdb') }}"
       threads: 4
