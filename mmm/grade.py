@@ -30,8 +30,8 @@ MEDIATED = ["incremental_deals_via_brand_search", "incremental_deals_total", "cp
 TOTAL_CURVE_KEYS = ("response_curve_total", "total_response_curve")
 # 2026: the answer key the year-end data cut writes, and what the team said in advance.
 TRUTH_2026_PATH = C.REPO_ROOT / "data" / "cut_2027-01-03" / "truth_2026.json"
-READOUT_PATH = C.REPO_ROOT / "geotest" / "outputs" / "readout.json"
-ROLLOUT_DIR = C.REPO_ROOT / "rollout" / "outputs"
+READOUT_PATH = C.REPO_ROOT / "geotest/outputs/readout.json"
+ROLLOUT_DIR = C.REPO_ROOT / "rollout/outputs"
 
 
 def _pct_err(est, true):
