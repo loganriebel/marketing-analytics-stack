@@ -50,7 +50,7 @@ def query_metric(
     """Query governed metrics.
 
     metrics: metric names from list_metrics. dimensions: optional group-bys (channel, channel_group,
-    marketing_role, is_paid, region, sales_area). grain: optional time grain for a period column.
+    marketing_role, is_paid, region, sales_area, test_cell, youtube_test_group, search_test_group). grain: optional time grain for a period column.
     start_date / end_date: YYYY-MM-DD, selecting weeks whose Monday is in range. filters: dimension
     filters. order_by: metric, dimension or 'period', prefix '-' for descending. limit: max rows (500).
     """

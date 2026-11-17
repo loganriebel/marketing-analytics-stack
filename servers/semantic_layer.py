@@ -27,15 +27,40 @@ DIMENSIONS = {
     "is_paid": ("channel__is_paid", "true for the nine paid channels"),
     "region": ("region__region_name", "One of 20 Midwest metro markets, e.g. Chicago, Fargo"),
     "sales_area": ("region__sales_area", "Illinois and Iowa, Ohio, Wisconsin or Upper Midwest"),
+    "test_cell": ("region__market_test_cell",
+                  "The market's cell in the 2026 market test MT2026Q1 (test weeks Monday 2026-02-02 through the "
+                  "week of 2026-04-20): youtube only, search only, youtube and search, or neither. "
+                  "'no test' when no test is registered"),
+    "youtube_test_group": ("region__youtube_test_group",
+                           "MT2026Q1's YouTube arm: test for the 10 markets that bought extra YouTube, "
+                           "control for the other 10"),
+    "search_test_group": ("region__search_test_group",
+                          "MT2026Q1's search arm: test for the 10 markets that ran non-brand search at 39% of "
+                          "plan, control for the other 10"),
 }
 GRAINS = ("week", "month", "quarter", "year")
 OPERATORS = ("=", "!=", "in", "not in")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 MAX_ROWS = 500
 
+# FERNHOOK_WAREHOUSE (read by warehouse/profiles.yml) points the layer at a later data cut.
+WAREHOUSE_DB = REPO / os.environ.get("FERNHOOK_WAREHOUSE", "data/warehouse.duckdb")
+
+
+def _data_weeks() -> str:
+    import duckdb
+
+    con = duckdb.connect(str(WAREHOUSE_DB), read_only=True)
+    try:
+        first, last = con.execute("select min(week_start), max(week_start) from fct_funnel").fetchone()
+    finally:
+        con.close()
+    return f"Data covers the weeks of {first} through {last}."
+
+
 CONVENTIONS = [
     "Weeks start on Monday. A week belongs to the month, quarter and year that contain its Monday.",
-    "Data covers the weeks of 2023-01-02 through 2025-12-22.",
+    "<data weeks>",
     "start_date and end_date select weeks whose Monday falls in the range, inclusive.",
     "Grouping a funnel or efficiency metric by channel uses the CRM's last-touch source.",
     "The latest weeks undercount deals because recent leads have not had time to close.",
@@ -51,11 +76,13 @@ class SemanticLayer:
         self._cfg = None
         self._lock = threading.Lock()
         self._metrics: dict[str, dict[str, str]] | None = None
+        self._weeks: str | None = None
 
     def _engine(self):
         with self._lock:
             if self._cfg is None:
                 os.chdir(REPO)  # the dbt profile's DuckDB path is relative to the repo root
+                self._weeks = _data_weeks()  # before MetricFlow holds its own connection
                 from dbt_metricflow.cli.cli_configuration import CLIConfiguration
 
                 cfg = CLIConfiguration()
@@ -73,12 +100,13 @@ class SemanticLayer:
         return self._metrics
 
     def catalog(self) -> dict[str, Any]:
+        metrics = self.metrics()
         return {
-            "metrics": [{"name": k, **v} for k, v in self.metrics().items()],
+            "metrics": [{"name": k, **v} for k, v in metrics.items()],
             "dimensions": {k: v[1] for k, v in DIMENSIONS.items()},
             "grains": list(GRAINS),
             "filter_operators": list(OPERATORS),
-            "conventions": CONVENTIONS,
+            "conventions": [self._weeks if c == "<data weeks>" else c for c in CONVENTIONS],
         }
 
     def query(self, metrics: list[str], dimensions: list[str] | None = None, grain: str | None = None,
