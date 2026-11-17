@@ -1,8 +1,22 @@
 # marketing-analytics-stack
 
-**AI-first marketing measurement for a made-up software company: Claude on governed metrics, a geo MMM graded against a hidden answer key, a pre-registered market test, and memos where every number is checked.** All data is synthetic.
+**AI-first marketing measurement for a made-up software company: Claude on governed metrics, a geo MMM graded against a hidden answer key, a pre-registered market test, a measured rollout, and memos where every number is checked.** All data is synthetic.
 
-**Status:** Phases A and B are done: the proposal, the 2026 market test, its readout, and the MMM refit. Phase C, the rollout and the results memo, is next.
+**Status:** all 8 chapters are built, from the December 2025 diagnosis to the January 2027 results memo.
+
+## The year in one page
+
+Fernhook, a fictional fleet-software company, spent more on paid media every year, mostly on non-brand search, and its deals fell 10% in 2025. Its CFO stopped trusting marketing's numbers. Over 2026 the measurement team did five things, with the test and the rollout written down before they ran:
+
+1. **Diagnosed.** A Bayesian geo MMM said YouTube was the cheapest next dollar and non-brand search the most saturated, and said plainly what it could not see.
+2. **Tested before moving money.** A pre-registered spring test pushed YouTube in 10 markets and pulled non-brand search back to its 2023 pace in a crossing 10. YouTube added **+463 deals (+246 to +679)** against a +334 forecast. The search pullback showed no clear drop (-79, -328 to +170); that side had 35% power and was a guardrail.
+3. **Refit.** Both results went into the MMM as lift tests, and the refit model set the budget.
+4. **Rolled out, with a holdout.** From June the refit plan ran in 15 markets at the same budget: Meta, YouTube, CTV, LinkedIn and affiliates up 50%, display down 50%, non-brand search down 12%. The 5 markets the spring test never touched stayed on the old plan, under readout rules registered in May (63% power at the forecast).
+5. **Measured it.** The holdout reads **+464 extra deals (+18 to +911)** against a +533 forecast: the rollout works and agrees with the model. The year closed with 28,054 deals (+10.8%), paid spend -1.8% and cost per deal $1,525 (-11.3%). A one-page results memo reports it, 35 of 35 numbers grounded.
+
+**What the answer key says** (only the grader reads it; nobody in the story can): the rollout truly added **+882** deals in those weeks. The holdout's range covered that. The model's forecast (+533, +407 to +661) and its own view of the year (+505) both ran low, in line with the MMM crediting paid media about 37% too little.
+
+**Weak spots, stated plainly:** paid media credited 37% low; the MMM's 90% ranges cover the truth 20 to 21 times in 32; the spring search test had 35% power and the rollout holdout 63%; the refit's forecast for the rollout missed low; and on the 2026 questions Claude gave a number for a causal question it should have refused, with governed metrics and with raw SQL.
 
 ## The story in 8 chapters
 
@@ -14,8 +28,8 @@ Fernhook's CFO has stopped trusting marketing's numbers. Each chapter is one ste
 4. **The test (February to April 2026).** Spend moves in some markets and not in others, under rules written down before it starts. [geotest/PREREGISTRATION.md](geotest/PREREGISTRATION.md)
 5. **The readout (May 2026).** The test is read out by its own rules, then checked a second way. [geotest/READOUT.md](geotest/READOUT.md)
 6. **The refit (May 2026).** The MMM learns from the test and is graded again. [docs/mmm/README.md](docs/mmm/README.md#the-refit)
-7. **The rollout (June to December 2026).** Budget moves across every market. Coming next.
-8. **The results memo (January 2027).** A memo reports what the move did. Coming next.
+7. **The rollout (June to December 2026).** The refit model's plan runs in 15 markets at the same budget, and 5 markets stay on the old plan to measure it, under rules written down first. [rollout/PLAN.md](rollout/PLAN.md)
+8. **The results memo (January 2027).** The holdout reads out the rollout by its own rules, the model's view sits beside it, and a one-page memo reports the year. Every number in it is checked. [rollout/RESULTS.md](rollout/RESULTS.md) and [memo/outputs/results_memo.md](memo/outputs/results_memo.md)
 
 ## The company
 
@@ -69,6 +83,8 @@ To test it, headless Claude answered 50 ad-hoc questions twice: once through the
 | Claude + raw tables (SQL) | 23/42 (55%) | 8/8 | 3 | 31/50 | $3.65 |
 
 Model `claude-sonnet-5-5`, one pass per arm, same instructions, built-in tools off, run on the 2.5x world (budgets drift from brand to search, every volume 2.5 times the first build). Per-question results: [evals/RESULTS.md](evals/RESULTS.md). The run hit the Claude session limit after 25 questions, so the 75 errored questions were run again; 2 governed questions whose metrics server never loaded (Claude saw no tools) were run again too. Earlier runs are kept: the same world at 1x (50/50 and 31/50) in `evals/results/archive_1x_world/`, the balanced-mix seven-state world (50/50 and 31/50) in `evals/results/archive_balanced_mix_world/`, and the first 20-region world (50/50 and 30/50) in `evals/results/archive_global_world/`.
+
+**The 2026 questions.** The governed layer gained the test and rollout dimensions (each market's test cell, its group in each arm, and rollout or holdout), and 9 new questions were asked of the year-end data cut, both ways: governed 8/9 ($0.69), raw SQL 6/9 ($1.47) ([evals/RESULTS_2026.md](evals/RESULTS_2026.md)). Both arms answered "how many extra deals did the YouTube test cause?" with a number, a test-minus-control difference, instead of saying a causal lift is not a defined metric. Governed definitions settle what a number means, not whether a causal claim is allowed.
 
 Why the raw arm missed: it had to invent definitions. It left partner fees and webinars out of "paid media", grouped search and YouTube as "Google", counted deals by calendar close date instead of the house week rule, read "CPA" as cost per lead, and could not answer share-of-spend questions without channel roles. Every one of those is a definition the semantic layer settles once.
 
@@ -169,17 +185,17 @@ Then one command runs the whole story, in chapter order:
 .venv\Scripts\python -m stack.run
 ```
 
-- **Stages:** sim, dbt, eda, evals, mmm, design, memo, test, readout, refit, tableau. Each one calls the repo's own commands.
+- **Stages:** sim, dbt, eda, evals, mmm, design, memo, test, readout, refit, rollout, yearend, results, results_memo, evals_2026, tableau. Each one calls the repo's own commands.
 - **Look first:** `--dry-run` prints every command and runs nothing.
 - **Pick stages:** `--only sim,dbt` runs just those. `--from readout` starts there and runs to the end.
-- **The evals are off by default.** They cost real money in Claude usage. Add `--with-evals` to run them.
-- **The Claude CLI:** the memo stage and the evals need it signed in (`claude auth login`). The evals save each answer as it lands and pick up where they left off.
-- **Slow stages:** the MMM fit, the refit and the evals take the longest. The rest are quick.
+- **The evals are off by default** (both sets). They cost real money in Claude usage. Add `--with-evals` to run them.
+- **The Claude CLI:** the two memo stages and the evals need it signed in (`claude auth login`). The evals save each answer as it lands and pick up where they left off.
+- **Slow stages:** the MMM fit, the refit and the evals take the longest; the rollout and results stages take a few minutes each (they refit the brand-search stage). The rest are quick.
 - **Two environments:** main steps use `.venv` and MMM steps use `.venv-mmm`. Use `--python` and `--mmm-python` to point somewhere else. On Mac or Linux the runner finds `.venv/bin/python` by itself.
 - **Same seed, same files:** the simulator writes byte-identical files every time.
 - **Tests:** `.venv\Scripts\python -m pytest -q` runs the main suite. The MMM tests are listed in [docs/mmm/README.md](docs/mmm/README.md). CI runs both on every pull request.
 
-Each step's own commands and options are in its README: [MMM](docs/mmm/README.md), [memo](memo/README.md), [Tableau](tableau/LAYOUT.md).
+Each step's own commands and options are in its README: [MMM](docs/mmm/README.md), [memo](memo/README.md), [Tableau](tableau/LAYOUT.md). The rollout's are in [rollout/PLAN.md](rollout/PLAN.md) and the module docstrings in `rollout/`.
 
 ## Repo map
 
@@ -194,6 +210,7 @@ evals/       eval set, runner, scorer, results
 eda/         EDA and validation report (python -m eda), reads the warehouse only
 mmm/         geo MMM, its outputs, and mmm/grade.py, the only reader of the answer key
 geotest/     the 2026 market test: design, pre-registration, readout, cross-check
+rollout/     the June to December rollout: plan, holdout registration, year-end readout, the model's view
 plans/       2026 spend plans the simulator runs
 memo/        facts pack, Claude memo writer, grounding check
 tableau/     Tableau CSV export and the dashboard build plan
@@ -209,3 +226,5 @@ Golden tables:
 - `fct_funnel`: week x region x lead source. Leads, MQLs, SQLs, opportunities, pipeline, won deals, revenue. Each stage is counted in the week it happened.
 - `fct_controls_weekly`: week x region. Headcount, email, promo and price flags, fleet activity index.
 - `dim_channel`: channel names, groups, and roles.
+- `dim_region`: markets, with each market's 2026 test cell, its group in each arm, and its rollout group.
+- `fct_media_plan_weekly`: week x region x planned channel. The media plan's budget line beside delivered spend.

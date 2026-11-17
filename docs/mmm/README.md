@@ -215,7 +215,7 @@ Estimand definitions match the scenario's:
 
 Stage 2's numbers come from a numpy copy of its media path (`mmm/estimands.py`). The smoke test checks it against PyMC-Marketing's own `channel_contribution` to 1e-8.
 
-**Optimizer** (`mmm/optimize.py`): one multiplier per channel on its actual weekly path, bounded to 0.5 to 1.5, same total spend, maximizing posterior-mean deals. Brand search is not a lever: it is always on and its spend follows searches. Upper-funnel curves include their deals via brand search, and the plan reports the brand-search spend those searches add (about $626,000 for the final plan). SLSQP stops with "positive directional derivative" with most channels at a bound; the budget holds exactly.
+**Optimizer** (`mmm/optimize.py`): one multiplier per channel on its actual weekly path, bounded to 0.5 to 1.5, same total spend, maximizing posterior-mean deals. Brand search is not a lever: it is always on and its spend follows searches. Upper-funnel curves include their deals via brand search, and the plan reports the brand-search spend those searches add (about $626,000 for the final plan). SLSQP stops with "positive directional derivative" with most channels at a bound; the budget holds exactly. That flag reads `converged: false`, but it is a false alarm: rebuilt from the saved posterior, the refit's plan meets the optimum's conditions (the channels inside their bounds all earn 0.137 extra deals per extra $1,000; the capped ones earn more, display at its floor less), and an exact solver (`mmm.optimize.solve_exact`) finds the same plan. The bounds bind for 4 of 7 channels by choice. See [rollout/PLAN.md](../../rollout/PLAN.md).
 
 ## Grading
 
@@ -281,6 +281,8 @@ Each change was tested on a development seed and kept only if it held there. The
 
 **Scale-up (step 6).** Also at Logan's direction, every volume in the world was then scaled 2.5x with the same unit economics, so less of each week is count luck. Before any fit, a world check compared every channel's true average and marginal CPA with the old world's (all within 1.5%) and confirmed spend is exactly 2.5x. The same model was refit once, unchanged.
 
+**Rollout check (step 8).** The rollout readout's first registered validity check (spend moved, by the ratio method) could not see a 12% search trim and failed 90% of quiet-week dry runs, so at Logan's direction the sim now also exports each market's media plan (a first version without each market's buying plan still left the 5-market holdout too noisy), the check compares delivered spend with it, and the readout was re-registered and rerun with every other file, and its +464, unchanged.
+
 The scenario changed twice during step 4, at Logan's direction: the business now sells only in seven Midwest states, and paid search is always on with the upper funnel creating brand searches. The original plan to turn brand-search pauses into lift tests still exists in code, but the current world has no pauses.
 
 ## The 2026 market test and the refit
@@ -338,6 +340,7 @@ Both arms entered the MMM as lift tests through `add_lift_test_measurements`: Yo
 - **A weaker plan.** The refit keeps Meta, YouTube and CTV at the 150% cap and display at the floor, trims non-brand search to 89% and affiliates to 70%, and now trims LinkedIn to 87% (the December plan pushed it to 126%). LinkedIn's next dollar comes out almost three times its true cost, so the plan cuts a channel that works, and the true gain falls from 4,560 to 3,954.
 - **Better ranking on average cost.** CPA rank correlation rises from 0.43 to 0.64, and YouTube's next dollar moves toward the truth (error +40% to +28%). Non-brand search's next dollar moves from $7,896 toward the true $11,117.
 - **No better on scale.** Paid media stays near 23,500 deals against 38,325 true. Non-brand search loses more credit (9,657 deals against 13,851 true). Coverage slips from 21 to 20 of 32.
+- **What the rollout used.** The rollout ([rollout/PLAN.md](../../rollout/PLAN.md)) solves this same objective again on June to December spend in the 15 rollout markets. On 2025's mix LinkedIn and affiliates are cheaper at the margin, so that plan grows them. The 2026 grade ([`mmm/grading/grade_2026.md`](../../mmm/grading/grade_2026.md)) shows the refit's forecast for it ran low: +533 forecast against +882 true.
 
 **Exploratory: how much came from the test itself?** A second refit on the same cut, with no lift tests (`mmm/outputs/refit_data_only/`, [`compare_holdout_refit_data_only.md`](../../mmm/grading/compare_holdout_refit_data_only.md)), passes every gate too. It still trains on the test's first four weeks, so it is "more data", not "no test".
 

@@ -19,6 +19,11 @@ flowchart TD
     run26["sim plus dbt<br/>2026 test run and its data cut"]
     readout["geotest/readout.py and crosscheck.py<br/>readout and cross-check"]
     refit["mmm/ refit<br/>MMM with the test's lift results"]
+    rplan["rollout/plan.py<br/>rollout plan and holdout registration"]
+    rprereg[("plans/2026_rollout.yaml<br/>rollout/PLAN.md")]
+    run27["sim plus dbt<br/>the year run and its year-end cut"]
+    rresults["rollout/results.py and crosscheck.py<br/>holdout readout and the model's view"]
+    rmemo["memo/results.py<br/>results memo, same writer and check"]
     facts["memo/facts.py<br/>facts pack"]
     writer["memo/writer.py<br/>Claude writes the memo"]
     ground["memo/grounding.py<br/>grounding check"]
@@ -48,6 +53,14 @@ flowchart TD
     run26 --> refit
     refit --> grade
 
+    refit --> rplan
+    readout --> rplan
+    rplan --> rprereg --> run27 --> rresults
+    rresults --> rmemo
+    rmemo --> ground
+    rresults --> grade
+    run27 --> truth
+
     out --> facts
     design --> facts
     facts --> writer --> ground
@@ -56,10 +69,11 @@ flowchart TD
 
     marts --> tab
     out --> tab
+    rresults --> tab
     grading -.->|answer-key view, labeled| tab
 
     classDef store fill:none,stroke:#888,stroke-dasharray:3 3
-    class raw,out,prereg,grading store
+    class raw,out,prereg,rprereg,grading store
     style wall fill:none,stroke:#C62828,stroke-width:3px,stroke-dasharray:8 4
 ```
 
@@ -95,6 +109,14 @@ flowchart TD
 - **geotest/readout.py and crosscheck.py**: read out the test by its own rules, then check it a second way.
 - **mmm/ refit**: fits the MMM again with the test results added, and the grader scores it again.
 
+**The rollout and the year-end results**
+
+- **rollout/plan.py**: checks the refit's budget plan, solves it again for June to December, and forecasts what it adds.
+- **plans/2026_rollout.yaml and rollout/PLAN.md**: the rollout plan, 5 markets held on the old plan, and the readout rules, all written down before it runs.
+- **The year run**: the simulator runs the world through December 2026 with both plans, and dbt builds the year-end cut. Its 2026 answer key goes behind the wall.
+- **rollout/results.py and crosscheck.py**: read out the rollout against the holdout by the May rules, and set the model's own view beside it.
+- **memo/results.py**: the January 2027 results memo, from its own facts pack, through the same writer and grounding check.
+
 **The memo**
 
 - **memo/facts.py**: collects every number the memo may use into one facts pack, each tied to its source.
@@ -109,5 +131,6 @@ flowchart TD
 
 - Only `mmm/grade.py` reads `sim/truth/`. Tests check the source of every other folder for this.
 - The memo reads `mmm/outputs/` and the test design. It never reads `mmm/grading/`.
+- The results memo reads only what the team wrote during 2026: the test readout, the rollout plan and the holdout readout. The rollout's true gain lives only in `mmm/grading/grade_2026.json`.
 - The Tableau answer-key view comes from the grader's written results, never from `sim/truth/`, and is labeled as the answer key.
 - The test design and the readout come from data the team would have had at the time. No answer-key number goes into them.
