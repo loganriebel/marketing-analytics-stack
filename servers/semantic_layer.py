@@ -37,6 +37,10 @@ DIMENSIONS = {
     "search_test_group": ("region__search_test_group",
                           "MT2026Q1's search arm: test for the 10 markets that ran non-brand search at 39% of "
                           "plan, control for the other 10"),
+    "rollout_group": ("region__rollout_group",
+                      "The June to December 2026 rollout (RO2026H2, weeks of 2026-06-01 through 2026-12-28): "
+                      "rollout for the 15 markets on the new plan, holdout for the 5 kept on the old plan. "
+                      "'no rollout' when it is not registered"),
 }
 GRAINS = ("week", "month", "quarter", "year")
 OPERATORS = ("=", "!=", "in", "not in")

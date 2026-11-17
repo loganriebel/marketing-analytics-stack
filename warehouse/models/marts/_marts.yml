@@ -53,6 +53,15 @@ models:
           - accepted_values:
               arguments:
                 values: [test, control, no test]
+      - name: rollout_group
+        description: >
+          The June to December 2026 rollout (RO2026H2): rollout if the market moved to the new plan,
+          holdout if it stayed on the old plan to measure it. 'no rollout' before the rollout is registered.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [rollout, holdout, no rollout]
 
   - name: dim_channel
     description: Golden channel dimension. Nine paid channels, owned email, and three unpaid CRM sources.
