@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# The Claude evals (python -m evals.run) and the memo writer (python -m memo) call the
+# claude CLI and cost money, so they stay a manual step. No test calls the CLI; the
+# memo tests only check the command the writer would run.
+
+jobs:
+  main:
+    name: Main environment (sim, dbt, pytest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install
+        run: python -m pip install -r requirements.txt
+
+      # sim and dbt build the base world. "test" runs the world through the 2026 market
+      # test and builds that cut, so the readout test can rebuild the committed readout.
+      - name: Simulate the world and build the marts
+        run: python -m stack.run --only sim,dbt,test
+
+      - name: Tests
+        run: python -m pytest tests/ -q
+
+      - name: Hand the warehouse to the MMM job
+        uses: actions/upload-artifact@v7
+        with:
+          name: warehouse
+          path: data/warehouse.duckdb
+          if-no-files-found: error
+          retention-days: 1
+
+  mmm:
+    name: MMM environment (PyMC tests)
+    needs: main
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-mmm.txt
+
+      - name: Install
+        run: python -m pip install -r requirements-mmm.txt
+
+      - name: Get the warehouse from the main job
+        uses: actions/download-artifact@v8
+        with:
+          name: warehouse
+          path: data
+
+      - name: Tests
+        run: >-
+          python -m pytest -q
+          tests/test_mmm_smoke.py
+          tests/test_mmm_no_truth_leak.py
+          tests/test_mmm_market_lifts.py
+          tests/test_geotest.py

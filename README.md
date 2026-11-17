@@ -1,8 +1,21 @@
 # marketing-analytics-stack
 
-An example of the stack I run at work: dashboards, Claude on golden tables, MMM for budget asks. All data is synthetic.
+**AI-first marketing measurement for a made-up software company: Claude on governed metrics, a geo MMM graded against a hidden answer key, a pre-registered market test, and memos where every number is checked.** All data is synthetic.
 
-**Status:** step 2 of 6. The fake company, its raw data, the dbt golden tables, an [EDA and data validation report](docs/eda/EDA.md), the governed metrics layer, and the Claude eval are built and tested. Tableau and the MMM come next.
+**Status:** Phases A and B are done: the proposal, the 2026 market test, its readout, and the MMM refit. Phase C, the rollout and the results memo, is next.
+
+## The story in 8 chapters
+
+Fernhook's CFO has stopped trusting marketing's numbers. Each chapter is one step a measurement team would take, in the order it would happen.
+
+1. **The problem (December 2025).** Spend climbs, deals fall, and nobody agrees on what works. [The problem](#the-problem) and the [EDA report](docs/eda/EDA.md).
+2. **The diagnosis (December 2025).** A geo MMM estimates what each channel adds, and a grader checks it against the answer key. [docs/mmm/README.md](docs/mmm/README.md)
+3. **The proposal (January 2026).** A one-page memo asks the CFO to approve a market test. Every number in it is checked. [memo/outputs/proposal_memo.md](memo/outputs/proposal_memo.md)
+4. **The test (February to April 2026).** Spend moves in some markets and not in others, under rules written down before it starts. [geotest/PREREGISTRATION.md](geotest/PREREGISTRATION.md)
+5. **The readout (May 2026).** The test is read out by its own rules, then checked a second way. [geotest/READOUT.md](geotest/READOUT.md)
+6. **The refit (May 2026).** The MMM learns from the test and is graded again. [docs/mmm/README.md](docs/mmm/README.md#the-refit)
+7. **The rollout (June to December 2026).** Budget moves across every market. Coming next.
+8. **The results memo (January 2027).** A memo reports what the move did. Coming next.
 
 ## The company
 
@@ -130,17 +143,64 @@ The daily quality control runs in a separate workflow, not in this repo. It work
 
 In this repo the same kinds of checks run on demand: the dbt tests in `dbt build`, the validation checks in the [EDA report](docs/eda/EDA.md), and `pytest`.
 
-## Layout
+## How to run
+
+Python 3.11, from the repo root. The MMM gets its own environment, so PyMC never moves the pinned warehouse stack. On Windows:
+
+```bash
+py -3.11 -m venv .venv
+```
+
+```bash
+.venv\Scripts\python -m pip install -r requirements.txt
+```
+
+```bash
+py -3.11 -m venv .venv-mmm
+```
+
+```bash
+.venv-mmm\Scripts\python -m pip install -r requirements-mmm.txt
+```
+
+Then one command runs the whole story, in chapter order:
+
+```bash
+.venv\Scripts\python -m stack.run
+```
+
+- **Stages:** sim, dbt, eda, evals, mmm, design, memo, test, readout, refit, tableau. Each one calls the repo's own commands.
+- **Look first:** `--dry-run` prints every command and runs nothing.
+- **Pick stages:** `--only sim,dbt` runs just those. `--from readout` starts there and runs to the end.
+- **The evals are off by default.** They cost real money in Claude usage. Add `--with-evals` to run them.
+- **The Claude CLI:** the memo stage and the evals need it signed in (`claude auth login`). The evals save each answer as it lands and pick up where they left off.
+- **Slow stages:** the MMM fit, the refit and the evals take the longest. The rest are quick.
+- **Two environments:** main steps use `.venv` and MMM steps use `.venv-mmm`. Use `--python` and `--mmm-python` to point somewhere else. On Mac or Linux the runner finds `.venv/bin/python` by itself.
+- **Same seed, same files:** the simulator writes byte-identical files every time.
+- **Tests:** `.venv\Scripts\python -m pytest -q` runs the main suite. The MMM tests are listed in [docs/mmm/README.md](docs/mmm/README.md). CI runs both on every pull request.
+
+Each step's own commands and options are in its README: [MMM](docs/mmm/README.md), [memo](memo/README.md), [Tableau](tableau/LAYOUT.md).
+
+## Repo map
+
+How the pieces connect, and the wall around the answer key: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ```
-sim/             seeded simulator (python -m sim) and the answer key in sim/truth/
-data/raw/        CSV exports, one per source system (generated, not committed)
-warehouse/       dbt project on DuckDB: staging, intermediate, marts, semantic layer
-servers/         MCP servers: governed metrics, and raw SQL for the eval baseline
-evals/           50-question eval set, runner, scorer, results
-eda/             EDA and validation report (python -m eda), reads the warehouse only
-docs/eda/        the generated report and charts
-tests/           pytest: determinism, no truth leak, scenario guards
+sim/         seeded simulator (python -m sim) and the answer key in sim/truth/
+data/        raw CSVs, the DuckDB warehouse and 2026 data cuts (generated, not committed)
+warehouse/   dbt project on DuckDB: staging, intermediate, marts, semantic layer
+servers/     MCP servers: governed metrics, and raw SQL for the eval baseline
+evals/       eval set, runner, scorer, results
+eda/         EDA and validation report (python -m eda), reads the warehouse only
+mmm/         geo MMM, its outputs, and mmm/grade.py, the only reader of the answer key
+geotest/     the 2026 market test: design, pre-registration, readout, cross-check
+plans/       2026 spend plans the simulator runs
+memo/        facts pack, Claude memo writer, grounding check
+tableau/     Tableau CSV export and the dashboard build plan
+stack/       python -m stack.run, one command for the whole story
+docs/        the architecture, the EDA report and the MMM write-up
+tests/       pytest for every step
+.github/     CI
 ```
 
 Golden tables:
@@ -149,20 +209,3 @@ Golden tables:
 - `fct_funnel`: week x region x lead source. Leads, MQLs, SQLs, opportunities, pipeline, won deals, revenue. Each stage is counted in the week it happened.
 - `fct_controls_weekly`: week x region. Headcount, email, promo and price flags, fleet activity index.
 - `dim_channel`: channel names, groups, and roles.
-
-## Run it
-
-Windows, Python 3.10 or newer, from the repo root:
-
-```bash
-py -3.11 -m venv .venv
-.venv\Scripts\python -m pip install -r requirements.txt
-.venv\Scripts\python -m sim
-.venv\Scripts\dbt build --project-dir warehouse --profiles-dir warehouse
-.venv\Scripts\python -m eda
-.venv\Scripts\python -m evals.run --arm both
-.venv\Scripts\python -m evals.score
-.venv\Scripts\python -m pytest -q
-```
-
-The same seed always writes byte-identical files. The eval needs the Claude CLI signed in (`claude auth login`); it saves each answer as it lands and resumes if cut off.
