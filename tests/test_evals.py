@@ -66,6 +66,7 @@ def test_semantic_layer_matches_plain_sql():
         return rows[0][1]
 
     assert one("spend", "2024-01-01", "2024-12-31") == pytest.approx(float(truth["q01"]), rel=1e-6)
-    assert 100 * one("win_rate", "2024-01-01", "2024-12-31") == pytest.approx(float(truth["q19"]), rel=1e-4)
+    # the layer rounds ratios to 4 decimals: half a unit of that is 0.005 percentage points
+    assert 100 * one("win_rate", "2024-01-01", "2024-12-31") == pytest.approx(float(truth["q19"]), abs=0.005)
     assert one("cost_per_acquisition", "2025-01-01", "2025-12-31") == pytest.approx(float(truth["q24"]), rel=1e-4)
     assert one("ae_headcount", "2024-01-01", "2024-12-31") == pytest.approx(float(truth["q40"]))

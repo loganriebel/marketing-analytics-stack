@@ -100,39 +100,39 @@ CRM_CHANNELS = PAID_CHANNELS + ["email", "organic_search", "direct", "referral"]
 # flight for the country and leaves a share of markets out of each flight.
 SPEND = {
     # Non-brand search is always on in every market and leans into busy seasons.
-    "paid_search_nonbrand": {"annual_budget": {2023: 3_380_000, 2024: 5_220_000, 2025: 8_430_000}, "quarter_sigma": 0.10,
+    "paid_search_nonbrand": {"annual_budget": {2023: 8_450_000, 2024: 13_050_000, 2025: 21_075_000}, "quarter_sigma": 0.10,
                              "weekly_sigma": 0.08, "flight": "always_on", "season_follow": 0.3,
                              "tilt_sigma": 0.30, "region_sigma": 0.22, "quarter_region_sigma": 0.20},
     # Meta prospecting is always on and pushes into each busy season. Each market's
     # buy has its own timing and size, and each season's push gets its own budget.
-    "meta": {"annual_budget": {2023: 1_600_000, 2024: 1_450_000, 2025: 1_350_000}, "quarter_sigma": 0.15,
+    "meta": {"annual_budget": {2023: 4_000_000, 2024: 3_625_000, 2025: 3_375_000}, "quarter_sigma": 0.15,
              "weekly_sigma": 0.10, "flight": "seasonal_push", "tilt_sigma": 0.40, "region_sigma": 0.15,
              "push": {"geo": "market", "lead": 3, "len": (4, 7), "mult": 1.35, "mult_sigma": 0.20,
                       "season_sigma": 0.40, "timing_sigma": 1.5, "market_timing_sigma": 1.5,
                       "market_mult_sigma": 0.25, "sustain": 1.0, "slow": 0.85}},
-    "linkedin": {"annual_budget": {2023: 1_220_000, 2024: 840_000, 2025: 500_000}, "quarter_sigma": 0.12,
+    "linkedin": {"annual_budget": {2023: 3_050_000, 2024: 2_100_000, 2025: 1_250_000}, "quarter_sigma": 0.12,
                  "weekly_sigma": 0.10, "flight": "always_on", "season_follow": 0.0,
                  "tilt_sigma": 0.45, "region_sigma": 0.18, "quarter_region_sigma": 0.30},
     # YouTube flights are bought nationally and run ahead of the season, to build
     # awareness before fleets start shopping.
-    "youtube": {"annual_budget": {2023: 1_000_000, 2024: 950_000, 2025: 850_000}, "quarter_sigma": 0.20,
+    "youtube": {"annual_budget": {2023: 2_500_000, 2024: 2_375_000, 2025: 2_125_000}, "quarter_sigma": 0.20,
                 "weekly_sigma": 0.10, "flight": "seasonal_push", "tilt_sigma": 0.35, "region_sigma": 0.15,
                 "push": {"geo": "national", "lead": 10, "len": (5, 8), "mult": 3.0, "mult_sigma": 0.20,
                          "timing_sigma": 1.5, "market_share": 0.75, "sustain": 0.35, "slow": 0.30}},
     # CTV is a market test: each test market runs its own flight ahead of each busy
     # season, on its own timing, and goes dark between flights.
-    "ctv": {"annual_budget": {2023: 1_300_000, 2024: 1_000_000, 2025: 600_000}, "quarter_sigma": 0.15,
+    "ctv": {"annual_budget": {2023: 3_250_000, 2024: 2_500_000, 2025: 1_500_000}, "quarter_sigma": 0.15,
             "weekly_sigma": 0.05, "flight": "seasonal_push", "tilt_sigma": 0.25, "region_sigma": 0.08,
             "push": {"geo": "market", "lead": 6, "len": (6, 9), "mult": 1.0, "mult_sigma": 0.20,
                      "season_sigma": 0.15, "timing_sigma": 2.0, "market_timing_sigma": 3.5,
                      "market_mult_sigma": 0.25, "sustain": 0.0, "slow": 0.0}},
-    "display": {"annual_budget": {2023: 1_300_000, 2024: 1_450_000, 2025: 1_600_000}, "quarter_sigma": 0.12,
+    "display": {"annual_budget": {2023: 3_250_000, 2024: 3_625_000, 2025: 4_000_000}, "quarter_sigma": 0.12,
                 "weekly_sigma": 0.20, "flight": "always_on", "season_follow": 0.0,
                 "tilt_sigma": 0.35, "region_sigma": 0.20, "quarter_region_sigma": 0.20},
     # Partner placement and sponsor fees with local resellers and fleet consultants,
     # set when each market's contracts renew every quarter. Per-deal commissions are
     # cost of sale and stay out of media spend.
-    "affiliates": {"annual_budget": {2023: 600_000, 2024: 750_000, 2025: 600_000}, "quarter_sigma": 0.10,
+    "affiliates": {"annual_budget": {2023: 1_500_000, 2024: 1_875_000, 2025: 1_500_000}, "quarter_sigma": 0.10,
                    "weekly_sigma": 0.04, "flight": "always_on", "season_follow": 0.0,
                    "tilt_sigma": 0.50, "region_sigma": 0.05, "quarter_region_sigma": 0.35},
 }
@@ -184,20 +184,20 @@ BUDGET_EVENTS = [
 # demand. Because spend follows searches, cutting one of these channels cuts brand
 # searches and brand-search spend with it.
 BRAND_SEARCH = {
-    "annual_budget": {2023: 2_400_000, 2024: 2_470_000, 2025: 2_550_000},
+    "annual_budget": {2023: 6_000_000, 2024: 6_175_000, 2025: 6_375_000},
     "noise_sigma": 0.10,
     "created_by": {
-        "meta": {"alpha": (0.10, 0.30), "reach_spend": (1_500, 3_000), "lift": (0.05, 0.10)},
-        "youtube": {"alpha": (0.20, 0.40), "reach_spend": (1_000, 2_500), "lift": (0.04, 0.09)},
-        "ctv": {"alpha": (0.30, 0.50), "reach_spend": (3_000, 6_000), "lift": (0.02, 0.05)},
+        "meta": {"alpha": (0.10, 0.30), "reach_spend": (3750, 7500), "lift": (0.05, 0.10)},
+        "youtube": {"alpha": (0.20, 0.40), "reach_spend": (2500, 6250), "lift": (0.04, 0.09)},
+        "ctv": {"alpha": (0.30, 0.50), "reach_spend": (7500, 15_000), "lift": (0.02, 0.05)},
     },
 }
 
 # Webinars are regional field events, not an ad platform.
 WEBINARS = {
-    "annual_budget": {2023: 700_000, 2024: 720_000, 2025: 750_000},  # event costs are paced to these
+    "annual_budget": {2023: 1_750_000, 2024: 1_800_000, 2025: 1_875_000},  # event costs are paced to these
     "events_per_week_national": 1.5,
-    "cost_median": 9_000,
+    "cost_median": 22_500,
     "cost_sigma": 0.35,
     "cost_per_registrant": 44.0,
     "attend_rate": 0.42,
@@ -226,20 +226,20 @@ HOLIDAY_SPEND_CUT = 0.7  # every planned channel trims spend in the last and fir
 # incrementality work: brand search and retargeting tend to show low lift, and one
 # channel is near zero so the MMM has a dud to find.
 EFFECT_RANGES = {
-    "paid_search_brand": {"alpha": (0.05, 0.15), "K": (450, 800), "S": (0.9, 1.1), "cpa": (3_500, 9_000)},
-    "paid_search_nonbrand": {"alpha": (0.20, 0.30), "K": (2_400, 3_400), "S": (1.3, 1.5), "cpa": (1_300, 2_100)},
-    "meta": {"alpha": (0.38, 0.52), "K": (2_500, 3_600), "S": (1.1, 1.3), "cpa": (1_100, 1_900)},
-    "linkedin": {"alpha": (0.33, 0.47), "K": (1_050, 1_600), "S": (1.1, 1.3), "cpa": (2_000, 3_400)},
-    "youtube": {"alpha": (0.62, 0.78), "K": (2_500, 3_600), "S": (1.2, 1.4), "cpa": (1_100, 2_000)},
-    "ctv": {"alpha": (0.68, 0.80), "K": (5_000, 7_200), "S": (1.4, 1.6), "cpa": (1_500, 2_600)},
-    "display": {"alpha": (0.25, 0.35), "K": (800, 1_200), "S": (0.9, 1.1), "cpa": (20_000, 60_000)},
-    "affiliates": {"alpha": (0.42, 0.58), "K": (750, 1_100), "S": (1.0, 1.2), "cpa": (950, 1_600)},
-    "webinars": {"alpha": (0.15, 0.25), "K": (5_000, 7_200), "S": (0.9, 1.1), "cpa": (900, 1_500)},
+    "paid_search_brand": {"alpha": (0.05, 0.15), "K": (1125, 2000), "S": (0.9, 1.1), "cpa": (3_500, 9_000)},
+    "paid_search_nonbrand": {"alpha": (0.20, 0.30), "K": (6000, 8500), "S": (1.3, 1.5), "cpa": (1_300, 2_100)},
+    "meta": {"alpha": (0.38, 0.52), "K": (6250, 9000), "S": (1.1, 1.3), "cpa": (1_100, 1_900)},
+    "linkedin": {"alpha": (0.33, 0.47), "K": (2625, 4000), "S": (1.1, 1.3), "cpa": (2_000, 3_400)},
+    "youtube": {"alpha": (0.62, 0.78), "K": (6250, 9000), "S": (1.2, 1.4), "cpa": (1_100, 2_000)},
+    "ctv": {"alpha": (0.68, 0.80), "K": (12_500, 18_000), "S": (1.4, 1.6), "cpa": (1_500, 2_600)},
+    "display": {"alpha": (0.25, 0.35), "K": (2000, 3000), "S": (0.9, 1.1), "cpa": (20_000, 60_000)},
+    "affiliates": {"alpha": (0.42, 0.58), "K": (1875, 2750), "S": (1.0, 1.2), "cpa": (950, 1_600)},
+    "webinars": {"alpha": (0.15, 0.25), "K": (12_500, 18_000), "S": (0.9, 1.1), "cpa": (900, 1_500)},
 }
 
 # --- Organic baseline ------------------------------------------------------
 BASE = {
-    "leads_per_week_avg_region": 82.5,  # at window start, size 1.0, NA, season 1.0
+    "leads_per_week_avg_region": 206.25,  # at window start, size 1.0, NA, season 1.0
     "growth_per_year_range": (0.05, 0.11),  # log growth, drawn per run
     "region_week_sigma": 0.07,
     "national_shock_sigma": 0.04,       # the part the market-activity index tracks
@@ -273,8 +273,8 @@ MACRO = {"index_level": 100.0, "measurement_sigma": 0.01, "demand_elasticity_ran
 # close more trials (opportunity to won). Multiplier = coverage ** elasticity,
 # with both elasticities drawn per run.
 SALES = {
-    "sdr_per_1k_accounts": 0.14,
-    "ae_per_1k_accounts": 0.19,
+    "sdr_per_1k_accounts": 0.35,
+    "ae_per_1k_accounts": 0.475,
     "start_coverage": 0.88,
     "hiring_months": (1, 2, 3),
     "hiring_gain_per_month": 0.045,
@@ -290,7 +290,7 @@ SALES = {
 }
 # Email is owned media: nurture and newsletter sends reactivate known contacts.
 EMAIL = {
-    "list_per_avg_region": 2_500,
+    "list_per_avg_region": 6250,
     "list_growth_per_year": 0.20,
     "sends_per_contact_week": 1.3,
     "blast_prob": 0.15,          # national promo blast weeks
@@ -299,9 +299,9 @@ EMAIL = {
     "open_rate_drift_per_year": -0.012,
     "click_rate_of_opens": 0.09,
     "alpha_range": (0.22, 0.38),
-    "K_range": (4_500, 8_000),
+    "K_range": (11_250, 20_000),
     "S": 1.0,
-    "leads_per_week_avg_region": 5.0,
+    "leads_per_week_avg_region": 12.5,
 }
 # Year-end offer: 15% off annual plans for trials started in ISO weeks 46 to 50.
 # List price rises 10% for leads created on or after the change date. The win-rate
@@ -340,7 +340,7 @@ FUNNEL_JITTER = {"rate_sigma": 0.06, "amount_sigma": 0.04}
 #   quality = 1 / (1 + slope * max(spend / (size * ref_spend) - 1, 0))
 # and both the MQL rate and the win rate are multiplied by sqrt(quality). The slope is
 # drawn per run.
-NONBRAND_QUALITY = {"ref_spend": 3_000.0, "slope_range": (0.10, 0.20)}
+NONBRAND_QUALITY = {"ref_spend": 7500, "slope_range": (0.10, 0.20)}
 AMOUNT_MEDIAN = 2_400.0  # first-year contract value at list price, USD
 AMOUNT_SIGMA = 0.45
 # Stage lags in days, gamma(shape, scale) floored to whole days. Lead to close
@@ -403,18 +403,18 @@ UTM_VARIANTS = {
 # reach = 1 - exp(-spend / (reach_spend * size)). Halo is credit for leads the
 # channel did not cause (brand search, view-through, cookie-based partner credit).
 PLATFORM = {
-    "paid_search_brand": {"claim_mult": 1.10, "halo": 0.20, "reach_spend": 800,
+    "paid_search_brand": {"claim_mult": 1.10, "halo": 0.20, "reach_spend": 2000,
                           "halo_from": {"ctv": 0.45, "youtube": 0.40, "meta": 0.25}, "noise_sigma": 0.0},
-    "paid_search_nonbrand": {"claim_mult": 1.20, "halo": 0.03, "reach_spend": 3_000,
+    "paid_search_nonbrand": {"claim_mult": 1.20, "halo": 0.03, "reach_spend": 7500,
                              "halo_from": {}, "noise_sigma": 0.0},
-    "meta": {"claim_mult": 1.60, "halo": 0.08, "reach_spend": 2_000, "halo_from": {}, "noise_sigma": 0.0},
-    "linkedin": {"claim_mult": 1.30, "halo": 0.05, "reach_spend": 1_500, "halo_from": {}, "noise_sigma": 0.0},
-    "youtube": {"claim_mult": 1.80, "halo": 0.04, "reach_spend": 1_500, "halo_from": {}, "noise_sigma": 0.0},
+    "meta": {"claim_mult": 1.60, "halo": 0.08, "reach_spend": 5000, "halo_from": {}, "noise_sigma": 0.0},
+    "linkedin": {"claim_mult": 1.30, "halo": 0.05, "reach_spend": 3750, "halo_from": {}, "noise_sigma": 0.0},
+    "youtube": {"claim_mult": 1.80, "halo": 0.04, "reach_spend": 3750, "halo_from": {}, "noise_sigma": 0.0},
     # The CTV platform only credits weeks it served ads, so CTV's long carryover is
     # partly missed; its in-flight household-match claim over-claims overall anyway.
-    "ctv": {"claim_mult": 2.40, "halo": 0.05, "reach_spend": 4_000, "halo_from": {}, "noise_sigma": 0.30},
-    "display": {"claim_mult": 2.00, "halo": 0.20, "reach_spend": 1_300, "halo_from": {}, "noise_sigma": 0.0},
-    "affiliates": {"claim_mult": 1.80, "halo": 0.04, "reach_spend": 600, "halo_from": {}, "noise_sigma": 0.0},
+    "ctv": {"claim_mult": 2.40, "halo": 0.05, "reach_spend": 10_000, "halo_from": {}, "noise_sigma": 0.30},
+    "display": {"claim_mult": 2.00, "halo": 0.20, "reach_spend": 3250, "halo_from": {}, "noise_sigma": 0.0},
+    "affiliates": {"claim_mult": 1.80, "halo": 0.04, "reach_spend": 1500, "halo_from": {}, "noise_sigma": 0.0},
 }
 DISPLAY_POST_VIEW_SHARE = 0.85
 # CPM in $ and click-through rate per impression (None = not reported).
@@ -422,7 +422,7 @@ MEDIA = {
     "paid_search_brand": {"cpm": 450.0, "ctr": 0.22},
     # Deeper search buying wins pricier auctions: cost per thousand impressions rises with
     # non-brand spend per unit of market size, relative to depth_ref.
-    "paid_search_nonbrand": {"cpm": 250.0, "ctr": 0.035, "depth_ref": 3_000.0, "depth_elasticity": 0.35},
+    "paid_search_nonbrand": {"cpm": 250.0, "ctr": 0.035, "depth_ref": 7500, "depth_elasticity": 0.35},
     "meta": {"cpm": 12.0, "ctr": 0.010},
     "linkedin": {"cpm": 45.0, "ctr": 0.006},
     "youtube": {"cpm": 10.0, "ctr": 0.002},

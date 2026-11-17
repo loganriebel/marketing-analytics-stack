@@ -20,7 +20,7 @@
       "random_seed": 4
     },
     "estimand_draws": 2000,
-    "sampling_seconds": 612,
+    "sampling_seconds": 793,
     "hdi_prob": 0.9,
     "estimands_cover": "the first 156 weeks' spend path (2023-01-02 to 2025-12-22) with this fit's posterior",
     "market_tests": "geotest/outputs/readout.json",
@@ -42,134 +42,134 @@
   ],
   "converged": false,
   "solver_message": "Positive directional derivative for linesearch",
-  "total_spend": 35990000.47999999,
+  "total_spend": 89974999.85,
   "plan": [
     {
       "channel": "paid_search_nonbrand",
-      "spend_now": 17030000.299999997,
-      "multiplier": 0.8665957164746023,
-      "spend_plan": 14758125.31154119,
-      "spend_change": -2271874.988458807,
+      "spend_now": 42574999.64,
+      "multiplier": 0.8847957452903361,
+      "spend_plan": 37670178.53720959,
+      "spend_change": -4904821.102790409,
       "deal_change": {
-        "mean": -275.7935621213847,
-        "median": -277.715865427831,
+        "mean": -625.1005032169321,
+        "median": -624.5622052269136,
         "hdi_90": [
-          -422.27827440861347,
-          -143.5152975498968
+          -834.445896805415,
+          -432.06882173579197
         ]
       }
     },
     {
       "channel": "meta",
-      "spend_now": 4399999.9,
-      "multiplier": 1.499999996333697,
-      "spend_plan": 6599999.833868268,
-      "spend_change": 2199999.933868267,
+      "spend_now": 10999999.96,
+      "multiplier": 1.4999994603239886,
+      "spend_plan": 16499994.003563898,
+      "spend_change": 5499994.043563896,
       "deal_change": {
-        "mean": 529.3325214054164,
-        "median": 525.9316011610543,
+        "mean": 2084.3434528340895,
+        "median": 2074.723986798669,
         "hdi_90": [
-          154.91264373511294,
-          899.7929100732061
+          1490.1391254996001,
+          2730.8275764030986
         ]
       },
-      "brand_search_spend_change": 66448.43239369403
+      "brand_search_spend_change": 185925.86854362916
     },
     {
       "channel": "linkedin",
-      "spend_now": 2560000.06,
-      "multiplier": 0.7964934589555316,
-      "spend_plan": 2039023.3027157683,
-      "spend_change": -520976.7572842316,
+      "spend_now": 6400000.24,
+      "multiplier": 0.8704519896256533,
+      "spend_plan": 5570892.942512658,
+      "spend_change": -829107.2974873414,
       "deal_change": {
-        "mean": -61.819351033734144,
-        "median": -49.8782903549572,
+        "mean": -107.61256598036391,
+        "median": -92.47625906630188,
         "hdi_90": [
-          -131.06452348576738,
-          -0.3471508889780264
+          -220.51703269999325,
+          -0.8493020097493833
         ]
       }
     },
     {
       "channel": "youtube",
-      "spend_now": 2800000.15,
-      "multiplier": 1.4999999877003634,
-      "spend_plan": 4200000.190561015,
-      "spend_change": 1400000.0405610155,
+      "spend_now": 7000000.05,
+      "multiplier": 1.4999999669750488,
+      "spend_plan": 10499999.84382534,
+      "spend_change": 3499999.7938253395,
       "deal_change": {
-        "mean": 546.9662274947323,
-        "median": 543.4078083261494,
+        "mean": 1506.3001530475929,
+        "median": 1504.2313880949164,
         "hdi_90": [
-          381.5336625833397,
-          724.6637134509879
+          1080.7580880503324,
+          1886.5831339380534
         ]
       },
-      "brand_search_spend_change": 52196.602478259585
+      "brand_search_spend_change": 134193.8052506663
     },
     {
       "channel": "ctv",
-      "spend_now": 2900000.0,
-      "multiplier": 1.5000000010671108,
-      "spend_plan": 4350000.003094621,
-      "spend_change": 1450000.0030946215,
+      "spend_now": 7250000.08,
+      "multiplier": 1.5000000306161232,
+      "spend_plan": 10875000.341966895,
+      "spend_change": 3625000.261966896,
       "deal_change": {
-        "mean": 338.23113222885854,
-        "median": 338.04663297813664,
+        "mean": 870.5343053345774,
+        "median": 868.0179287304094,
         "hdi_90": [
-          253.27835734545977,
-          421.02232606122163
+          720.4133122542594,
+          1019.7225049535185
         ]
       },
-      "brand_search_spend_change": 130503.206713292
+      "brand_search_spend_change": 306539.9693475489
     },
     {
       "channel": "display",
-      "spend_now": 4350000.16,
-      "multiplier": 0.5000000057718292,
-      "spend_plan": 2175000.1051074583,
-      "spend_change": -2175000.054892542,
+      "spend_now": 10874999.879999999,
+      "multiplier": 0.5000005548488862,
+      "spend_plan": 5437505.97398157,
+      "spend_change": -5437493.9060184285,
       "deal_change": {
-        "mean": -141.5939579956877,
-        "median": -109.19551590110078,
+        "mean": -188.7350840876255,
+        "median": -136.31417768537122,
         "hdi_90": [
-          -311.5246143813678,
-          -0.02450796633919977
+          -437.608699554028,
+          -0.05345453030437325
         ]
       }
     },
     {
       "channel": "affiliates",
-      "spend_now": 1949999.91,
-      "multiplier": 0.9578727278565181,
-      "spend_plan": 1867851.7331116647,
-      "spend_change": -82148.17688833518,
+      "spend_now": 4875000.0,
+      "multiplier": 0.7018314270646222,
+      "spend_plan": 3421428.2069400335,
+      "spend_change": -1453571.7930599668,
       "deal_change": {
-        "mean": -10.581250261233258,
-        "median": -8.971465426842087,
+        "mean": -176.84076937986265,
+        "median": -140.70674236718827,
         "hdi_90": [
-          -21.603723494970268,
-          -0.011059162610524975
+          -394.40213352419414,
+          -0.4382441235612693
         ]
       }
     }
   ],
   "deal_change": {
-    "mean": 924.7417597169674,
-    "median": 936.7072097671404,
+    "mean": 3362.8889885514754,
+    "median": 3351.6741378006873,
     "hdi_90": [
-      425.46889526155775,
-      1415.1808417952643
+      2421.7569940196545,
+      4243.344218681097
     ]
   },
   "deal_change_pct_of_paid_incremental": {
-    "mean": 9.448727146720955,
-    "median": 9.283093834205342,
+    "mean": 14.424278312347019,
+    "median": 14.23919418629574,
     "hdi_90": [
-      3.7301309106621336,
-      15.255265094711381
+      10.075039035931054,
+      19.149650712603073
     ]
   },
-  "prob_gain_positive": 0.9985,
+  "prob_gain_positive": 1.0,
   "brand_search": "not a lever: always on, spend follows searches; the plan's upper-funnel moves change it by brand_search_spend_change",
-  "brand_search_spend_change": 249148.24158524565
+  "brand_search_spend_change": 626659.6431418443
 }

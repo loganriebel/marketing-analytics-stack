@@ -3,8 +3,40 @@
   "attempts": [
     {
       "attempt": 1,
-      "cost_usd": 0.3575574,
-      "seconds": 87.5,
+      "cost_usd": 0.31831740000000003,
+      "seconds": 71.4,
+      "models_used": [
+        "claude-sonnet-5-5"
+      ],
+      "grounding_score": 1.0,
+      "unmatched": [],
+      "style": [
+        {
+          "line": 0,
+          "text": "607 words above the appendix; aim for 230 to 400"
+        }
+      ]
+    },
+    {
+      "attempt": 2,
+      "cost_usd": 0.23669040000000002,
+      "seconds": 26.3,
+      "models_used": [
+        "claude-sonnet-5-5"
+      ],
+      "grounding_score": 1.0,
+      "unmatched": [],
+      "style": [
+        {
+          "line": 0,
+          "text": "456 words above the appendix; aim for 230 to 400"
+        }
+      ]
+    },
+    {
+      "attempt": 3,
+      "cost_usd": 0.2869404,
+      "seconds": 50.2,
       "models_used": [
         "claude-sonnet-5-5"
       ],
@@ -15,5 +47,5 @@
   ],
   "grounding_pass": true,
   "style_pass": true,
-  "words": 487
+  "words": 531
 }

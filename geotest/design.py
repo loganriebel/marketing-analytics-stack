@@ -43,6 +43,7 @@ import yaml  # noqa: E402
 from scipy import stats  # noqa: E402
 
 from . import estimator as E  # noqa: E402
+from .compliance import dry_run, registered  # noqa: E402
 from .data import REPO, Markets, load  # noqa: E402
 from .prereg import prereg_md  # noqa: E402
 
@@ -62,7 +63,9 @@ DURATIONS = (8, 12, 16)
 CANDIDATES = 4000
 DESIGN_SEED = 20260126
 MAX_CROSS = 0.15                       # cross-arm dose imbalance allowed, as a share of the arm's own
-ADD_GRID = np.arange(500, 8001, 250)   # grow-arm step, $ per week per unit of market size
+# Grow-arm step, $ per week per unit of market size. It scales with the company's spend
+# (2.5x since the world was scaled up), so the grid is the same relative to spend.
+ADD_GRID = np.arange(1250, 20001, 625)
 TARGET_POWER = 0.80
 
 
@@ -257,6 +260,10 @@ def design() -> dict:
         },
         "durations": durations,
     }
+    # Rule 5, registered now: the market-compliance check, and what it flags on last
+    # year's same weeks, when nothing was tested.
+    out["compliance"] = registered(add, keep)
+    out["compliance"]["dry_run"] = dry_run(m, out, arms, proxy, TEST_WEEKS)
     return out
 
 

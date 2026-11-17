@@ -8,39 +8,39 @@
     "by_year": {
       "2023": {
         "weeks": 52,
-        "won_deals": 10517.0,
-        "paid_spend": 13500000.3,
-        "cost_per_deal": 1283.636046401065,
+        "won_deals": 26637.0,
+        "paid_spend": 33750000.12,
+        "cost_per_deal": 1267.0345804707736,
         "spend_by_role": {
-          "performance": 7680000.1899999995,
-          "brand": 5120000.13,
-          "events": 699999.98
+          "performance": 19199999.94,
+          "brand": 12800000.170000002,
+          "events": 1750000.0100000002
         },
-        "performance_share": 0.59999999984375
+        "performance_share": 0.5999999960625
       },
       "2024": {
         "weeks": 53,
-        "won_deals": 11008.0,
-        "paid_spend": 14849999.97,
-        "cost_per_deal": 1349.0188926235467,
+        "won_deals": 27658.0,
+        "paid_spend": 37124999.89,
+        "cost_per_deal": 1342.2879416443704,
         "spend_by_role": {
-          "performance": 9890000.18,
-          "brand": 4239999.8,
-          "events": 719999.99
+          "performance": 24724999.810000002,
+          "brand": 10600000.1,
+          "events": 1799999.98
         },
-        "performance_share": 0.699929242321202
+        "performance_share": 0.6999292249962811
       },
       "2025": {
         "weeks": 51,
-        "won_deals": 9713.0,
-        "paid_spend": 17230000.29,
-        "cost_per_deal": 1773.9112828168434,
+        "won_deals": 24886.0,
+        "paid_spend": 43074999.67,
+        "cost_per_deal": 1730.892858233545,
         "spend_by_role": {
-          "performance": 13180000.11,
-          "brand": 3300000.18,
-          "events": 750000.0
+          "performance": 32949999.6,
+          "brand": 8250000.0600000005,
+          "events": 1875000.01
         },
-        "performance_share": 0.7997572741547567
+        "performance_share": 0.7997572784445989
       }
     }
   },
@@ -65,9 +65,9 @@
     ],
     "cut_value": 0.39,
     "cut_spend_by_year": {
-      "2023": 3380000.15,
-      "2024": 5220000.08,
-      "2025": 8430000.07
+      "2023": 8449999.93,
+      "2024": 13049999.93,
+      "2025": 21074999.78
     },
     "always_on": [
       "paid_search_nonbrand",
@@ -78,40 +78,40 @@
       "affiliates"
     ],
     "mcpa": {
-      "paid_search_nonbrand": 6834.8891080484755,
-      "meta": 7037.924450645541,
-      "linkedin": 8093.074466881766,
-      "youtube": 2253.3018639754578,
-      "ctv": 3797.132877250703,
-      "display": 27516.705667620416,
-      "affiliates": 10134.208829493211
+      "paid_search_nonbrand": 7895.874942257844,
+      "meta": 3509.0898706879852,
+      "linkedin": 5209.168260977651,
+      "youtube": 2290.958627537673,
+      "ctv": 3578.23621714978,
+      "display": 56162.07369542701,
+      "affiliates": 9412.254754543417
     },
     "plan_multipliers": {
-      "paid_search_nonbrand": 0.9728105425956808,
-      "meta": 1.0745539120296606,
-      "linkedin": 0.9399539378373168,
-      "youtube": 1.4999999960277357,
-      "ctv": 1.500000000069369,
-      "display": 0.5000000017303567,
-      "affiliates": 0.8019062438883052
+      "paid_search_nonbrand": 0.8163436173144131,
+      "meta": 1.4999999820796301,
+      "linkedin": 1.2565643904371506,
+      "youtube": 1.4999999820796301,
+      "ctv": 1.4999999550225513,
+      "display": 0.49999999402654344,
+      "affiliates": 0.7927505384541218
     }
   },
   "arms": {
     "grow": {
       "channel": "youtube",
       "move": "add_per_week_per_size",
-      "value": 2500.0,
+      "value": 5625.0,
       "markets": [
-        "CAK",
-        "CID",
         "CMH",
         "CVG",
-        "FSD",
+        "DLH",
+        "GRB",
         "MKE",
         "MLI",
         "MSN",
         "RFD",
-        "RST"
+        "RST",
+        "TOL"
       ]
     },
     "cut": {
@@ -122,47 +122,47 @@
       "value": 0.39,
       "basis": "the channel's first-year weekly pace over its last-year weekly pace",
       "markets": [
-        "CID",
-        "CLE",
+        "CHI",
         "CVG",
+        "DAY",
+        "DLH",
+        "DSM",
         "FAR",
-        "MKE",
-        "MLI",
-        "MSP",
+        "GRB",
+        "MSN",
         "PIA",
-        "RST",
         "TOL"
       ]
     }
   },
   "cells": {
     "grow only": [
-      "CAK",
       "CMH",
-      "FSD",
-      "MSN",
-      "RFD"
-    ],
-    "search only": [
-      "CLE",
-      "FAR",
-      "MSP",
-      "PIA",
-      "TOL"
-    ],
-    "grow and search": [
-      "CID",
-      "CVG",
       "MKE",
       "MLI",
+      "RFD",
       "RST"
     ],
-    "neither": [
+    "search only": [
       "CHI",
       "DAY",
-      "DLH",
       "DSM",
-      "GRB"
+      "FAR",
+      "PIA"
+    ],
+    "grow and search": [
+      "CVG",
+      "DLH",
+      "GRB",
+      "MSN",
+      "TOL"
+    ],
+    "neither": [
+      "CAK",
+      "CID",
+      "CLE",
+      "FSD",
+      "MSP"
     ]
   },
   "market_names": {
@@ -202,9 +202,9 @@
     ],
     [
       "DAY",
-      "CAK",
+      "MLI",
       "TOL",
-      "MLI"
+      "CAK"
     ],
     [
       "PIA",
@@ -214,14 +214,14 @@
     ],
     [
       "FAR",
-      "FSD",
       "DLH",
+      "FSD",
       "RST"
     ]
   ],
   "assignment": {
     "candidates": 4000,
-    "kept_after_balance": 1942,
+    "kept_after_balance": 1940,
     "seed": 20260126,
     "rule": "smallest placebo RMS, worst of the two arms and the two years (2024 and 2025 windows)",
     "max_cross": 0.15
@@ -231,418 +231,418 @@
     "windows_2024": 53,
     "windows_2025": 36,
     "rms_2024": [
-      38.08092765051963,
-      38.82362563536753
+      131.86805891221175,
+      135.3729691747019
     ],
     "rms_2025": [
-      37.35462083023142,
-      30.229426213864677
+      114.74851667140436,
+      151.3531957245305
     ],
     "rms_all": [
-      37.78882195964666,
-      35.598095616922
+      125.22549538332403,
+      142.0535583568993
     ],
     "mean_all": [
-      17.004125856964308,
-      -1.9987793715407796
+      26.795036458396737,
+      4.471049417083554
     ],
     "count_noise_floor": [
-      47.354959951826835,
-      54.32268678585261
+      76.14422082294419,
+      89.06453615414874
     ],
     "sd_used": [
-      47.354959951826835,
-      54.32268678585261
+      131.86805891221175,
+      151.3531957245305
     ],
-    "false_positive_rate_max": 0.02247191011235955,
+    "false_positive_rate_max": 0.011235955056179775,
     "arms": [
       "grow",
       "cut"
     ]
   },
   "mde": {
-    "grow": 117.74691744135653,
-    "cut": 135.07199504916278,
+    "grow": 327.88661339136326,
+    "cut": 376.33591622907215,
     "z": 2.4864748605243863,
     "rule": "2.49 x the largest of the 2024 placebo RMS, the 2025 placebo RMS and the count-noise floor"
   },
   "window_deals_last_year": {
-    "grow_markets": 1255.0,
-    "cut_markets": 1446.0,
-    "all_markets": 2959.0
+    "grow_markets": 3243.0,
+    "cut_markets": 3894.0,
+    "all_markets": 7549.0
   },
   "forecast": {
     "grow": {
-      "lift_mean": 118.97400647306966,
+      "lift_mean": 333.60359624165693,
       "lift_hdi_90": [
-        88.08811655432002,
-        153.74234415340254
+        287.47631212616653,
+        382.15086822383245
       ],
-      "lift_total_mean": 132.13707835304672,
-      "spend_change": 252631.5789473684,
-      "power": 0.8071752025283355,
-      "assurance": 0.7875880189253849,
-      "cost_per_extra_deal": 2123.4182695575
+      "lift_total_mean": 340.363075115056,
+      "spend_change": 568421.0526315789,
+      "power": 0.8119149543718023,
+      "assurance": 0.8064873565348608,
+      "cost_per_extra_deal": 1703.8816698481394
     },
     "cut": {
-      "lift_mean": -82.62541752588088,
+      "lift_mean": -189.59965887166445,
       "lift_hdi_90": [
-        -120.28982210586405,
-        -40.911783658080495
+        -252.14479394572527,
+        -112.8490743173474
       ],
-      "lift_total_mean": -83.16807707751214,
-      "spend_change": -594201.366,
-      "power": 0.4507200375540964,
-      "multiple_of_forecast_for_80pct_power": 1.6347511346233619,
+      "lift_total_mean": -191.4189186367954,
+      "spend_change": -1701091.7012,
+      "power": 0.34747115833735026,
+      "multiple_of_forecast_for_80pct_power": 1.9848976441661486,
       "by_channel": {
         "paid_search_nonbrand": {
-          "spend_change": -594201.366,
-          "lift_in_window_mean": -82.62541752588088
+          "spend_change": -1701091.7012,
+          "lift_in_window_mean": -189.59965887166445
         }
       }
     },
-    "grid_step": 250.0,
+    "grid_step": 625.0,
     "grid": [
-      {
-        "add_per_week_per_size": 500.0,
-        "spend_change": 50526.31578947368,
-        "lift_mean": 32.77947448509094,
-        "lift_hdi_90": [
-          20.194500490724728,
-          45.0237692912654
-        ],
-        "power": 0.17038478471443352,
-        "assurance": 0.17346867343368597
-      },
-      {
-        "add_per_week_per_size": 750.0,
-        "spend_change": 75789.47368421053,
-        "lift_mean": 50.16798760154877,
-        "lift_hdi_90": [
-          32.37788990561502,
-          66.42502179808083
-        ],
-        "power": 0.2791223847126134,
-        "assurance": 0.2836237016638905
-      },
-      {
-        "add_per_week_per_size": 1000.0,
-        "spend_change": 101052.63157894737,
-        "lift_mean": 65.82975264147122,
-        "lift_hdi_90": [
-          45.55204966771578,
-          86.6198293819772
-        ],
-        "power": 0.39946993195384684,
-        "assurance": 0.40268034794126456
-      },
       {
         "add_per_week_per_size": 1250.0,
         "spend_change": 126315.78947368421,
-        "lift_mean": 79.19302658318347,
+        "lift_mean": 72.4524282237454,
         "lift_hdi_90": [
-          55.333166455318604,
-          102.37123599528766
+          49.998924993252295,
+          96.1374275024764
         ],
-        "power": 0.5109593196682857,
-        "assurance": 0.5105328234178298
+        "power": 0.13666581056760752,
+        "assurance": 0.1380939561577468
       },
       {
-        "add_per_week_per_size": 1500.0,
-        "spend_change": 151578.94736842104,
-        "lift_mean": 90.32775539533192,
+        "add_per_week_per_size": 1875.0,
+        "spend_change": 189473.68421052635,
+        "lift_mean": 115.76475775801073,
         "lift_hdi_90": [
-          62.99158371964444,
-          115.07316536212966
+          83.75779757055913,
+          147.34311027691427
         ],
-        "power": 0.6035735229854143,
-        "assurance": 0.5985338993078428
-      },
-      {
-        "add_per_week_per_size": 1750.0,
-        "spend_change": 176842.1052631579,
-        "lift_mean": 99.54587773804437,
-        "lift_hdi_90": [
-          71.34965819120193,
-          127.35323422406184
-        ],
-        "power": 0.6762607277556404,
-        "assurance": 0.6666779716204624
-      },
-      {
-        "add_per_week_per_size": 2000.0,
-        "spend_change": 202105.26315789472,
-        "lift_mean": 107.19601069151612,
-        "lift_hdi_90": [
-          80.45876197265952,
-          140.08592561318648
-        ],
-        "power": 0.7319813917260202,
-        "assurance": 0.7184067358614266
-      },
-      {
-        "add_per_week_per_size": 2250.0,
-        "spend_change": 227368.42105263157,
-        "lift_mean": 113.58774220090248,
-        "lift_hdi_90": [
-          85.04352272067865,
-          147.67217509579982
-        ],
-        "power": 0.7745127746974532,
-        "assurance": 0.7576176169048241
+        "power": 0.22154955883839716,
+        "assurance": 0.2240213708665584
       },
       {
         "add_per_week_per_size": 2500.0,
-        "spend_change": 252631.5789473684,
-        "lift_mean": 118.97400647306966,
+        "spend_change": 252631.57894736843,
+        "lift_mean": 159.94599651111125,
         "lift_hdi_90": [
-          88.08811655432002,
-          153.74234415340254
+          120.7954396897938,
+          194.79014249732703
         ],
-        "power": 0.8071752025283355,
-        "assurance": 0.7875880189253849
+        "power": 0.3328964542364693,
+        "assurance": 0.3351437765650801
       },
       {
-        "add_per_week_per_size": 2750.0,
-        "spend_change": 277894.7368421053,
-        "lift_mean": 123.55456296050141,
+        "add_per_week_per_size": 3125.0,
+        "spend_change": 315789.47368421056,
+        "lift_mean": 202.41833501503842,
         "lift_hdi_90": [
-          92.53843779914348,
-          161.1851941894534
+          164.06485157264606,
+          242.8834744290756
         ],
-        "power": 0.8325426901602478,
-        "assurance": 0.8107958288364514
-      },
-      {
-        "add_per_week_per_size": 3000.0,
-        "spend_change": 303157.89473684214,
-        "lift_mean": 127.48526687179823,
-        "lift_hdi_90": [
-          94.38244013653903,
-          165.31186785090028
-        ],
-        "power": 0.8525117858696596,
-        "assurance": 0.8290366277628779
-      },
-      {
-        "add_per_week_per_size": 3250.0,
-        "spend_change": 328421.05263157893,
-        "lift_mean": 130.88755293493801,
-        "lift_hdi_90": [
-          97.35142373200333,
-          170.82332140085617
-        ],
-        "power": 0.8684541408681148,
-        "assurance": 0.8435935486310773
-      },
-      {
-        "add_per_week_per_size": 3500.0,
-        "spend_change": 353684.2105263158,
-        "lift_mean": 133.85643539025804,
-        "lift_hdi_90": [
-          97.65242227645534,
-          173.41231319349035
-        ],
-        "power": 0.881359000174158,
-        "assurance": 0.8553836539223492
+        "power": 0.45626533000931757,
+        "assurance": 0.4569633353230029
       },
       {
         "add_per_week_per_size": 3750.0,
-        "spend_change": 378947.36842105264,
-        "lift_mean": 136.4667739401584,
+        "spend_change": 378947.3684210527,
+        "lift_mean": 241.48730844534023,
         "lift_hdi_90": [
-          99.07253615889198,
-          177.09544159674752
+          198.68583592303813,
+          280.4703200275236
         ],
-        "power": 0.8919435650591583,
-        "assurance": 0.8650671704027324
+        "power": 0.573944703259728,
+        "assurance": 0.5726490523301847
       },
       {
-        "add_per_week_per_size": 4000.0,
-        "spend_change": 404210.52631578944,
-        "lift_mean": 138.77802872700582,
+        "add_per_week_per_size": 4375.0,
+        "spend_change": 442105.2631578947,
+        "lift_mean": 276.375074257564,
         "lift_hdi_90": [
-          100.45134766397592,
-          180.17679256214052
+          234.13088219024226,
+          319.8752165024218
         ],
-        "power": 0.9007326675255891,
-        "assurance": 0.8731245855245272
-      },
-      {
-        "add_per_week_per_size": 4250.0,
-        "spend_change": 429473.6842105263,
-        "lift_mean": 140.8378267301402,
-        "lift_hdi_90": [
-          102.47911508732194,
-          184.33833079032217
-        ],
-        "power": 0.9081147008942294,
-        "assurance": 0.879909923874683
-      },
-      {
-        "add_per_week_per_size": 4500.0,
-        "spend_change": 454736.8421052632,
-        "lift_mean": 142.68463291396841,
-        "lift_hdi_90": [
-          102.58444794022758,
-          186.06699497948702
-        ],
-        "power": 0.9143805425539041,
-        "assurance": 0.885687390450413
-      },
-      {
-        "add_per_week_per_size": 4750.0,
-        "spend_change": 480000.0,
-        "lift_mean": 144.34975887162136,
-        "lift_hdi_90": [
-          102.8772749680108,
-          188.0518228303304
-        ],
-        "power": 0.9197506699419433,
-        "assurance": 0.8906566679168002
+        "power": 0.6740022869792139,
+        "assurance": 0.6709427140015798
       },
       {
         "add_per_week_per_size": 5000.0,
-        "spend_change": 505263.1578947368,
-        "lift_mean": 145.85888358701072,
+        "spend_change": 505263.15789473685,
+        "lift_mean": 306.9836399649653,
         "lift_hdi_90": [
-          105.00240386330242,
-          191.29895183934647
+          261.993513182145,
+          352.49767193763483
         ],
-        "power": 0.9243941693222979,
-        "assurance": 0.8949705242435841
+        "power": 0.7527303618637811,
+        "assurance": 0.7483120157448584
       },
       {
-        "add_per_week_per_size": 5250.0,
-        "spend_change": 530526.3157894737,
-        "lift_mean": 147.23321424901735,
+        "add_per_week_per_size": 5625.0,
+        "spend_change": 568421.0526315789,
+        "lift_mean": 333.60359624165693,
         "lift_hdi_90": [
-          105.79001745773347,
-          193.39561173926663
+          287.47631212616653,
+          382.15086822383245
         ],
-        "power": 0.9284421811157559,
-        "assurance": 0.8987471969006794
-      },
-      {
-        "add_per_week_per_size": 5500.0,
-        "spend_change": 555789.4736842106,
-        "lift_mean": 148.4903800317064,
-        "lift_hdi_90": [
-          106.07526731441064,
-          194.9941651400495
-        ],
-        "power": 0.9319975086036554,
-        "assurance": 0.9020792039308217
-      },
-      {
-        "add_per_week_per_size": 5750.0,
-        "spend_change": 581052.6315789474,
-        "lift_mean": 149.64512626612878,
-        "lift_hdi_90": [
-          106.70212764581845,
-          196.68468343786043
-        ],
-        "power": 0.9351415597816125,
-        "assurance": 0.9050396873592806
-      },
-      {
-        "add_per_week_per_size": 6000.0,
-        "spend_change": 606315.7894736843,
-        "lift_mean": 150.70985811780363,
-        "lift_hdi_90": [
-          105.11313175880514,
-          195.9352282490759
-        ],
-        "power": 0.9379394177255694,
-        "assurance": 0.907687033809648
+        "power": 0.8119149543718023,
+        "assurance": 0.8064873565348608
       },
       {
         "add_per_week_per_size": 6250.0,
-        "spend_change": 631578.9473684211,
-        "lift_mean": 151.69506978027732,
+        "spend_change": 631578.947368421,
+        "lift_mean": 356.6914025575495,
         "lift_hdi_90": [
-          104.56816844131527,
-          196.14796549181148
+          307.9498163296243,
+          407.8502320939055
         ],
-        "power": 0.940443584036946,
-        "assurance": 0.9100682785861294
+        "power": 0.8554408186243079,
+        "assurance": 0.8492669935086223
       },
       {
-        "add_per_week_per_size": 6500.0,
-        "spend_change": 656842.105263158,
-        "lift_mean": 152.6096858031968,
+        "add_per_week_per_size": 6875.0,
+        "spend_change": 694736.842105263,
+        "lift_mean": 376.73723553702155,
         "lift_hdi_90": [
-          104.8941125957574,
-          196.8941179946321
+          320.22768139997925,
+          426.3851589217202
         ],
-        "power": 0.9426967715051443,
-        "assurance": 0.9122216408171521
-      },
-      {
-        "add_per_week_per_size": 6750.0,
-        "spend_change": 682105.2631578948,
-        "lift_mean": 153.46133440674492,
-        "lift_hdi_90": [
-          105.5146287932525,
-          198.31242121486267
-        ],
-        "power": 0.9447340083243128,
-        "assurance": 0.9141784309210692
-      },
-      {
-        "add_per_week_per_size": 7000.0,
-        "spend_change": 707368.4210526316,
-        "lift_mean": 154.25656772280348,
-        "lift_hdi_90": [
-          105.93931840442116,
-          199.4324611576974
-        ],
-        "power": 0.9465842386876033,
-        "assurance": 0.9159644997144378
-      },
-      {
-        "add_per_week_per_size": 7250.0,
-        "spend_change": 732631.5789473684,
-        "lift_mean": 155.0010403072931,
-        "lift_hdi_90": [
-          106.58488252387966,
-          200.75021365711706
-        ],
-        "power": 0.9482715513006981,
-        "assurance": 0.9176013493081364
+        "power": 0.8872575876429584,
+        "assurance": 0.8805365551903072
       },
       {
         "add_per_week_per_size": 7500.0,
-        "spend_change": 757894.7368421053,
-        "lift_mean": 155.6996546114318,
+        "spend_change": 757894.7368421054,
+        "lift_mean": 394.20040410373116,
         "lift_hdi_90": [
-          106.94925078827933,
-          201.7268113078957
+          334.9933807216657,
+          447.71434272760314
         ],
-        "power": 0.9498161303770781,
-        "assurance": 0.9191069919642106
+        "power": 0.9106067981245547,
+        "assurance": 0.9034938101933347
       },
       {
-        "add_per_week_per_size": 7750.0,
-        "spend_change": 783157.8947368421,
-        "lift_mean": 156.356680119166,
+        "add_per_week_per_size": 8125.0,
+        "spend_change": 821052.6315789474,
+        "lift_mean": 409.4844822699804,
         "lift_hdi_90": [
-          107.67922535154001,
-          203.15767260473012
+          350.8408461212527,
+          469.50601562110324
         ],
-        "power": 0.95123499776031,
-        "assurance": 0.9204966193671423
+        "power": 0.9279106572621109,
+        "assurance": 0.920528653946111
       },
       {
-        "add_per_week_per_size": 8000.0,
-        "spend_change": 808421.0526315789,
-        "lift_mean": 156.9758513689072,
+        "add_per_week_per_size": 8750.0,
+        "spend_change": 884210.5263157894,
+        "lift_mean": 422.9325473022787,
         "lift_hdi_90": [
-          108.00034171770204,
-          204.08965306506542
+          362.7514588086081,
+          488.10139902506836
         ],
-        "power": 0.9525425964772819,
-        "assurance": 0.921783128029801
+        "power": 0.9409015327118763,
+        "assurance": 0.9333476958749117
+      },
+      {
+        "add_per_week_per_size": 9375.0,
+        "spend_change": 947368.4210526317,
+        "lift_mean": 434.8312946810542,
+        "lift_hdi_90": [
+          369.1256808604747,
+          501.0939316933451
+        ],
+        "power": 0.9507957702281553,
+        "assurance": 0.9431461160435121
+      },
+      {
+        "add_per_week_per_size": 10000.0,
+        "spend_change": 1010526.3157894736,
+        "lift_mean": 445.4183105898546,
+        "lift_hdi_90": [
+          382.1182717741654,
+          520.5573662717953
+        ],
+        "power": 0.9584436123962911,
+        "assurance": 0.9507567851543501
+      },
+      {
+        "add_per_week_per_size": 10625.0,
+        "spend_change": 1073684.2105263157,
+        "lift_mean": 454.8898420093874,
+        "lift_hdi_90": [
+          385.4861291459579,
+          529.7797446270295
+        ],
+        "power": 0.9644414959356897,
+        "assurance": 0.9567620575214006
+      },
+      {
+        "add_per_week_per_size": 11250.0,
+        "spend_change": 1136842.1052631577,
+        "lift_mean": 463.4079568786412,
+        "lift_hdi_90": [
+          391.78555144249304,
+          540.7821485204411
+        ],
+        "power": 0.9692112164937126,
+        "assurance": 0.9615724655693356
+      },
+      {
+        "add_per_week_per_size": 11875.0,
+        "spend_change": 1200000.0,
+        "lift_mean": 471.1067257325382,
+        "lift_hdi_90": [
+          397.1663905221961,
+          551.7556567277713
+        ],
+        "power": 0.9730542522489773,
+        "assurance": 0.9654805794633128
+      },
+      {
+        "add_per_week_per_size": 12500.0,
+        "spend_change": 1263157.8947368423,
+        "lift_mean": 478.0973852274496,
+        "lift_hdi_90": [
+          404.95507423621444,
+          564.20368476935
+        ],
+        "power": 0.976188670863781,
+        "assurance": 0.9686974823377378
+      },
+      {
+        "add_per_week_per_size": 13125.0,
+        "spend_change": 1326315.789473684,
+        "lift_mean": 484.47257574049803,
+        "lift_hdi_90": [
+          409.00395315030767,
+          572.0786588399197
+        ],
+        "power": 0.9787741872102534,
+        "assurance": 0.9713774501923206
+      },
+      {
+        "add_per_week_per_size": 13750.0,
+        "spend_change": 1389473.6842105263,
+        "lift_mean": 490.30978617847717,
+        "lift_hdi_90": [
+          413.4203292271656,
+          580.45571101194
+        ],
+        "power": 0.9809292560629115,
+        "assurance": 0.9736347282744593
+      },
+      {
+        "add_per_week_per_size": 14375.0,
+        "spend_change": 1452631.5789473683,
+        "lift_mean": 495.67414066829224,
+        "lift_hdi_90": [
+          417.65886148013215,
+          589.0116743904886
+        ],
+        "power": 0.9827428226836653,
+        "assurance": 0.9755550243267651
+      },
+      {
+        "add_per_week_per_size": 15000.0,
+        "spend_change": 1515789.4736842108,
+        "lift_mean": 500.62064803500147,
+        "lift_hdi_90": [
+          417.44727692198006,
+          592.4632888031449
+        ],
+        "power": 0.9842824783691878,
+        "assurance": 0.9772034582659493
+      },
+      {
+        "add_per_week_per_size": 15625.0,
+        "spend_change": 1578947.3684210526,
+        "lift_mean": 505.1960168176216,
+        "lift_hdi_90": [
+          427.7081869764303,
+          605.6208378266309
+        ],
+        "power": 0.9856001804982337,
+        "assurance": 0.9786301189468202
+      },
+      {
+        "add_per_week_per_size": 16250.0,
+        "spend_change": 1642105.2631578948,
+        "lift_mean": 509.4401206833004,
+        "lift_hdi_90": [
+          424.72857901309885,
+          606.2028755396472
+        ],
+        "power": 0.9867363084067012,
+        "assurance": 0.9798739909499246
+      },
+      {
+        "add_per_week_per_size": 16875.0,
+        "spend_change": 1705263.157894737,
+        "lift_mean": 513.3871832324618,
+        "lift_hdi_90": [
+          429.6708208552414,
+          614.5197162889733
+        ],
+        "power": 0.9877225711112341,
+        "assurance": 0.9809657602653008
+      },
+      {
+        "add_per_week_per_size": 17500.0,
+        "spend_change": 1768421.0526315789,
+        "lift_mean": 517.0667377944519,
+        "lift_hdi_90": [
+          432.48530714714116,
+          620.1002596579274
+        ],
+        "power": 0.9885841147822731,
+        "assurance": 0.9819298410013427
+      },
+      {
+        "add_per_week_per_size": 18125.0,
+        "spend_change": 1831578.9473684211,
+        "lift_mean": 520.5044068004571,
+        "lift_hdi_90": [
+          429.416663257768,
+          619.7271039673857
+        ],
+        "power": 0.989341066621755,
+        "assurance": 0.9827858552399293
+      },
+      {
+        "add_per_week_per_size": 18750.0,
+        "spend_change": 1894736.8421052634,
+        "lift_mean": 523.7225363943503,
+        "lift_hdi_90": [
+          435.6006844609044,
+          628.2136020750444
+        ],
+        "power": 0.9900096776719177,
+        "assurance": 0.983549725041894
+      },
+      {
+        "add_per_week_per_size": 19375.0,
+        "spend_change": 1957894.7368421052,
+        "lift_mean": 526.7407147654377,
+        "lift_hdi_90": [
+          437.7781313014135,
+          633.252005652047
+        ],
+        "power": 0.9906031772757898,
+        "assurance": 0.984234486588319
+      },
+      {
+        "add_per_week_per_size": 20000.0,
+        "spend_change": 2021052.6315789474,
+        "lift_mean": 529.5761969433056,
+        "lift_hdi_90": [
+          434.95397302983986,
+          632.3324908027627
+        ],
+        "power": 0.9911324181443385,
+        "assurance": 0.9848509032766951
       }
     ]
   },
@@ -651,49 +651,110 @@
       "test_weeks": 8,
       "window_weeks": 12,
       "grow": {
-        "mde": 101.97182172152377,
-        "lift_mean": 91.2600241861423,
-        "power": 0.7191861087357936,
-        "spend_change": 168421.05263157893
+        "mde": 317.2878861703107,
+        "lift_mean": 249.7204972388356,
+        "power": 0.6225249927532539,
+        "spend_change": 378947.36842105264
       },
       "cut": {
-        "mde": 116.9757790524209,
-        "lift_mean": -53.4147085655037,
-        "power": 0.30521723894000674,
-        "spend_change": -382249.71069999994
+        "mde": 351.4530166776597,
+        "lift_mean": -123.88891013026786,
+        "power": 0.2211369486692562,
+        "spend_change": -1132097.8837
       }
     },
     {
       "test_weeks": 12,
       "window_weeks": 16,
       "grow": {
-        "mde": 117.74691744135653,
-        "lift_mean": 118.97400647306966,
-        "power": 0.8071752025283355,
-        "spend_change": 252631.5789473684
+        "mde": 327.88661339136326,
+        "lift_mean": 333.60359624165693,
+        "power": 0.8119149543718023,
+        "spend_change": 568421.0526315789
       },
       "cut": {
-        "mde": 135.07199504916278,
-        "lift_mean": -82.62541752588088,
-        "power": 0.4507200375540964,
-        "spend_change": -594201.366
+        "mde": 376.33591622907215,
+        "lift_mean": -189.59965887166445,
+        "power": 0.34747115833735026,
+        "spend_change": -1701091.7012
       }
     },
     {
       "test_weeks": 16,
       "window_weeks": 20,
       "grow": {
-        "mde": 131.64505576996442,
-        "lift_mean": 158.06199712485355,
-        "power": 0.9099710866235766,
-        "spend_change": 336842.1052631579
+        "mde": 368.63305691626243,
+        "lift_mean": 453.9620417695453,
+        "power": 0.9217842071796291,
+        "spend_change": 757894.7368421054
       },
       "cut": {
-        "mde": 151.01508139322152,
-        "lift_mean": -111.52959264736486,
-        "power": 0.575929002809358,
-        "spend_change": -814273.8293000001
+        "mde": 401.1400531098618,
+        "lift_mean": -253.45956365600287,
+        "power": 0.470592993451355,
+        "spend_change": -2337984.4906
       }
     }
-  ]
+  ],
+  "compliance": {
+    "spend_change": {
+      "method": "ratio difference-in-differences on the moved channel's spend over the test weeks, with the registered pre-period",
+      "plan_dollars": {
+        "grow": "the add per week per size unit x the arm's size units x the test weeks",
+        "cut": "observed spend / multiplier - observed spend"
+      },
+      "max_miss": 0.2
+    },
+    "plan_file": {
+      "path": "plans/2026_test.yaml",
+      "rule": "assigns the registered markets, moves and dates"
+    },
+    "grow_seen": {
+      "stat": "lowest weekly grow-channel spend per size unit over the test weeks",
+      "line_share_of_add": 0.5,
+      "line": 2812.5
+    },
+    "cut_seen": {
+      "stat": "step at the test start inside its quarter, relative to the markets outside the arm",
+      "rule": "step nearer, in logs, to the multiplier than to 1; decided for the arm, its markets summed; each market tested the same way on its own",
+      "market_miss": "an assigned market whose own step misses: named, lifts recomputed without it as exploratory; never voids the readout",
+      "line": 0.6244997998398398,
+      "noise": "sd of the log step in the same layout in every earlier full quarter"
+    },
+    "void_if": [
+      "an arm's realized spend change misses its plan by more than max_miss",
+      "the plan file does not assign the registered markets, moves and dates",
+      "an assigned grow market's spend does not show the add",
+      "the search arm's summed spend does not show the cut"
+    ],
+    "drift": "a market outside an arm whose spend shows that arm's move: named, lifts recomputed without it as exploratory; never voids the readout and never changes the registered lift",
+    "dry_run": {
+      "weeks_start": "2025-02-03",
+      "test_weeks": 12,
+      "grow": {
+        "line_per_size_week": 2812.5,
+        "max_lowest_weekly_per_size": 985.0866666666667,
+        "flagged": [],
+        "windows": 110,
+        "windows_max_lowest_weekly_per_size": 1771.5427272727275,
+        "windows_flag_rate": 0.0
+      },
+      "cut": {
+        "line": 0.6244997998398398,
+        "noise_log_sd": 0.20602563005358984,
+        "noise_quarters": 8,
+        "weeks_before": 4,
+        "weeks_after": 9,
+        "flagged": [
+          "FAR"
+        ],
+        "p_assigned_market_misses_line": 0.011151333919019265,
+        "p_any_assigned_market_misses_line": 0.10608068695763861,
+        "p_market_flagged_without_a_move": 0.011151333919019265,
+        "arm_step": 1.2617226854205235,
+        "arm_noise_log_sd": 0.16510370823181766,
+        "p_arm_misses_line": 0.002175216511260597
+      }
+    }
+  }
 }

@@ -84,6 +84,18 @@ def test_step_check_sees_the_cut_and_names_drift():
     assert not res["all_in_cell"]
 
 
+def test_the_arm_decides_the_cut_and_a_missed_market_is_named():
+    cut = ["M00", "M02", "M04", "M06", "M08", "M10"]
+    d = {"arms": {"cut": {"channels": ["paid_search_nonbrand"], "value": 0.39, "markets": cut},
+                  "grow": {"channel": "youtube", "value": 2500.0, "markets": []}}}
+    m = _markets(cut[:-1], 0.39)                # M10 is in the arm but its spend never moved
+    arms = np.stack([np.zeros(12, bool), np.isin(m.regions, cut)])
+    res = R.step_check(m, d, arms, m.week_index("2026-02-02"), 12)
+    seen = {r["market"]: r["cut_seen"] for r in res["markets"]}
+    assert res["arm"]["cut_seen"] and not seen["M10"]
+    assert res["arm"]["noise_log_sd"] < res["noise_log_sd"]
+
+
 def test_plan_check_matches_the_committed_plan():
     plan = yaml.safe_load((REPO / "plans" / "2026_test.yaml").read_text(encoding="utf-8"))
     assert R.plan_check(DESIGN, plan)["matches"]
