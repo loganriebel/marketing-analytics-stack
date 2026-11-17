@@ -1,0 +1,5 @@
+readout,window_start,window_end,measured,measured_low,measured_high,forecast,forecast_low,forecast_high,power_at_forecast,decision,true_in_window,answer_key_note
+Spring test: YouTube push,2026-02-02,2026-05-24,462.58,245.68,679.49,333.6,287.48,382.15,0.8119,YouTube works; agrees with the forecast,345.93,"Answer key, from the MMM grader. It exists only because the data is synthetic; a real team never has it."
+Spring test: non-brand search pullback,2026-02-02,2026-05-24,-79.35,-328.3,169.61,-189.6,-252.14,-112.85,0.3475,No clear drop; agrees with the forecast,-119.09,"Answer key, from the MMM grader. It exists only because the data is synthetic; a real team never has it."
+Rollout: 15 markets against the 5 held out,2026-06-01,2027-01-03,464.47,18.22,910.73,533.4,406.75,661.38,0.626,works; agrees with the forecast,881.61,"Answer key, from the MMM grader. It exists only because the data is synthetic; a real team never has it."
+Rollout: the model's own view (cross-check),2026-06-01,2027-01-03,504.63,383.45,633.28,533.4,406.75,661.38,,decides nothing,881.61,"Answer key, from the MMM grader. It exists only because the data is synthetic; a real team never has it."
