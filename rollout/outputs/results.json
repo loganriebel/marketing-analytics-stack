@@ -1,0 +1,313 @@
+{
+  "test_id": "RO2026H2",
+  "readout_snapshot": "2027-01-03",
+  "data_cut": {
+    "warehouse": "data/cut_2027-01-03/data/warehouse.duckdb",
+    "first_week": "2023-01-02",
+    "last_week": "2026-12-28"
+  },
+  "window": {
+    "start": "2026-06-01",
+    "end": "2027-01-03",
+    "weeks": 31,
+    "pre_period": [
+      "2025-02-03",
+      "2026-01-26"
+    ]
+  },
+  "markets": {
+    "rollout": [
+      "CHI",
+      "CMH",
+      "CVG",
+      "DAY",
+      "DLH",
+      "DSM",
+      "FAR",
+      "GRB",
+      "MKE",
+      "MLI",
+      "MSN",
+      "PIA",
+      "RFD",
+      "RST",
+      "TOL"
+    ],
+    "holdout": [
+      "CAK",
+      "CID",
+      "CLE",
+      "FSD",
+      "MSP"
+    ],
+    "holdout_names": [
+      "Akron",
+      "Cedar Rapids",
+      "Cleveland",
+      "Sioux Falls",
+      "Minneapolis-St. Paul"
+    ]
+  },
+  "measured": {
+    "method": "standing holdout",
+    "lift": 464.474988998094,
+    "interval_90": [
+      18.2150546417555,
+      910.7349233544325
+    ],
+    "sd": 271.3067759004336,
+    "window_deals_rollout": 13128.0,
+    "window_deals_holdout": 4650.0,
+    "holdout_scaled": 12663.525011001906,
+    "pre_period_ratio": 2.7233387120434207
+  },
+  "registered": {
+    "power_at_forecast": 0.6259723727389673,
+    "smallest_detectable_lift": 674.5974777663515,
+    "forecast": {
+      "mean": 533.4049516845764,
+      "hdi_90": [
+        406.75397778159794,
+        661.3804744498432
+      ]
+    }
+  },
+  "decision": {
+    "valid": true,
+    "rule_1_rollout_works": true,
+    "rule_2_against_forecast": "agrees with the forecast",
+    "rule_3_not_clear": false,
+    "rule_3_drop_is_clear": false
+  },
+  "validity": {
+    "plan": {
+      "plan_file": "plans/2026_rollout.yaml",
+      "matches": true
+    },
+    "moves": {
+      "channels": {
+        "paid_search_nonbrand": {
+          "multiplier": 0.8837,
+          "rollout_ratio": 1.0034511044125036,
+          "rollout_line": 1.0637695937359757,
+          "move_shows": true,
+          "holdout_ratio": 1.0044465046843658,
+          "holdout_stays": true
+        },
+        "meta": {
+          "multiplier": 1.5,
+          "rollout_ratio": 0.9947966954471552,
+          "rollout_line": 0.816496580927726,
+          "move_shows": true,
+          "holdout_ratio": 0.9934848860462172,
+          "holdout_stays": true
+        },
+        "linkedin": {
+          "multiplier": 1.5,
+          "rollout_ratio": 1.01434809447572,
+          "rollout_line": 0.816496580927726,
+          "move_shows": true,
+          "holdout_ratio": 1.0143061006009175,
+          "holdout_stays": true
+        },
+        "youtube": {
+          "multiplier": 1.5,
+          "rollout_ratio": 0.9697202471570787,
+          "rollout_line": 0.816496580927726,
+          "move_shows": true,
+          "holdout_ratio": 0.9705045815191434,
+          "holdout_stays": true
+        },
+        "ctv": {
+          "multiplier": 1.5,
+          "rollout_ratio": 0.9898882972589662,
+          "rollout_line": 0.816496580927726,
+          "move_shows": true,
+          "holdout_ratio": 0.9992966969702319,
+          "holdout_stays": true
+        },
+        "display": {
+          "multiplier": 0.5,
+          "rollout_ratio": 1.0102616492924437,
+          "rollout_line": 1.4142135623730951,
+          "move_shows": true,
+          "holdout_ratio": 1.010303946367281,
+          "holdout_stays": true
+        },
+        "affiliates": {
+          "multiplier": 1.5,
+          "rollout_ratio": 1.0159127945934519,
+          "rollout_line": 0.816496580927726,
+          "move_shows": true,
+          "holdout_ratio": 1.0156579036579216,
+          "holdout_stays": true
+        }
+      },
+      "named_markets": [],
+      "passes": true
+    },
+    "valid": true
+  },
+  "secondary": {
+    "brand_search_spend_change": 91493.27437494695,
+    "blended_cost_per_deal_in_window": {
+      "rollout_markets": 1489.5526553930529,
+      "holdout_markets": 1435.9803591397852
+    },
+    "paid_spend_in_window": {
+      "rollout_markets": 19554847.259999998,
+      "holdout_markets": 6677308.670000001
+    }
+  },
+  "exploratory": {
+    "placebo_mean_removed": {
+      "placebo_mean": 97.4291312741256,
+      "lift": 367.04585772396837
+    }
+  },
+  "year": {
+    "2025": {
+      "weeks": 52,
+      "won_deals": 25318.0,
+      "paid_spend": 43535140.43000001,
+      "cost_per_deal": 1719.533155462517
+    },
+    "2026": {
+      "weeks": 52,
+      "won_deals": 28054.0,
+      "paid_spend": 42772952.97,
+      "cost_per_deal": 1524.6650377842732
+    },
+    "change_pct": {
+      "won_deals": 10.806540801011133,
+      "paid_spend": -1.7507407865733793,
+      "cost_per_deal": -11.332617638642073
+    }
+  },
+  "model_view": {
+    "method": "refit MMM on the realized 2026 spend, with and without the rollout's moves",
+    "markets": [
+      "CHI",
+      "CMH",
+      "CVG",
+      "DAY",
+      "DLH",
+      "DSM",
+      "FAR",
+      "GRB",
+      "MKE",
+      "MLI",
+      "MSN",
+      "PIA",
+      "RFD",
+      "RST",
+      "TOL"
+    ],
+    "weeks": [
+      "2026-06-01",
+      "2026-12-28"
+    ],
+    "deal_change_in_window": {
+      "mean": 504.63375008387317,
+      "median": 502.52803055962,
+      "hdi_90": [
+        383.4497647500302,
+        633.2810908519263
+      ]
+    },
+    "deal_change": {
+      "mean": 518.7212419890272,
+      "median": 516.7486832328027,
+      "hdi_90": [
+        390.5727368311594,
+        661.3345472627253
+      ]
+    },
+    "by_channel": [
+      {
+        "channel": "paid_search_nonbrand",
+        "multiplier": 0.8837,
+        "deal_change_in_window": {
+          "mean": -64.63957299720998,
+          "median": -63.665407924427385,
+          "hdi_90": [
+            -94.44922567185881,
+            -34.69636598465145
+          ]
+        }
+      },
+      {
+        "channel": "meta",
+        "multiplier": 1.5,
+        "deal_change_in_window": {
+          "mean": 241.5957473010861,
+          "median": 239.13235785843506,
+          "hdi_90": [
+            159.52151122493405,
+            326.822813272365
+          ]
+        }
+      },
+      {
+        "channel": "linkedin",
+        "multiplier": 1.5,
+        "deal_change_in_window": {
+          "mean": 41.025430984279375,
+          "median": 35.18261539439727,
+          "hdi_90": [
+            0.3268834656597235,
+            84.92362135612481
+          ]
+        }
+      },
+      {
+        "channel": "youtube",
+        "multiplier": 1.5,
+        "deal_change_in_window": {
+          "mean": 182.6509506774884,
+          "median": 182.0955598999015,
+          "hdi_90": [
+            132.70781070832282,
+            226.54569242347378
+          ]
+        }
+      },
+      {
+        "channel": "ctv",
+        "multiplier": 1.5,
+        "deal_change_in_window": {
+          "mean": 98.95801089845583,
+          "median": 98.99896050524683,
+          "hdi_90": [
+            85.48295490175094,
+            111.65870934227948
+          ]
+        }
+      },
+      {
+        "channel": "display",
+        "multiplier": 0.5,
+        "deal_change_in_window": {
+          "mean": -25.295212838598484,
+          "median": -18.21706276914572,
+          "hdi_90": [
+            -57.75028326034436,
+            -0.006630246453866468
+          ]
+        }
+      },
+      {
+        "channel": "affiliates",
+        "multiplier": 1.5,
+        "deal_change_in_window": {
+          "mean": 30.33839605837184,
+          "median": 22.36249236325728,
+          "hdi_90": [
+            0.07842114588859686,
+            69.32780967450228
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "method": "refit MMM on the realized 2026 spend, with and without the rollout's moves",
+  "markets": [
+    "CHI",
+    "CMH",
+    "CVG",
+    "DAY",
+    "DLH",
+    "DSM",
+    "FAR",
+    "GRB",
+    "MKE",
+    "MLI",
+    "MSN",
+    "PIA",
+    "RFD",
+    "RST",
+    "TOL"
+  ],
+  "weeks": [
+    "2026-06-01",
+    "2026-12-28"
+  ],
+  "deal_change_in_window": {
+    "mean": 504.63375008387317,
+    "median": 502.52803055962,
+    "hdi_90": [
+      383.4497647500302,
+      633.2810908519263
+    ]
+  },
+  "deal_change": {
+    "mean": 518.7212419890272,
+    "median": 516.7486832328027,
+    "hdi_90": [
+      390.5727368311594,
+      661.3345472627253
+    ]
+  },
+  "by_channel": [
+    {
+      "channel": "paid_search_nonbrand",
+      "multiplier": 0.8837,
+      "deal_change_in_window": {
+        "mean": -64.63957299720998,
+        "median": -63.665407924427385,
+        "hdi_90": [
+          -94.44922567185881,
+          -34.69636598465145
+        ]
+      }
+    },
+    {
+      "channel": "meta",
+      "multiplier": 1.5,
+      "deal_change_in_window": {
+        "mean": 241.5957473010861,
+        "median": 239.13235785843506,
+        "hdi_90": [
+          159.52151122493405,
+          326.822813272365
+        ]
+      }
+    },
+    {
+      "channel": "linkedin",
+      "multiplier": 1.5,
+      "deal_change_in_window": {
+        "mean": 41.025430984279375,
+        "median": 35.18261539439727,
+        "hdi_90": [
+          0.3268834656597235,
+          84.92362135612481
+        ]
+      }
+    },
+    {
+      "channel": "youtube",
+      "multiplier": 1.5,
+      "deal_change_in_window": {
+        "mean": 182.6509506774884,
+        "median": 182.0955598999015,
+        "hdi_90": [
+          132.70781070832282,
+          226.54569242347378
+        ]
+      }
+    },
+    {
+      "channel": "ctv",
+      "multiplier": 1.5,
+      "deal_change_in_window": {
+        "mean": 98.95801089845583,
+        "median": 98.99896050524683,
+        "hdi_90": [
+          85.48295490175094,
+          111.65870934227948
+        ]
+      }
+    },
+    {
+      "channel": "display",
+      "multiplier": 0.5,
+      "deal_change_in_window": {
+        "mean": -25.295212838598484,
+        "median": -18.21706276914572,
+        "hdi_90": [
+          -57.75028326034436,
+          -0.006630246453866468
+        ]
+      }
+    },
+    {
+      "channel": "affiliates",
+      "multiplier": 1.5,
+      "deal_change_in_window": {
+        "mean": 30.33839605837184,
+        "median": 22.36249236325728,
+        "hdi_90": [
+          0.07842114588859686,
+          69.32780967450228
+        ]
+      }
+    }
+  ]
+}
