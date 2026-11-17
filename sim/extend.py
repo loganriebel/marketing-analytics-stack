@@ -14,9 +14,10 @@ Rules:
   basis bought with each channel's usual habits (flighting, market split, noise), then
   the plan's test arms and national moves. Brand search follows searches, as before.
 * The media plan is exported too (media_plan_weekly): each planned channel's weekly
-  budget line by market, the plan's moves applied, before delivery noise (the weekly
-  national swing and each market's AR(1) buying noise). Delivered spend is that line
-  times the noise, so the plan export adds no draws and changes no other table.
+  buying line by market (the budget, its flighting and market split, and each market's
+  buying plan), the plan's moves applied, before delivery noise (the weekly national
+  swing the platforms add). Delivered spend is that line times the swing, so the plan
+  export adds no draws and changes no other table.
 * No peeking. Draws whose count does not depend on spend (demand noise, buying habits,
   headcount, email, webinars, reporting noise) come from one stream per component,
   drawn for the whole year at once. Draws whose count depends on spend (leads and their
@@ -120,7 +121,7 @@ def _exogenous(st: dict, cal: dict, seed: int) -> dict:
         x = np.round(national[:, None] * h["alloc"][None, :] * shape * noise, 2)
         x[x < 10.0] = 0.0
         bau[ch] = x
-        line = np.round(budget[:, None] * h["alloc"][None, :] * shape, 2)
+        line = np.round(budget[:, None] * h["alloc"][None, :] * shape * noise, 2)
         line[line < 10.0] = 0.0
         plan_bau[ch] = line
         add_noise[ch] = np.exp(rngs["add_noise"].normal(0.0, p["weekly_sigma"], (T, R)))

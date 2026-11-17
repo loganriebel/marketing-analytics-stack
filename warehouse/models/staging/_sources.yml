@@ -47,6 +47,6 @@ sources:
           dates. Empty until a test is registered.
       - name: media_plan_weekly
         description: >
-          The media plan from the planning tool: each planned channel's weekly budget line by market,
-          the plan's moves applied. Brand search follows searches and webinars are events, so neither
+          The media plan from the planning tool: each planned channel's weekly buying line by market,
+          the plan's moves applied. Delivered spend differs from it by the platforms' weekly swing. Brand search follows searches and webinars are events, so neither
           is planned here. Empty before the 2026 plan.
