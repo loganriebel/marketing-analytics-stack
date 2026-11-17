@@ -1,0 +1,21 @@
+# Written by python -m rollout.plan from the refit MMM (rollout/outputs/plan.json).
+# Do not edit by hand. The rollout is one arm, so the holdout markets
+# (CAK, CID, CLE, FSD, MSP) stay on the old plan.
+name: 2026 rollout
+approved: '2026-05-29'
+test:
+  id: RO2026H2
+  start: '2026-06-01'
+  end: '2026-12-28'
+  arms:
+  - id: rollout
+    markets: [CHI, CMH, CVG, DAY, DLH, DSM, FAR, GRB, MKE, MLI, MSN, PIA, RFD, RST,
+      TOL]
+    moves:
+      paid_search_nonbrand: {multiplier: 0.8837}
+      meta: {multiplier: 1.5}
+      linkedin: {multiplier: 1.5}
+      youtube: {multiplier: 1.5}
+      ctv: {multiplier: 1.5}
+      display: {multiplier: 0.5}
+      affiliates: {multiplier: 1.5}
