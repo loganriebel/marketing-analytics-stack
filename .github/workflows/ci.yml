@@ -82,3 +82,4 @@ jobs:
           tests/test_mmm_market_lifts.py
           tests/test_geotest.py
           tests/test_rollout_plan.py
+          tests/test_mmm_backtest.py
