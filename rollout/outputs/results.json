@@ -88,47 +88,47 @@
       "channels": {
         "paid_search_nonbrand": {
           "multiplier": 0.8837,
-          "rollout_ratio": 1.0034511044125036,
+          "rollout_ratio": 1.003451104412505,
           "rollout_line": 1.0637695937359757,
           "move_shows": true,
-          "holdout_ratio": 1.0044465046843658,
+          "holdout_ratio": 1.0044465046843642,
           "holdout_stays": true
         },
         "meta": {
           "multiplier": 1.5,
-          "rollout_ratio": 0.9947966954471552,
+          "rollout_ratio": 0.9947966954471545,
           "rollout_line": 0.816496580927726,
           "move_shows": true,
-          "holdout_ratio": 0.9934848860462172,
+          "holdout_ratio": 0.9934848860462173,
           "holdout_stays": true
         },
         "linkedin": {
           "multiplier": 1.5,
-          "rollout_ratio": 1.01434809447572,
+          "rollout_ratio": 1.0143480944757222,
           "rollout_line": 0.816496580927726,
           "move_shows": true,
-          "holdout_ratio": 1.0143061006009175,
+          "holdout_ratio": 1.0143061006009182,
           "holdout_stays": true
         },
         "youtube": {
           "multiplier": 1.5,
-          "rollout_ratio": 0.9697202471570787,
+          "rollout_ratio": 0.9697202471570799,
           "rollout_line": 0.816496580927726,
           "move_shows": true,
-          "holdout_ratio": 0.9705045815191434,
+          "holdout_ratio": 0.9705045815191431,
           "holdout_stays": true
         },
         "ctv": {
           "multiplier": 1.5,
-          "rollout_ratio": 0.9898882972589662,
+          "rollout_ratio": 0.9898882972589659,
           "rollout_line": 0.816496580927726,
           "move_shows": true,
-          "holdout_ratio": 0.9992966969702319,
+          "holdout_ratio": 0.9992966969702322,
           "holdout_stays": true
         },
         "display": {
           "multiplier": 0.5,
-          "rollout_ratio": 1.0102616492924437,
+          "rollout_ratio": 1.010261649292444,
           "rollout_line": 1.4142135623730951,
           "move_shows": true,
           "holdout_ratio": 1.010303946367281,
@@ -136,10 +136,10 @@
         },
         "affiliates": {
           "multiplier": 1.5,
-          "rollout_ratio": 1.0159127945934519,
+          "rollout_ratio": 1.015912794593454,
           "rollout_line": 0.816496580927726,
           "move_shows": true,
-          "holdout_ratio": 1.0156579036579216,
+          "holdout_ratio": 1.0156579036579223,
           "holdout_stays": true
         }
       },

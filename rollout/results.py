@@ -72,7 +72,7 @@ def plan_rows(path: Path) -> list[tuple]:
     con = duckdb.connect(str(path), read_only=True)
     try:
         return con.execute("select strftime(week_start, '%Y-%m-%d'), region_id, channel_id, planned_spend, spend "
-                           "from fct_media_plan_weekly").fetchall()
+                           "from fct_media_plan_weekly order by 1, 2, 3").fetchall()
     finally:
         con.close()
 
