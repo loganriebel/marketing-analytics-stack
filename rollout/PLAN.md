@@ -55,4 +55,19 @@ In the 15 rollout markets, the refit model expects +533 extra deals closing insi
 2. Against the model: the rollout beats the May forecast if the interval lies above it, falls short if it lies below, and agrees otherwise.
 3. If the interval reaches zero, the result is not clear. At 63% power that is the likely read even if the forecast is right, so it is not evidence that the plan failed. A clear drop (the whole interval below zero) would be.
 4. The model's own counterfactual, the refit MMM scoring the realized 2026 spend with and without the rollout's moves, is shown beside the readout as a cross-check. It decides nothing.
-5. Validity: the plan file assigns the registered markets, moves and dates; the money moved, by the same ratio method on spend, lands within 20% of plan for the grown channels together and for the cut channels together. Otherwise the readout is void.
+5. Validity: the plan file assigns the registered markets, moves and dates. For every moved channel, the rollout markets' delivered spend over the rollout weeks sits nearer, in logs, to the new plan's budget line than to the old one, and the holdout markets' sits nearer to the old line than to the new. Otherwise the readout is void. A single market that misses is named, never void.
+
+**Dry run of the move check** (rule 5), on the media plan's weeks before the rollout (2025-12-29 to 2026-05-25):
+
+| Channel | Move | Line | Delivered / planned, spend followed the plan | Same, if the rollout had not run |
+|---|---:|---:|---:|---:|
+| non-brand search | 0.88x | 1.064 | 0.973 (shows) | 1.101 (misses) |
+| Meta | 1.50x | 0.816 | 0.950 (shows) | 0.633 (misses) |
+| LinkedIn | 1.50x | 0.816 | 0.980 (shows) | 0.653 (misses) |
+| YouTube | 1.50x | 0.816 | 0.994 (shows) | 0.663 (misses) |
+| connected TV | 1.50x | 0.816 | 0.999 (shows) | 0.666 (misses) |
+| display retargeting | 0.50x | 1.414 | 1.101 (shows) | 2.202 (misses) |
+| affiliates | 1.50x | 0.816 | 0.995 (shows) | 0.663 (misses) |
+
+- **Spend followed the plan:** the check passes; 0 market-channel cells would be named.
+- **The rollout had not run:** the check fails, so it can see every move, including the smallest one, the non-brand search trim.

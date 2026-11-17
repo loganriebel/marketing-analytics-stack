@@ -12,6 +12,11 @@ environment) share one copy.
 * Interval: 90%, from placebo windows with the same geometry (window, gap, pre-period)
   on weeks before the spring test, where nothing moved. The sd used is the largest of
   the windows starting in 2024, those starting in 2025, and the count-noise floor.
+* Validity: the media plan (fct_media_plan_weekly) holds each channel's weekly budget
+  line by market, moves applied. A move ran when the delivered spend over the rollout
+  weeks sits nearer, in logs, to the new plan's line than to the old plan's (for a
+  multiplier m: delivered / planned nearer 1 than 1 / m). The holdout stayed on the
+  old plan when its delivered spend sits nearer to the old line than to the new one.
 """
 
 from __future__ import annotations
@@ -24,7 +29,6 @@ TEST_ID = "RO2026H2"
 ARM_ID = "rollout"
 HOLDOUT = ["CAK", "CID", "CLE", "FSD", "MSP"]     # the spring test's "neither" cell
 PRE_WEEKS = 52
-SPEND_MAX_MISS = 0.20
 
 
 def sums(deals: np.ndarray, start: int, n_win: int, gap: int, n_pre: int = PRE_WEEKS) -> tuple[np.ndarray, np.ndarray]:
@@ -95,6 +99,55 @@ def decide(lift_: float, low: float, high: float, forecast: float, valid: bool) 
             "rule_3_not_clear": bool(low <= 0 <= high), "rule_3_drop_is_clear": bool(high < 0)}
 
 
+def plan_ratios(rows, rollout_markets: list[str], first: str, last: str) -> dict:
+    """Delivered over planned spend per channel, weeks with Monday in [first, last]: the
+    rollout markets summed, the holdout markets summed, and each market.
+
+    rows: (week_start ISO, region_id, channel_id, planned_spend, spend) from fct_media_plan_weekly.
+    """
+    acc: dict = {}
+    for wk, region, ch, planned, spend in rows:
+        if not first <= wk <= last:
+            continue
+        c = acc.setdefault(ch, {"rollout": [0.0, 0.0], "holdout": [0.0, 0.0], "markets": {}})
+        side = "rollout" if region in rollout_markets else "holdout"
+        c[side][0] += spend
+        c[side][1] += planned
+        m = c["markets"].setdefault(region, [0.0, 0.0])
+        m[0] += spend
+        m[1] += planned
+    out = {}
+    for ch, c in acc.items():
+        out[ch] = {"rollout": c["rollout"][0] / c["rollout"][1], "holdout": c["holdout"][0] / c["holdout"][1],
+                   "markets": {r: v[0] / v[1] for r, v in sorted(c["markets"].items()) if v[1] > 0}}
+    return out
+
+
+def _nearer_one(ratio: float, other: float) -> bool:
+    """True when ratio is nearer, in logs, to 1 than to `other`."""
+    return abs(np.log(ratio)) < abs(np.log(ratio) - np.log(other))
+
+
+def plan_check(ratios: dict, mult: dict, rollout_markets: list[str], ran: bool = True) -> dict:
+    """The registered move check. ran=False reads the same spend against the new plan as
+    if the rollout had not run (delivered spend on the old line), the check's dry run."""
+    out, named = {}, []
+    for ch, m in mult.items():
+        r = ratios[ch]
+        k = 1.0 if ran else 1.0 / m
+        roll = r["rollout"] * k
+        out[ch] = {"multiplier": m, "rollout_ratio": roll, "rollout_line": float(np.sqrt(1.0 / m)),
+                   "move_shows": bool(_nearer_one(roll, 1.0 / m)),
+                   "holdout_ratio": r["holdout"], "holdout_stays": bool(_nearer_one(r["holdout"], m))}
+        for reg, v in r["markets"].items():
+            rolled = reg in rollout_markets
+            v = v * k if rolled else v
+            if not _nearer_one(v, 1.0 / m if rolled else m):
+                named.append({"market": reg, "channel": ch, "ratio": v, "rollout": rolled})
+    return {"channels": out, "named_markets": named,
+            "passes": bool(all(v["move_shows"] and v["holdout_stays"] for v in out.values()))}
+
+
 def rules(power: float) -> list[str]:
     return [
         "The rollout works if the holdout readout's 90% interval is above zero.",
@@ -105,7 +158,8 @@ def rules(power: float) -> list[str]:
         "below zero) would be.",
         "The model's own counterfactual, the refit MMM scoring the realized 2026 spend with and without the "
         "rollout's moves, is shown beside the readout as a cross-check. It decides nothing.",
-        f"Validity: the plan file assigns the registered markets, moves and dates; the money moved, by the same "
-        f"ratio method on spend, lands within {SPEND_MAX_MISS:.0%} of plan for the grown channels together and "
-        "for the cut channels together. Otherwise the readout is void.",
+        "Validity: the plan file assigns the registered markets, moves and dates. For every moved channel, the "
+        "rollout markets' delivered spend over the rollout weeks sits nearer, in logs, to the new plan's budget "
+        "line than to the old one, and the holdout markets' sits nearer to the old line than to the new. "
+        "Otherwise the readout is void. A single market that misses is named, never void.",
     ]

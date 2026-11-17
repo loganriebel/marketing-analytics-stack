@@ -85,6 +85,7 @@ N_WEEKS = 31
 PROXY_START = date(2025, 6, 2)         # last year's same ISO week, the stand-in for 2026 spend
 SPRING_START = date(2026, 2, 2)        # the spring test's first week; the holdout's pre-period ends before it
 READOUT_SNAPSHOT = date(2027, 1, 3)    # the year-end data cut
+EXT_FIRST_WEEK = date(2025, 12, 29)    # the media plan's first week (ISO 2026-W01)
 CARRY_IN_WEEKS = 20                    # spend before the rollout, held as it was, so saturation starts right
 ESTIMANDS_WEEKS = 156                  # the refit scores its plan on 2023 to 2025
 DRAWS = 2000
@@ -311,6 +312,16 @@ def build() -> dict:
                 "readout_snapshot": str(READOUT_SNAPSHOT),
                 "forecast": {k: out["rollout"]["plan"]["deal_change_in_window"][k] for k in ("mean", "hdi_90")},
                 "rules": H.rules(reg["power_at_forecast"])})
+    # The move check, dry-run now on the plan weeks before the rollout: it passes when
+    # spend followed the plan, and fails when the new plan is read against spend that
+    # stayed on the old line.
+    from .results import plan_rows
+    first, last = str(m.weeks[m.week_index(EXT_FIRST_WEEK)].date()), str(m.weeks[-1].date())
+    ratios = H.plan_ratios(plan_rows(CUT), reg["rollout_markets"], first, last)
+    mult = out["rollout"]["plan"]["multipliers"]
+    reg["plan_check"] = {"source": "fct_media_plan_weekly", "dry_run_weeks": [first, last],
+                         "if_the_plan_ran": H.plan_check(ratios, mult, reg["rollout_markets"], True),
+                         "if_it_had_not_run": H.plan_check(ratios, mult, reg["rollout_markets"], False)}
     out["holdout"] = reg
     return out
 

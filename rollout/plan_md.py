@@ -113,6 +113,26 @@ def plan_md(d: dict) -> str:
         "**Rules:**", "",
     ]
     lines += [f"{i}. {t}" for i, t in enumerate(h["rules"], 1)]
+    pc = h["plan_check"]
+    ran, idle = pc["if_the_plan_ran"], pc["if_it_had_not_run"]
+    lines += [
+        "", "**Dry run of the move check** (rule 5), on the media plan's weeks before the rollout "
+        f"({pc['dry_run_weeks'][0]} to {pc['dry_run_weeks'][1]}):", "",
+        "| Channel | Move | Line | Delivered / planned, spend followed the plan | Same, if the rollout had not run |",
+        "|---|---:|---:|---:|---:|",
+    ]
+    for c, r in ran["channels"].items():
+        q = idle["channels"][c]
+        lines.append(f"| {NAMES[c]} | {r['multiplier']:.2f}x | {r['rollout_line']:.3f} | {r['rollout_ratio']:.3f} "
+                     f"({'shows' if r['move_shows'] else 'misses'}) | {q['rollout_ratio']:.3f} "
+                     f"({'shows' if q['move_shows'] else 'misses'}) |")
+    lines += [
+        "",
+        f"- **Spend followed the plan:** the check {'passes' if ran['passes'] else 'fails'}; "
+        f"{len(ran['named_markets'])} market-channel cells would be named.",
+        f"- **The rollout had not run:** the check {'passes' if idle['passes'] else 'fails'}, so it can see "
+        "every move, including the smallest one, the non-brand search trim.",
+    ]
     return "\n".join(lines) + "\n"
 
 

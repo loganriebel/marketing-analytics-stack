@@ -717,7 +717,721 @@
       "Against the model: the rollout beats the May forecast if the interval lies above it, falls short if it lies below, and agrees otherwise.",
       "If the interval reaches zero, the result is not clear. At 63% power that is the likely read even if the forecast is right, so it is not evidence that the plan failed. A clear drop (the whole interval below zero) would be.",
       "The model's own counterfactual, the refit MMM scoring the realized 2026 spend with and without the rollout's moves, is shown beside the readout as a cross-check. It decides nothing.",
-      "Validity: the plan file assigns the registered markets, moves and dates; the money moved, by the same ratio method on spend, lands within 20% of plan for the grown channels together and for the cut channels together. Otherwise the readout is void."
-    ]
+      "Validity: the plan file assigns the registered markets, moves and dates. For every moved channel, the rollout markets' delivered spend over the rollout weeks sits nearer, in logs, to the new plan's budget line than to the old one, and the holdout markets' sits nearer to the old line than to the new. Otherwise the readout is void. A single market that misses is named, never void."
+    ],
+    "plan_check": {
+      "source": "fct_media_plan_weekly",
+      "dry_run_weeks": [
+        "2025-12-29",
+        "2026-05-25"
+      ],
+      "if_the_plan_ran": {
+        "channels": {
+          "paid_search_nonbrand": {
+            "multiplier": 0.8837,
+            "rollout_ratio": 0.9726071458045843,
+            "rollout_line": 1.0637695937359757,
+            "move_shows": true,
+            "holdout_ratio": 0.9708142441142366,
+            "holdout_stays": true
+          },
+          "meta": {
+            "multiplier": 1.5,
+            "rollout_ratio": 0.9496441051714384,
+            "rollout_line": 0.816496580927726,
+            "move_shows": true,
+            "holdout_ratio": 0.9389500952766049,
+            "holdout_stays": true
+          },
+          "linkedin": {
+            "multiplier": 1.5,
+            "rollout_ratio": 0.9798446766469985,
+            "rollout_line": 0.816496580927726,
+            "move_shows": true,
+            "holdout_ratio": 0.9701078104621322,
+            "holdout_stays": true
+          },
+          "youtube": {
+            "multiplier": 1.5,
+            "rollout_ratio": 0.9944731238798425,
+            "rollout_line": 0.816496580927726,
+            "move_shows": true,
+            "holdout_ratio": 0.9942998083078627,
+            "holdout_stays": true
+          },
+          "ctv": {
+            "multiplier": 1.5,
+            "rollout_ratio": 0.9988022378084879,
+            "rollout_line": 0.816496580927726,
+            "move_shows": true,
+            "holdout_ratio": 0.9511460406781556,
+            "holdout_stays": true
+          },
+          "display": {
+            "multiplier": 0.5,
+            "rollout_ratio": 1.101166883470567,
+            "rollout_line": 1.4142135623730951,
+            "move_shows": true,
+            "holdout_ratio": 1.1032579781648746,
+            "holdout_stays": true
+          },
+          "affiliates": {
+            "multiplier": 1.5,
+            "rollout_ratio": 0.9949306813828088,
+            "rollout_line": 0.816496580927726,
+            "move_shows": true,
+            "holdout_ratio": 0.9943437400444975,
+            "holdout_stays": true
+          }
+        },
+        "named_markets": [],
+        "passes": true
+      },
+      "if_it_had_not_run": {
+        "channels": {
+          "paid_search_nonbrand": {
+            "multiplier": 0.8837,
+            "rollout_ratio": 1.100607837280281,
+            "rollout_line": 1.0637695937359757,
+            "move_shows": false,
+            "holdout_ratio": 0.9708142441142366,
+            "holdout_stays": true
+          },
+          "meta": {
+            "multiplier": 1.5,
+            "rollout_ratio": 0.6330960701142923,
+            "rollout_line": 0.816496580927726,
+            "move_shows": false,
+            "holdout_ratio": 0.9389500952766049,
+            "holdout_stays": true
+          },
+          "linkedin": {
+            "multiplier": 1.5,
+            "rollout_ratio": 0.6532297844313323,
+            "rollout_line": 0.816496580927726,
+            "move_shows": false,
+            "holdout_ratio": 0.9701078104621322,
+            "holdout_stays": true
+          },
+          "youtube": {
+            "multiplier": 1.5,
+            "rollout_ratio": 0.6629820825865617,
+            "rollout_line": 0.816496580927726,
+            "move_shows": false,
+            "holdout_ratio": 0.9942998083078627,
+            "holdout_stays": true
+          },
+          "ctv": {
+            "multiplier": 1.5,
+            "rollout_ratio": 0.6658681585389918,
+            "rollout_line": 0.816496580927726,
+            "move_shows": false,
+            "holdout_ratio": 0.9511460406781556,
+            "holdout_stays": true
+          },
+          "display": {
+            "multiplier": 0.5,
+            "rollout_ratio": 2.202333766941134,
+            "rollout_line": 1.4142135623730951,
+            "move_shows": false,
+            "holdout_ratio": 1.1032579781648746,
+            "holdout_stays": true
+          },
+          "affiliates": {
+            "multiplier": 1.5,
+            "rollout_ratio": 0.6632871209218725,
+            "rollout_line": 0.816496580927726,
+            "move_shows": false,
+            "holdout_ratio": 0.9943437400444975,
+            "holdout_stays": true
+          }
+        },
+        "named_markets": [
+          {
+            "market": "CHI",
+            "channel": "paid_search_nonbrand",
+            "ratio": 1.1020083931504954,
+            "rollout": true
+          },
+          {
+            "market": "CMH",
+            "channel": "paid_search_nonbrand",
+            "ratio": 1.1016485714500008,
+            "rollout": true
+          },
+          {
+            "market": "CVG",
+            "channel": "paid_search_nonbrand",
+            "ratio": 1.104800508501094,
+            "rollout": true
+          },
+          {
+            "market": "DAY",
+            "channel": "paid_search_nonbrand",
+            "ratio": 1.1009522552982018,
+            "rollout": true
+          },
+          {
+            "market": "DLH",
+            "channel": "paid_search_nonbrand",
+            "ratio": 1.0947195895204316,
+            "rollout": true
+          },
+          {
+            "market": "DSM",
+            "channel": "paid_search_nonbrand",
+            "ratio": 1.1080889280375692,
+            "rollout": true
+          },
+          {
+            "market": "FAR",
+            "channel": "paid_search_nonbrand",
+            "ratio": 1.0956474469142572,
+            "rollout": true
+          },
+          {
+            "market": "GRB",
+            "channel": "paid_search_nonbrand",
+            "ratio": 1.100603245494002,
+            "rollout": true
+          },
+          {
+            "market": "MKE",
+            "channel": "paid_search_nonbrand",
+            "ratio": 1.0966848050827729,
+            "rollout": true
+          },
+          {
+            "market": "MLI",
+            "channel": "paid_search_nonbrand",
+            "ratio": 1.0938533203126066,
+            "rollout": true
+          },
+          {
+            "market": "MSN",
+            "channel": "paid_search_nonbrand",
+            "ratio": 1.0958003957987599,
+            "rollout": true
+          },
+          {
+            "market": "PIA",
+            "channel": "paid_search_nonbrand",
+            "ratio": 1.1021895057242326,
+            "rollout": true
+          },
+          {
+            "market": "RFD",
+            "channel": "paid_search_nonbrand",
+            "ratio": 1.102251593323139,
+            "rollout": true
+          },
+          {
+            "market": "RST",
+            "channel": "paid_search_nonbrand",
+            "ratio": 1.1005648447182041,
+            "rollout": true
+          },
+          {
+            "market": "TOL",
+            "channel": "paid_search_nonbrand",
+            "ratio": 1.102044541143168,
+            "rollout": true
+          },
+          {
+            "market": "CHI",
+            "channel": "meta",
+            "ratio": 0.6308874782836296,
+            "rollout": true
+          },
+          {
+            "market": "CMH",
+            "channel": "meta",
+            "ratio": 0.6328589481630824,
+            "rollout": true
+          },
+          {
+            "market": "CVG",
+            "channel": "meta",
+            "ratio": 0.6350960750359891,
+            "rollout": true
+          },
+          {
+            "market": "DAY",
+            "channel": "meta",
+            "ratio": 0.631193604094818,
+            "rollout": true
+          },
+          {
+            "market": "DLH",
+            "channel": "meta",
+            "ratio": 0.6360822820225195,
+            "rollout": true
+          },
+          {
+            "market": "DSM",
+            "channel": "meta",
+            "ratio": 0.631018342578606,
+            "rollout": true
+          },
+          {
+            "market": "FAR",
+            "channel": "meta",
+            "ratio": 0.6264232374859562,
+            "rollout": true
+          },
+          {
+            "market": "GRB",
+            "channel": "meta",
+            "ratio": 0.6264173383408739,
+            "rollout": true
+          },
+          {
+            "market": "MKE",
+            "channel": "meta",
+            "ratio": 0.6380620866808087,
+            "rollout": true
+          },
+          {
+            "market": "MLI",
+            "channel": "meta",
+            "ratio": 0.6332735833071357,
+            "rollout": true
+          },
+          {
+            "market": "MSN",
+            "channel": "meta",
+            "ratio": 0.6314227408793381,
+            "rollout": true
+          },
+          {
+            "market": "PIA",
+            "channel": "meta",
+            "ratio": 0.641397110204303,
+            "rollout": true
+          },
+          {
+            "market": "RFD",
+            "channel": "meta",
+            "ratio": 0.6290491118077326,
+            "rollout": true
+          },
+          {
+            "market": "RST",
+            "channel": "meta",
+            "ratio": 0.6423254427078827,
+            "rollout": true
+          },
+          {
+            "market": "TOL",
+            "channel": "meta",
+            "ratio": 0.6317797629132484,
+            "rollout": true
+          },
+          {
+            "market": "CHI",
+            "channel": "linkedin",
+            "ratio": 0.6565776591829481,
+            "rollout": true
+          },
+          {
+            "market": "CMH",
+            "channel": "linkedin",
+            "ratio": 0.6515004194671844,
+            "rollout": true
+          },
+          {
+            "market": "CVG",
+            "channel": "linkedin",
+            "ratio": 0.6467090039672363,
+            "rollout": true
+          },
+          {
+            "market": "DAY",
+            "channel": "linkedin",
+            "ratio": 0.6522706754579342,
+            "rollout": true
+          },
+          {
+            "market": "DLH",
+            "channel": "linkedin",
+            "ratio": 0.6487448542305494,
+            "rollout": true
+          },
+          {
+            "market": "DSM",
+            "channel": "linkedin",
+            "ratio": 0.6503136739286561,
+            "rollout": true
+          },
+          {
+            "market": "FAR",
+            "channel": "linkedin",
+            "ratio": 0.65199904711251,
+            "rollout": true
+          },
+          {
+            "market": "GRB",
+            "channel": "linkedin",
+            "ratio": 0.6618175194586644,
+            "rollout": true
+          },
+          {
+            "market": "MKE",
+            "channel": "linkedin",
+            "ratio": 0.6495340403222475,
+            "rollout": true
+          },
+          {
+            "market": "MLI",
+            "channel": "linkedin",
+            "ratio": 0.644294632540586,
+            "rollout": true
+          },
+          {
+            "market": "MSN",
+            "channel": "linkedin",
+            "ratio": 0.6461843837864496,
+            "rollout": true
+          },
+          {
+            "market": "PIA",
+            "channel": "linkedin",
+            "ratio": 0.6435092038093435,
+            "rollout": true
+          },
+          {
+            "market": "RFD",
+            "channel": "linkedin",
+            "ratio": 0.6555452500472281,
+            "rollout": true
+          },
+          {
+            "market": "RST",
+            "channel": "linkedin",
+            "ratio": 0.6600231951302296,
+            "rollout": true
+          },
+          {
+            "market": "TOL",
+            "channel": "linkedin",
+            "ratio": 0.6476903704977827,
+            "rollout": true
+          },
+          {
+            "market": "CHI",
+            "channel": "youtube",
+            "ratio": 0.6670450657748496,
+            "rollout": true
+          },
+          {
+            "market": "CMH",
+            "channel": "youtube",
+            "ratio": 0.6466920411898213,
+            "rollout": true
+          },
+          {
+            "market": "CVG",
+            "channel": "youtube",
+            "ratio": 0.6672456709089867,
+            "rollout": true
+          },
+          {
+            "market": "DAY",
+            "channel": "youtube",
+            "ratio": 0.6649707280294825,
+            "rollout": true
+          },
+          {
+            "market": "DLH",
+            "channel": "youtube",
+            "ratio": 0.655441232721831,
+            "rollout": true
+          },
+          {
+            "market": "DSM",
+            "channel": "youtube",
+            "ratio": 0.6658997270727466,
+            "rollout": true
+          },
+          {
+            "market": "FAR",
+            "channel": "youtube",
+            "ratio": 0.6648591832389836,
+            "rollout": true
+          },
+          {
+            "market": "GRB",
+            "channel": "youtube",
+            "ratio": 0.6850661506508656,
+            "rollout": true
+          },
+          {
+            "market": "MKE",
+            "channel": "youtube",
+            "ratio": 0.6601999473541533,
+            "rollout": true
+          },
+          {
+            "market": "MLI",
+            "channel": "youtube",
+            "ratio": 0.6557661986210155,
+            "rollout": true
+          },
+          {
+            "market": "MSN",
+            "channel": "youtube",
+            "ratio": 0.6566989948182416,
+            "rollout": true
+          },
+          {
+            "market": "PIA",
+            "channel": "youtube",
+            "ratio": 0.6661338368953862,
+            "rollout": true
+          },
+          {
+            "market": "RFD",
+            "channel": "youtube",
+            "ratio": 0.6777356183828275,
+            "rollout": true
+          },
+          {
+            "market": "RST",
+            "channel": "youtube",
+            "ratio": 0.6503109315419404,
+            "rollout": true
+          },
+          {
+            "market": "TOL",
+            "channel": "youtube",
+            "ratio": 0.6667406357786334,
+            "rollout": true
+          },
+          {
+            "market": "CMH",
+            "channel": "ctv",
+            "ratio": 0.6544112923916461,
+            "rollout": true
+          },
+          {
+            "market": "CVG",
+            "channel": "ctv",
+            "ratio": 0.6673830024604915,
+            "rollout": true
+          },
+          {
+            "market": "DSM",
+            "channel": "ctv",
+            "ratio": 0.6689647205486172,
+            "rollout": true
+          },
+          {
+            "market": "MKE",
+            "channel": "ctv",
+            "ratio": 0.6682989253085998,
+            "rollout": true
+          },
+          {
+            "market": "MLI",
+            "channel": "ctv",
+            "ratio": 0.6674711436709445,
+            "rollout": true
+          },
+          {
+            "market": "MSN",
+            "channel": "ctv",
+            "ratio": 0.6715328590891186,
+            "rollout": true
+          },
+          {
+            "market": "TOL",
+            "channel": "ctv",
+            "ratio": 0.6726275605863083,
+            "rollout": true
+          },
+          {
+            "market": "CHI",
+            "channel": "display",
+            "ratio": 2.202036041240472,
+            "rollout": true
+          },
+          {
+            "market": "CMH",
+            "channel": "display",
+            "ratio": 2.2325187432548383,
+            "rollout": true
+          },
+          {
+            "market": "CVG",
+            "channel": "display",
+            "ratio": 2.219149884348382,
+            "rollout": true
+          },
+          {
+            "market": "DAY",
+            "channel": "display",
+            "ratio": 2.184319621335178,
+            "rollout": true
+          },
+          {
+            "market": "DLH",
+            "channel": "display",
+            "ratio": 2.2006787050637038,
+            "rollout": true
+          },
+          {
+            "market": "DSM",
+            "channel": "display",
+            "ratio": 2.193891114776514,
+            "rollout": true
+          },
+          {
+            "market": "FAR",
+            "channel": "display",
+            "ratio": 2.2022778848517452,
+            "rollout": true
+          },
+          {
+            "market": "GRB",
+            "channel": "display",
+            "ratio": 2.2035527315855905,
+            "rollout": true
+          },
+          {
+            "market": "MKE",
+            "channel": "display",
+            "ratio": 2.1843201983173706,
+            "rollout": true
+          },
+          {
+            "market": "MLI",
+            "channel": "display",
+            "ratio": 2.1804594001719124,
+            "rollout": true
+          },
+          {
+            "market": "MSN",
+            "channel": "display",
+            "ratio": 2.198250693299637,
+            "rollout": true
+          },
+          {
+            "market": "PIA",
+            "channel": "display",
+            "ratio": 2.2195600544840683,
+            "rollout": true
+          },
+          {
+            "market": "RFD",
+            "channel": "display",
+            "ratio": 2.1983391903466827,
+            "rollout": true
+          },
+          {
+            "market": "RST",
+            "channel": "display",
+            "ratio": 2.206578920911967,
+            "rollout": true
+          },
+          {
+            "market": "TOL",
+            "channel": "display",
+            "ratio": 2.1958360260785477,
+            "rollout": true
+          },
+          {
+            "market": "CHI",
+            "channel": "affiliates",
+            "ratio": 0.661939895741215,
+            "rollout": true
+          },
+          {
+            "market": "CMH",
+            "channel": "affiliates",
+            "ratio": 0.6648501221758791,
+            "rollout": true
+          },
+          {
+            "market": "CVG",
+            "channel": "affiliates",
+            "ratio": 0.6675836015521439,
+            "rollout": true
+          },
+          {
+            "market": "DAY",
+            "channel": "affiliates",
+            "ratio": 0.6574182828956695,
+            "rollout": true
+          },
+          {
+            "market": "DLH",
+            "channel": "affiliates",
+            "ratio": 0.662852872332196,
+            "rollout": true
+          },
+          {
+            "market": "DSM",
+            "channel": "affiliates",
+            "ratio": 0.66772013802491,
+            "rollout": true
+          },
+          {
+            "market": "FAR",
+            "channel": "affiliates",
+            "ratio": 0.6653428642981476,
+            "rollout": true
+          },
+          {
+            "market": "GRB",
+            "channel": "affiliates",
+            "ratio": 0.6614810713938348,
+            "rollout": true
+          },
+          {
+            "market": "MKE",
+            "channel": "affiliates",
+            "ratio": 0.6577346743449216,
+            "rollout": true
+          },
+          {
+            "market": "MLI",
+            "channel": "affiliates",
+            "ratio": 0.6669538361269416,
+            "rollout": true
+          },
+          {
+            "market": "MSN",
+            "channel": "affiliates",
+            "ratio": 0.6630265559429055,
+            "rollout": true
+          },
+          {
+            "market": "PIA",
+            "channel": "affiliates",
+            "ratio": 0.6638687257149521,
+            "rollout": true
+          },
+          {
+            "market": "RFD",
+            "channel": "affiliates",
+            "ratio": 0.6655966962957398,
+            "rollout": true
+          },
+          {
+            "market": "RST",
+            "channel": "affiliates",
+            "ratio": 0.6655560015157662,
+            "rollout": true
+          },
+          {
+            "market": "TOL",
+            "channel": "affiliates",
+            "ratio": 0.6650453065886787,
+            "rollout": true
+          }
+        ],
+        "passes": false
+      }
+    }
   }
 }
