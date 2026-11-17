@@ -43,6 +43,10 @@ from . import config as C
 
 BUDGET_BASES = ("hold_2025_exit",)
 MOVE_KEYS = ("multiplier", "add_per_week_per_size")
+# The market test registry export (market_tests.csv): one row per test arm, market and move.
+# Before any test is registered it is written with its header and no rows.
+MARKET_TEST_COLUMNS = ["test_id", "test_name", "arm_id", "region_code", "channel", "move", "move_value",
+                       "start_date", "end_date", "approved_date"]
 
 
 @dataclass

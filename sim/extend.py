@@ -35,7 +35,7 @@ import pandas as pd
 from . import config as C
 from .generate import (SimResult, _adstock, _brand_flighting, _categorical, _date_str, _depth_price, _hill,
                        _monday_of_iso_week, _nonbrand_quality, _r, _season_log, simulate)
-from .plans import Plan, load_all
+from .plans import MARKET_TEST_COLUMNS, Plan, load_all
 
 EXT_START = C.WINDOW_START + timedelta(weeks=C.N_WEEKS)   # 2025-12-29, ISO 2026-W01
 EXT_WEEKS = 53                                             # through the week of 2026-12-28
@@ -605,8 +605,7 @@ def _tables(base: SimResult, st: dict, cal: dict, ex: dict, plans: list[Plan], s
                                      "start_date": str(p.test.start),
                                      "end_date": str(p.test.end + timedelta(days=6)),
                                      "approved_date": str(p.approved)})
-    t["market_tests"] = pd.DataFrame(rows, columns=["test_id", "test_name", "arm_id", "region_code", "channel",
-                                                    "move", "move_value", "start_date", "end_date", "approved_date"])
+    t["market_tests"] = pd.DataFrame(rows, columns=MARKET_TEST_COLUMNS)
 
     t["crm_leads"], t["crm_opportunities"] = _crm(st, weeks_out, snapshot)
     return t
