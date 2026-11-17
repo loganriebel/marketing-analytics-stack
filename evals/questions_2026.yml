@@ -1,0 +1,88 @@
+# Questions about the 2026 market test and the rollout, asked of the year-end data cut
+# (python -m sim --through 2027-01-03, then dbt build from that folder). Ground truth is
+# plain SQL on that cut's golden tables. Same answer types and house rules as questions.yml.
+warehouse: data/cut_2027-01-03/data/warehouse.duckdb
+raw_dir: data/cut_2027-01-03/data/raw
+weeks: ["2023-01-02", "2026-12-28"]
+
+questions:
+  # --- the market test --------------------------------------------------------------
+  - id: t01
+    category: test
+    question: >
+      How many closed-won deals did the markets in the YouTube arm of the 2026 market test close in the
+      weeks from 2026-02-02 through 2026-05-18?
+    answer_type: number
+    sql: >
+      select sum(f.won_deals) from fct_funnel f join dim_region r using (region_id)
+      where r.youtube_test_group = 'test' and f.week_start between '2026-02-02' and '2026-05-18'
+  - id: t02
+    category: test
+    question: >
+      How much did we spend on YouTube in the YouTube test markets during the test weeks, 2026-02-02
+      through 2026-04-20?
+    answer_type: number
+    sql: >
+      select sum(c.spend) from fct_channel_weekly c join dim_region r using (region_id)
+      where c.channel_id = 'youtube' and r.youtube_test_group = 'test'
+        and c.week_start between '2026-02-02' and '2026-04-20'
+  - id: t03
+    category: test
+    question: >
+      How much did we spend on non-brand paid search in the search test markets during the test weeks,
+      2026-02-02 through 2026-04-20?
+    answer_type: number
+    sql: >
+      select sum(c.spend) from fct_channel_weekly c join dim_region r using (region_id)
+      where c.channel_id = 'paid_search_nonbrand' and r.search_test_group = 'test'
+        and c.week_start between '2026-02-02' and '2026-04-20'
+  - id: t04
+    category: test
+    question: >
+      What was the cost per acquisition in the markets that were in neither arm of the 2026 market test,
+      in the weeks from 2026-02-02 through 2026-05-18?
+    answer_type: number
+    sql: >
+      select s.spend / d.deals from
+        (select sum(c.spend) as spend from fct_channel_weekly c join dim_region r using (region_id)
+         where r.market_test_cell = 'neither' and c.week_start between '2026-02-02' and '2026-05-18') s,
+        (select sum(f.won_deals) as deals from fct_funnel f join dim_region r using (region_id)
+         where r.market_test_cell = 'neither' and f.week_start between '2026-02-02' and '2026-05-18') d
+  - id: t05
+    category: test
+    question: >
+      Which cell of the 2026 market test (youtube only, search only, youtube and search, or neither) closed
+      the most closed-won deals in the weeks from 2026-02-02 through 2026-05-18?
+    answer_type: text
+    sql: >
+      select r.market_test_cell from fct_funnel f join dim_region r using (region_id)
+      where f.week_start between '2026-02-02' and '2026-05-18'
+      group by 1 order by sum(f.won_deals) desc limit 1
+  - id: t06
+    category: refusal
+    question: How many extra deals did the 2026 YouTube test cause in its markets?
+    answer_type: refusal
+
+  # --- the year ------------------------------------------------------------------------
+  - id: t07
+    category: year
+    question: How many closed-won deals did we close in 2026?
+    answer_type: number
+    sql: select sum(won_deals) from fct_funnel where year(week_start) = 2026
+  - id: t08
+    category: year
+    question: What was total paid media spend in the weeks from 2026-06-01 through 2026-12-28?
+    answer_type: number
+    sql: select sum(spend) from fct_channel_weekly where week_start between '2026-06-01' and '2026-12-28'
+  - id: t09
+    category: year
+    question: >
+      What was the cost per acquisition in the rollout's holdout markets, the ones kept on the old plan, in
+      the weeks from 2026-06-01 through 2026-12-28?
+    answer_type: number
+    sql: >
+      select s.spend / d.deals from
+        (select sum(c.spend) as spend from fct_channel_weekly c join dim_region r using (region_id)
+         where r.rollout_group = 'holdout' and c.week_start between '2026-06-01' and '2026-12-28') s,
+        (select sum(f.won_deals) as deals from fct_funnel f join dim_region r using (region_id)
+         where r.rollout_group = 'holdout' and f.week_start between '2026-06-01' and '2026-12-28') d
