@@ -2,19 +2,19 @@
 
 **AI-first Marketing Measurement: Claude on governed metrics, a full MMM build, Matched market test, and actionable insights digestable for exectuive stakeholders.**
 
-## The year in one page
+## The Year in One Page
 
-Fernhook, a fictional fleet-software company, spent more on paid media every year, mostly on non-brand search, and its deals fell 10% in 2025. Its CFO stopped trusting marketing's numbers. Over 2026 the measurement team did five things:
+Fernhook, a fleet-software company, spent more on paid media every year, mostly on non-brand search, and its deals fell 10% in 2025. Its CFO stopped trusting marketing's numbers. Over 2026 the measurement team did five things:
 
 1. **Diagnosed.** A Bayesian geo MMM said YouTube was the cheapest next dollar and non-brand search the most saturated.
-2. **Tested before moving money.** A Matched market test pushed YouTube in 10 markets and pulled non-brand search back to its 2023 pace in the test markets. YouTube added **+463 deals (+246 to +679)** against a +334 forecast. The search pullback showed no clear drop (-79, -328 to +170).
+2. **Tested Before Moving Money.** A Matched market test pushed YouTube in 10 markets and pulled non-brand search back to its 2023 pace in the test markets. YouTube added **+463 deals (+246 to +679)** against a +334 forecast. The search pullback showed no clear drop (-79, -328 to +170).
 3. **Refit.** Both results went into the MMM as lift tests, and the refit model set the budget.
-4. **Rolled out, with a holdout.** From June the refit plan ran in 15 markets at the same budget: Meta, YouTube, CTV, LinkedIn and affiliates up 50%, display down 50%, non-brand search down 12%. The 5 markets that weren't part of the test kept the BAU budget splits.
+4. **Rolled out, With a Holdout.** From June the refit plan ran in 15 markets at the same budget: Meta, YouTube, CTV, LinkedIn and affiliates up 50%, display down 50%, non-brand search down 12%. The 5 markets that weren't part of the test kept the BAU budget splits.
 5. **Measured it.** The holdout reads **+464 extra deals (+18 to +911)** against a +533 forecast: the rollout works and agrees with the model. The year closed with 28,054 deals (+10.8%), paid spend -1.8% and cost per deal $1,525 (-11.3%).
 
-**What the results say:** the rollout truly added **+882** deals in those weeks. Validating Fernhook's need for more upper funnel investment and less focus on demand capture tactics.
+**What the Results Say:** the rollout truly added **+882** deals in those weeks. Validating Fernhook's need for more upper funnel investment and less focus on demand capture tactics.
 
-## The story in 8 chapters
+## The Story in 8 Chapters
 
 1. **The Problem:** Spend climbs, deals fall, and nobody agrees on what works. [The problem](#the-problem) and the [EDA report](docs/eda/EDA.md).
 2. **The Diagnosis:** A geo MMM estimates what each channel adds to sales and gives them all a CPA and saturation curves. [docs/mmm/README.md](docs/mmm/README.md)
@@ -25,7 +25,7 @@ Fernhook, a fictional fleet-software company, spent more on paid media every yea
 7. **The Rollout:** The refit model's plan runs in 15 markets with the new channels splits, and 5 markets stay on the old BAU plan to measure it. [rollout/PLAN.md](rollout/PLAN.md)
 8. **The Results:** The model results are validated, proving that Fernhook can close more deals at a cheaper CPA by optimizing their channel mix. By using the MMM, Fernhook understand where the next best dollar can be allocated across their marketing mix. [rollout/RESULTS.md](rollout/RESULTS.md) and [memo/outputs/results_memo.md](memo/outputs/results_memo.md)
 
-## The company
+## The Company
 
 **Fernhook Software** Sells fleet-maintenance and work-order software to small fleets (5 to 50 vehicles).
 
@@ -36,7 +36,7 @@ Fernhook, a fictional fleet-software company, spent more on paid media every yea
 - Sold only in seven Midwest states: Minnesota, Wisconsin, Illinois, Iowa, Ohio, North Dakota, and South Dakota. They split into 20 metro markets in four sales areas.
 - About 125 SDRs and 170 AEs.
 
-| Sales area | Markets |
+| Sales Area | Markets |
 |---|---|
 | Illinois and Iowa | Chicago, Rockford, Peoria, Quad Cities, Des Moines, Cedar Rapids |
 | Ohio | Cleveland, Columbus, Cincinnati, Dayton, Toledo, Akron |
